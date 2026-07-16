@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { historyChapters } from "@/content/history";
 import { StoryExit } from "@/components/story/story-exit";
 import { StoryProgress } from "@/components/story/story-progress";
+import { StoryUnfolding } from "@/components/story/story-unfolding";
 
 export const metadata: Metadata = {
   title: "A city, unfolded",
@@ -33,6 +34,7 @@ function ArchivalPlaceholder({ chapter }: { chapter: number }) {
 export default function Home() {
   return (
     <main id="main-content" className="story-journal">
+      <StoryUnfolding />
       <section className="journal-cover" aria-labelledby="cover-title">
         <div className="journal-cover__registration" aria-hidden="true">
           FIELD JOURNAL · NO. 01
@@ -78,6 +80,15 @@ export default function Home() {
               key={chapter.id}
               aria-labelledby={`${chapter.id}-title`}
             >
+              <div className="history-chapter__binding" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="history-chapter__folio" aria-hidden="true">
+                <span>Hello Tagbilaran</span>
+                <span>Journal leaf {String(chapter.order).padStart(2, "0")}</span>
+              </div>
               <div className="history-chapter__number" aria-hidden="true">
                 {String(chapter.order).padStart(2, "0")}
               </div>

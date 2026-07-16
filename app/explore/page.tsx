@@ -15,12 +15,12 @@ export default function ExplorePage() {
     <main id="main-content" className="explore-page">
       <header className="explore-hero">
         <div>
-          <p className="kicker">The story continues in the streets</p>
+          <p className="kicker">Open the city map</p>
           <h1>Explore Tagbilaran</h1>
         </div>
         <p>
-          A source-conscious prototype field guide. Every card states its geographic scope;
-          details marked for local verification should not yet be used for travel planning.
+          Move through the journal index to highlight source-located stops. Hover or focus a
+          marker for a short note; open it for the full place story.
         </p>
       </header>
       <noscript>
