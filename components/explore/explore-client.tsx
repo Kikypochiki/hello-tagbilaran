@@ -4,8 +4,12 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useCallback, useMemo, useState } from "react";
-import { PlaceCard } from "@/components/place-card";
+import { PlaceDialog } from "@/components/explore/place-dialog";
 import { ScopeBadge } from "@/components/scope-badge";
+import {
+  tagbilaranBarangays,
+  tagbilaranBoundarySource,
+} from "@/content/barangays";
 import { categoryLabels, categoryOrder } from "@/lib/place-labels";
 import type { Place, PlaceCategory } from "@/types/content";
 
@@ -16,7 +20,7 @@ const MapCanvas = dynamic(
     loading: () => (
       <div className="map-loading map-loading--full" role="status">
         <span className="map-loading__compass" aria-hidden="true" />
-        Opening the illustrated city map…
+        Drawing the Tagbilaran map…
       </div>
     ),
   },
@@ -33,8 +37,14 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const categoryParam = searchParams.get("category");
   const category = isCategory(categoryParam) ? categoryParam : null;
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
-  const [showMap, setShowMap] = useState(true);
   const [previewedId, setPreviewedId] = useState<string>();
+
+  const selectedPlace = places.find(
+    (place) => place.slug === searchParams.get("place"),
+  );
+  const selectedBarangay = tagbilaranBarangays.find(
+    (barangay) => barangay.code === searchParams.get("barangay"),
+  );
 
   const filteredPlaces = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -42,7 +52,8 @@ export function ExploreClient({ places }: { places: Place[] }) {
       const matchesCategory = !category || place.category === category;
       const matchesQuery =
         !normalized ||
-        [place.name, place.summary, categoryLabels[place.category]]
+        [place.name, place.summary, categoryLabels[place.category], place.barangay]
+          .filter(Boolean)
           .join(" ")
           .toLocaleLowerCase()
           .includes(normalized);
@@ -75,9 +86,12 @@ export function ExploreClient({ places }: { places: Place[] }) {
     [pathname, router, searchParams],
   );
 
-  const activatePlace = useCallback(
-    (slug: string) => router.push(`/places/${slug}`),
-    [router],
+  const openPlace = useCallback(
+    (place: Place) => {
+      setPreviewedId(undefined);
+      replaceParams({ place: place.slug });
+    },
+    [replaceParams],
   );
 
   function updateQuery(value: string) {
@@ -86,183 +100,219 @@ export function ExploreClient({ places }: { places: Place[] }) {
     replaceParams({ q: value.trim() || null, place: null });
   }
 
-  function openList() {
-    setShowMap(false);
-    window.requestAnimationFrame(() => {
-      document.getElementById("results-title")?.scrollIntoView({
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
-        block: "start",
-      });
-    });
-  }
-
   return (
-    <div className="explore-workspace" data-map-visible={showMap || undefined}>
-      <section className="filter-sheet" aria-labelledby="filter-title">
-        <div className="filter-sheet__heading">
-          <div>
-            <p className="section-kicker">Map index</p>
-            <h2 id="filter-title">Find a place</h2>
-          </div>
-          <span aria-live="polite">
-            {highlightedIds.length} mapped · {filteredPlaces.length} listed
+    <section className="map-only-workspace" aria-label="Explore Tagbilaran city map">
+      <h1 className="sr-only">Explore Tagbilaran</h1>
+
+      <details className="map-index">
+        <summary>
+          <span>
+            <span className="section-kicker">Journal index</span>
+            <strong>Places &amp; barangays</strong>
           </span>
-        </div>
-        <label className="search-field">
-          <span>Search place notes</span>
-          <span className="search-field__control">
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <circle cx="10.8" cy="10.8" r="6.8" />
-              <path d="m16 16 5 5" />
-            </svg>
-            <input
-              type="search"
-              value={query}
-              onChange={(event) => updateQuery(event.target.value)}
-              placeholder="Name, story, or category"
-            />
+          <span className="map-index__count">
+            {places.length} places · {tagbilaranBarangays.length} barangays
           </span>
-        </label>
-        <fieldset className="category-filters category-filters--map">
-          <legend>Highlight a category on the map</legend>
-          <button
-            type="button"
-            aria-pressed={!category}
-            onClick={() => {
-              setPreviewedId(undefined);
-              replaceParams({ category: null, place: null });
-            }}
-          >
-            All
-          </button>
-          {categoryOrder.map((item) => {
-            const locatedCount = places.filter(
-              (place) => place.category === item && place.coordinates,
-            ).length;
-            return (
+        </summary>
+
+        <div className="map-index__body">
+          <section className="map-index__section" aria-labelledby="places-index-title">
+            <header className="map-index__heading">
+              <div>
+                <p className="section-kicker">Place register</p>
+                <h2 id="places-index-title">Find a place</h2>
+              </div>
+              <span aria-live="polite">
+                {highlightedIds.length} mapped · {filteredPlaces.length} indexed
+              </span>
+            </header>
+
+            <label className="search-field search-field--index">
+              <span>Search the place index</span>
+              <span className="search-field__control">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <circle cx="10.8" cy="10.8" r="6.8" />
+                  <path d="m16 16 5 5" />
+                </svg>
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => updateQuery(event.target.value)}
+                  placeholder="Name, barangay, or category"
+                />
+              </span>
+            </label>
+
+            <fieldset className="category-filters category-filters--index">
+              <legend>Highlight a place category</legend>
               <button
-                key={item}
                 type="button"
-                aria-pressed={category === item}
+                aria-pressed={!category}
                 onClick={() => {
                   setPreviewedId(undefined);
-                  replaceParams({ category: item, place: null });
+                  replaceParams({ category: null, place: null });
                 }}
               >
-                {categoryLabels[item]}
-                <small>{locatedCount ? `${locatedCount} mapped` : "list only"}</small>
+                All
               </button>
-            );
-          })}
-        </fieldset>
-        <div className="view-switch" aria-label="Explore view">
-          {!showMap ? (
-            <button type="button" onClick={() => setShowMap(true)}>
-              Return to map
-            </button>
-          ) : (
-            <button type="button" onClick={openList}>
-              View accessible list
-            </button>
-          )}
-        </div>
-      </section>
+              {categoryOrder.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  aria-pressed={category === item}
+                  onClick={() => {
+                    setPreviewedId(undefined);
+                    replaceParams({ category: item, place: null });
+                  }}
+                >
+                  {categoryLabels[item]}
+                </button>
+              ))}
+            </fieldset>
 
-      {showMap ? (
-        <section className="map-sheet" aria-labelledby="map-title">
-          <div className="map-sheet__heading">
-            <div>
-              <p className="section-kicker">Source-located field map</p>
-              <h2 id="map-title">
-                {category ? categoryLabels[category] : "Tagbilaran on the page"}
-              </h2>
-            </div>
-            <span>Hover or focus a marker · click for the full entry</span>
-          </div>
-          <MapCanvas
-            places={mappablePlaces}
-            highlightedIds={highlightedIds}
-            previewedId={previewedId}
-            onPreview={setPreviewedId}
-            onActivate={activatePlace}
-          />
-          {highlightedIds.length === 0 ? (
-            <div className="map-category-empty" role="status">
-              <strong>No source-backed points in this filter.</strong>
-              <span>The matching place notes remain in the list below.</span>
-            </div>
-          ) : null}
-          {previewedPlace ? (
-            <aside className="map-place-preview" aria-live="polite">
-              <div className="map-place-preview__labels">
-                <ScopeBadge scope={previewedPlace.scope} />
-                <span className="category-label">
-                  {categoryLabels[previewedPlace.category]}
-                </span>
+            {filteredPlaces.length ? (
+              <ol className="map-index__places">
+                {filteredPlaces.map((place) => (
+                  <li key={place.id}>
+                    <Link
+                      href={`/places/${place.slug}`}
+                      onClick={(event) => {
+                        if (
+                          event.button !== 0 ||
+                          event.metaKey ||
+                          event.ctrlKey ||
+                          event.shiftKey ||
+                          event.altKey
+                        ) {
+                          return;
+                        }
+                        event.preventDefault();
+                        openPlace(place);
+                      }}
+                      onPointerEnter={() => {
+                        if (place.coordinates) setPreviewedId(place.id);
+                      }}
+                      onPointerLeave={() => setPreviewedId(undefined)}
+                      onFocus={() => {
+                        if (place.coordinates) setPreviewedId(place.id);
+                      }}
+                      onBlur={() => setPreviewedId(undefined)}
+                    >
+                      <span className="map-index__place-name">{place.name}</span>
+                      <span>{categoryLabels[place.category]}</span>
+                      <span>{place.coordinates ? "Map pin" : "Index only"}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <div className="map-index__empty" role="status">
+                <strong>No matching place entries.</strong>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    replaceParams({ q: null, category: null, place: null });
+                  }}
+                >
+                  Clear filters
+                </button>
               </div>
-              <p className="section-kicker">Place note</p>
-              <h3 id="map-preview-title">{previewedPlace.name}</h3>
-              <p>{previewedPlace.summary}</p>
-              <Link className="text-link" href={`/places/${previewedPlace.slug}`}>
-                Open the full place entry <span aria-hidden="true">→</span>
-              </Link>
-            </aside>
-          ) : (
-            <div className="map-hover-hint" aria-hidden="true">
-              <span>01</span>
-              Hover a map pin to open its field note
+            )}
+          </section>
+
+          <section className="map-index__section" aria-labelledby="barangay-index-title">
+            <header className="map-index__heading">
+              <div>
+                <p className="section-kicker">City districts</p>
+                <h2 id="barangay-index-title">All 15 barangays</h2>
+              </div>
+            </header>
+            <div className="barangay-index">
+              {tagbilaranBarangays.map((barangay) => (
+                <button
+                  key={barangay.code}
+                  type="button"
+                  aria-pressed={selectedBarangay?.code === barangay.code}
+                  onClick={() =>
+                    replaceParams({
+                      barangay:
+                        selectedBarangay?.code === barangay.code ? null : barangay.code,
+                    })
+                  }
+                >
+                  <span>{barangay.name}</span>
+                  <small>{barangay.code}</small>
+                </button>
+              ))}
             </div>
-          )}
-          <p className="map-disclosure">
-            Prototype map points use recorded coordinates and still require a local launch
-            check. Complete content is available in the list.
-          </p>
-        </section>
+            <p className="map-index__source">
+              {tagbilaranBoundarySource.note} Source: {tagbilaranBoundarySource.publisher}.
+            </p>
+          </section>
+        </div>
+      </details>
+
+      <MapCanvas
+        places={mappablePlaces}
+        highlightedIds={highlightedIds}
+        previewedId={previewedId}
+        selectedBarangayCode={selectedBarangay?.code}
+        onPreview={setPreviewedId}
+        onActivate={(id) => {
+          const place = places.find((item) => item.id === id);
+          if (place) openPlace(place);
+        }}
+        onSelectBarangay={(code) => replaceParams({ barangay: code ?? null })}
+      />
+
+      {highlightedIds.length === 0 ? (
+        <div className="map-category-empty map-category-empty--map-only" role="status">
+          <strong>No source-located pins in this filter.</strong>
+          <span>Matching entries remain available inside the map index.</span>
+        </div>
       ) : null}
 
-      <section className="results-sheet" aria-labelledby="results-title">
-        <header className="results-sheet__header">
-          <div>
-            <p className="section-kicker">Accessible field index</p>
-            <h2 id="results-title">
-              {filteredPlaces.length} {filteredPlaces.length === 1 ? "place note" : "place notes"}
-            </h2>
-          </div>
-          <p className="results-count" aria-live="polite">
-            Showing {filteredPlaces.length} of {places.length} prototype listings
-          </p>
-        </header>
-        {filteredPlaces.length ? (
-          <div className="place-grid">
-            {filteredPlaces.map((place) => (
-              <PlaceCard key={place.id} place={place} />
-            ))}
-          </div>
-        ) : (
-          <div className="results-empty">
-            <span className="results-empty__stamp" aria-hidden="true">
-              NO MATCH
+      {previewedPlace && !selectedPlace ? (
+        <aside className="map-place-preview map-place-preview--map-only" aria-live="polite">
+          <div className="map-place-preview__labels">
+            <ScopeBadge scope={previewedPlace.scope} />
+            <span className="category-label">
+              {categoryLabels[previewedPlace.category]}
             </span>
-            <h3>No place notes match this search—yet.</h3>
-            <p>
-              Try a broader phrase or return to all categories. Prototype listings may be
-              renamed as local verification continues.
-            </p>
-            <button
-              className="secondary-action"
-              type="button"
-              onClick={() => {
-                setQuery("");
-                replaceParams({ q: null, category: null, place: null });
-              }}
-            >
-              Clear filters
-            </button>
           </div>
-        )}
-      </section>
-    </div>
+          <p className="section-kicker">Place note</p>
+          <h2>{previewedPlace.name}</h2>
+          <p>{previewedPlace.summary}</p>
+          <button className="text-link" type="button" onClick={() => openPlace(previewedPlace)}>
+            Open complete information <span aria-hidden="true">→</span>
+          </button>
+        </aside>
+      ) : null}
+
+      {selectedBarangay ? (
+        <aside className="selected-barangay" aria-live="polite">
+          <p className="section-kicker">Highlighted barangay</p>
+          <h2>{selectedBarangay.name}</h2>
+          <p>Indicative administrative area · PSGC {selectedBarangay.code}</p>
+          <button type="button" onClick={() => replaceParams({ barangay: null })}>
+            Clear highlight
+          </button>
+        </aside>
+      ) : null}
+
+      <p className="map-boundary-note">
+        Yellow marks the selected barangay. The green line marks the indicative Tagbilaran
+        City boundary. Boundary geometry requires local confirmation.
+      </p>
+
+      {selectedPlace ? (
+        <PlaceDialog
+          key={selectedPlace.id}
+          place={selectedPlace}
+          onClose={() => replaceParams({ place: null })}
+        />
+      ) : null}
+    </section>
   );
 }

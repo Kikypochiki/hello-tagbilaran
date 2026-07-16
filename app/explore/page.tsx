@@ -4,29 +4,19 @@ import { ExploreClient } from "@/components/explore/explore-client";
 import { places } from "@/content/places";
 
 export const metadata: Metadata = {
-  title: "Explore the city",
+  title: "Explore the city map",
   description:
-    "Browse prototype Tagbilaran City place notes by category, geographic scope, list, or enhanced map.",
+    "Explore Tagbilaran through an interactive city map, collapsible place index, and indicative barangay boundaries.",
   alternates: { canonical: "/explore" },
 };
 
 export default function ExplorePage() {
   return (
-    <main id="main-content" className="explore-page">
-      <header className="explore-hero">
-        <div>
-          <p className="kicker">Open the city map</p>
-          <h1>Explore Tagbilaran</h1>
-        </div>
-        <p>
-          Move through the journal index to highlight source-located stops. Hover or focus a
-          marker for a short note; open it for the full place story.
-        </p>
-      </header>
+    <main id="main-content" className="explore-page explore-page--map-only">
       <noscript>
-        <div className="no-script-note">
-          JavaScript is off. The complete place list remains available below; interactive
-          filtering, saving, and the optional map require JavaScript.
+        <div className="no-script-note no-script-note--map">
+          The interactive map requires JavaScript. Open the map index to use the standalone
+          place links without the map.
         </div>
       </noscript>
       <Suspense fallback={<ExploreWorkspaceLoading />}>
@@ -38,9 +28,9 @@ export default function ExplorePage() {
 
 function ExploreWorkspaceLoading() {
   return (
-    <div className="workspace-loading" role="status">
+    <div className="workspace-loading workspace-loading--map" role="status">
       <span aria-hidden="true" />
-      Opening the field index…
+      Opening the city field map…
     </div>
   );
 }

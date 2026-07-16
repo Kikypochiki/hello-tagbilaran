@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Libre_Baskerville } from "next/font/google";
-import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -60,17 +59,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </a>
         <SiteHeader />
         {children}
-        <footer className="site-footer">
-          <div>
-            <strong>Hello Tagbilaran</strong>
-            <p>A working city journal. Local verification is part of the design.</p>
-          </div>
-          <nav aria-label="Footer navigation">
-            <Link href="/">Story</Link>
-            <Link href="/explore">Explore</Link>
-          </nav>
-          <p className="site-footer__note">Prototype milestone · Not yet a travel advisory</p>
-        </footer>
       </body>
     </html>
   );

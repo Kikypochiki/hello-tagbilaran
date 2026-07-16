@@ -7,41 +7,98 @@ import maplibregl, {
   type Marker,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import barangayBoundariesJson from "@/content/tagbilaran-barangays.json";
+import cityBoundaryJson from "@/content/tagbilaran-city-boundary.json";
 import type { Place } from "@/types/content";
+
+interface BarangayProperties {
+  brgy_name: string;
+  brgy_code: string;
+}
+
+type BarangayGeometry = GeoJSON.Polygon | GeoJSON.MultiPolygon;
+type BarangayFeature = GeoJSON.Feature<BarangayGeometry, BarangayProperties>;
+
+const barangayBoundaries = barangayBoundariesJson as unknown as GeoJSON.FeatureCollection<
+  BarangayGeometry,
+  BarangayProperties
+>;
+const cityBoundary = cityBoundaryJson as unknown as GeoJSON.FeatureCollection<
+  GeoJSON.Polygon | GeoJSON.MultiPolygon
+>;
+
+function extendBounds(bounds: LngLatBounds, coordinates: unknown): void {
+  if (!Array.isArray(coordinates)) return;
+  if (
+    coordinates.length >= 2 &&
+    typeof coordinates[0] === "number" &&
+    typeof coordinates[1] === "number"
+  ) {
+    bounds.extend([coordinates[0], coordinates[1]]);
+    return;
+  }
+  coordinates.forEach((coordinate) => extendBounds(bounds, coordinate));
+}
+
+function boundsForGeometry(geometry: GeoJSON.Geometry): LngLatBounds {
+  const bounds = new LngLatBounds();
+  if (geometry.type !== "GeometryCollection") {
+    extendBounds(bounds, geometry.coordinates);
+  }
+  return bounds;
+}
+
+function mapPadding() {
+  return window.innerWidth <= 780
+    ? { top: 180, right: 36, bottom: 170, left: 36 }
+    : { top: 150, right: 90, bottom: 90, left: 90 };
+}
 
 export function MapCanvas({
   places,
   highlightedIds,
   previewedId,
+  selectedBarangayCode,
   onPreview,
   onActivate,
+  onSelectBarangay,
 }: {
   places: Place[];
   highlightedIds: string[];
   previewedId?: string;
+  selectedBarangayCode?: string;
   onPreview: (id?: string) => void;
-  onActivate: (slug: string) => void;
+  onActivate: (id: string) => void;
+  onSelectBarangay: (code?: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
   const onPreviewRef = useRef(onPreview);
   const onActivateRef = useRef(onActivate);
+  const onSelectBarangayRef = useRef(onSelectBarangay);
 
   useEffect(() => {
     onPreviewRef.current = onPreview;
     onActivateRef.current = onActivate;
-  }, [onActivate, onPreview]);
+    onSelectBarangayRef.current = onSelectBarangay;
+  }, [onActivate, onPreview, onSelectBarangay]);
 
   useEffect(() => {
-    if (!containerRef.current || !places.length || !places[0].coordinates) return;
+    if (!containerRef.current) return;
 
-    const first = places[0].coordinates;
+    const cityFeature = cityBoundary.features[0];
+    if (!cityFeature) return;
+    const initialBounds = boundsForGeometry(cityFeature.geometry);
+
     const map = new maplibregl.Map({
       container: containerRef.current,
-      center: [first.longitude, first.latitude],
-      zoom: 13.7,
-      cooperativeGestures: true,
+      bounds: initialBounds,
+      fitBoundsOptions: {
+        padding: mapPadding(),
+        maxZoom: 14.2,
+      },
+      cooperativeGestures: false,
       attributionControl: false,
       style: {
         version: 8,
@@ -53,13 +110,86 @@ export function MapCanvas({
             attribution:
               '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
           },
+          barangays: {
+            type: "geojson",
+            data: barangayBoundaries,
+          },
+          "city-boundary": {
+            type: "geojson",
+            data: cityBoundary,
+          },
         },
         layers: [
           {
             id: "osm",
             type: "raster",
             source: "osm",
-            paint: { "raster-saturation": -0.48, "raster-contrast": 0.05 },
+            paint: {
+              "raster-saturation": -0.56,
+              "raster-contrast": 0.08,
+              "raster-opacity": 0.88,
+            },
+          },
+          {
+            id: "barangay-fill",
+            type: "fill",
+            source: "barangays",
+            paint: {
+              "fill-color": "#005c09",
+              "fill-opacity": 0.055,
+            },
+          },
+          {
+            id: "barangay-selected-fill",
+            type: "fill",
+            source: "barangays",
+            filter: ["==", ["get", "brgy_code"], ""],
+            paint: {
+              "fill-color": "#f4c542",
+              "fill-opacity": 0.42,
+            },
+          },
+          {
+            id: "barangay-lines",
+            type: "line",
+            source: "barangays",
+            paint: {
+              "line-color": "#005c09",
+              "line-width": 1,
+              "line-opacity": 0.48,
+              "line-dasharray": [3, 2],
+            },
+          },
+          {
+            id: "barangay-selected-line",
+            type: "line",
+            source: "barangays",
+            filter: ["==", ["get", "brgy_code"], ""],
+            paint: {
+              "line-color": "#4a3d14",
+              "line-width": 2.5,
+              "line-opacity": 0.95,
+            },
+          },
+          {
+            id: "city-boundary-casing",
+            type: "line",
+            source: "city-boundary",
+            paint: {
+              "line-color": "#fff9eb",
+              "line-width": 7,
+              "line-opacity": 0.9,
+            },
+          },
+          {
+            id: "city-boundary-line",
+            type: "line",
+            source: "city-boundary",
+            paint: {
+              "line-color": "#005c09",
+              "line-width": 3.5,
+              "line-opacity": 1,
+            },
           },
         ],
       },
@@ -76,12 +206,15 @@ export function MapCanvas({
       markerButton.className = "journal-marker";
       markerButton.dataset.placeId = place.id;
       markerButton.dataset.markerNumber = String(index + 1).padStart(2, "0");
-      markerButton.setAttribute("aria-label", `Open the full place entry for ${place.name}`);
+      markerButton.setAttribute("aria-label", `Show information for ${place.name}`);
       markerButton.addEventListener("pointerenter", () => onPreviewRef.current(place.id));
       markerButton.addEventListener("pointerleave", () => onPreviewRef.current(undefined));
       markerButton.addEventListener("focus", () => onPreviewRef.current(place.id));
       markerButton.addEventListener("blur", () => onPreviewRef.current(undefined));
-      markerButton.addEventListener("click", () => onActivateRef.current(place.slug));
+      markerButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        onActivateRef.current(place.id);
+      });
 
       const marker = new maplibregl.Marker({ element: markerButton, anchor: "bottom" })
         .setLngLat([place.coordinates.longitude, place.coordinates.latitude])
@@ -89,25 +222,22 @@ export function MapCanvas({
       markers.set(place.id, marker);
     });
 
-    const fitAllPlaces = () => {
-      const bounds = new LngLatBounds();
-      places.forEach((place) => {
-        if (place.coordinates) {
-          bounds.extend([place.coordinates.longitude, place.coordinates.latitude]);
-        }
-      });
-      if (!bounds.isEmpty()) {
-        const compact = window.innerWidth <= 780;
-        map.fitBounds(bounds, {
-          padding: compact
-            ? { top: 210, right: 55, bottom: 330, left: 55 }
-            : { top: 170, right: 120, bottom: 130, left: 390 },
-          maxZoom: 14.4,
-          duration: 0,
-        });
-      }
+    const handleBarangayClick = (
+      event: maplibregl.MapLayerMouseEvent & { features?: GeoJSON.Feature[] },
+    ) => {
+      const code = event.features?.[0]?.properties?.brgy_code;
+      if (typeof code === "string") onSelectBarangayRef.current(code);
     };
-    map.once("load", fitAllPlaces);
+    const showPointer = () => {
+      map.getCanvas().style.cursor = "pointer";
+    };
+    const clearPointer = () => {
+      map.getCanvas().style.cursor = "";
+    };
+
+    map.on("click", "barangay-fill", handleBarangayClick);
+    map.on("mouseenter", "barangay-fill", showPointer);
+    map.on("mouseleave", "barangay-fill", clearPointer);
 
     return () => {
       markers.clear();
@@ -127,54 +257,46 @@ export function MapCanvas({
   }, [highlightedIds, previewedId]);
 
   useEffect(() => {
-    const highlighted = new Set(highlightedIds);
     const map = mapRef.current;
-    const located = places.filter(
-      (place) => place.coordinates && highlighted.has(place.id),
-    );
-    if (!map || !located.length) return;
+    if (!map) return;
 
-    const moveToHighlights = () => {
+    const applySelection = () => {
+      const filter: maplibregl.FilterSpecification = [
+        "==",
+        ["get", "brgy_code"],
+        selectedBarangayCode ?? "",
+      ];
+      map.setFilter("barangay-selected-fill", filter);
+      map.setFilter("barangay-selected-line", filter);
+
+      const feature = barangayBoundaries.features.find(
+        (item) => item.properties.brgy_code === selectedBarangayCode,
+      ) as BarangayFeature | undefined;
+      const target = feature ?? cityBoundary.features[0];
+      if (!target) return;
+
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const compact = window.innerWidth <= 780;
-      if (located.length === 1 && located[0].coordinates) {
-        map.easeTo({
-          center: [located[0].coordinates.longitude, located[0].coordinates.latitude],
-          zoom: 15,
-          duration: reducedMotion ? 0 : 650,
-        });
-        return;
-      }
-
-      const bounds = new LngLatBounds();
-      located.forEach((place) => {
-        if (place.coordinates) {
-          bounds.extend([place.coordinates.longitude, place.coordinates.latitude]);
-        }
-      });
-      map.fitBounds(bounds, {
-        padding: compact
-          ? { top: 210, right: 55, bottom: 330, left: 55 }
-          : { top: 170, right: 120, bottom: 130, left: 390 },
-        maxZoom: 14.4,
+      map.fitBounds(boundsForGeometry(target.geometry), {
+        padding: mapPadding(),
+        maxZoom: feature ? 15.6 : 14.2,
         duration: reducedMotion ? 0 : 650,
       });
     };
 
-    if (map.loaded()) moveToHighlights();
-    else map.once("load", moveToHighlights);
+    if (map.isStyleLoaded()) applySelection();
+    else map.once("style.load", applySelection);
 
     return () => {
-      map.off("load", moveToHighlights);
+      map.off("style.load", applySelection);
     };
-  }, [highlightedIds, places]);
+  }, [selectedBarangayCode]);
 
   return (
     <div
-      className="map-canvas"
+      className="map-canvas map-canvas--city"
       ref={containerRef}
       role="region"
-      aria-label="Interactive map of source-located prototype places. Hover or focus a marker for a short note; activate it for the full place entry."
+      aria-label="Interactive map of Tagbilaran place pins, all 15 indicative barangay areas, and the indicative city boundary. The map index provides keyboard controls for every selection."
     />
   );
 }
