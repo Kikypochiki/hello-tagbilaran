@@ -258,6 +258,46 @@ export function MapCanvas({
 
   useEffect(() => {
     const map = mapRef.current;
+    if (
+      !map ||
+      selectedBarangayCode ||
+      highlightedIds.length === 0 ||
+      highlightedIds.length === places.length
+    ) {
+      return;
+    }
+
+    const highlighted = new Set(highlightedIds);
+    const points = places.filter(
+      (place) => place.coordinates && highlighted.has(place.id),
+    );
+    if (points.length === 0) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (points.length === 1 && points[0]?.coordinates) {
+      map.easeTo({
+        center: [points[0].coordinates.longitude, points[0].coordinates.latitude],
+        zoom: 15.2,
+        duration: reducedMotion ? 0 : 550,
+      });
+      return;
+    }
+
+    const bounds = new LngLatBounds();
+    points.forEach((place) => {
+      if (place.coordinates) {
+        bounds.extend([place.coordinates.longitude, place.coordinates.latitude]);
+      }
+    });
+    map.fitBounds(bounds, {
+      padding: mapPadding(),
+      maxZoom: 15.2,
+      duration: reducedMotion ? 0 : 650,
+    });
+  }, [highlightedIds, places, selectedBarangayCode]);
+
+  useEffect(() => {
+    const map = mapRef.current;
     if (!map) return;
 
     const applySelection = () => {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SaveButton } from "@/components/save-button";
@@ -23,6 +24,13 @@ export async function generateMetadata({
     title: place.name,
     description: place.summary,
     alternates: { canonical: `/places/${place.slug}` },
+    openGraph: place.images[0]
+      ? {
+          title: place.name,
+          description: place.summary,
+          images: [{ url: place.images[0].src, alt: place.images[0].alt }],
+        }
+      : undefined,
   };
 }
 
@@ -34,6 +42,7 @@ export default async function PlacePage({
   const { slug } = await params;
   const place = getPlace(slug);
   if (!place) notFound();
+  const leadImage = place.images[0];
 
   return (
     <main id="main-content" className="place-page">
@@ -64,29 +73,28 @@ export default async function PlacePage({
           </div>
         </header>
 
-        <figure className="place-hero-placeholder">
-          <div role="img" aria-label={`Photography placeholder for ${place.name}`}>
-            <svg aria-hidden="true" viewBox="0 0 900 440" preserveAspectRatio="xMidYMid slice">
-              <circle cx="690" cy="94" r="45" />
-              <path d="M0 333 183 178l119 104 133-170 132 143 115-78 218 156v107H0Z" />
-              <path d="M0 360c145-42 247 29 407-8 168-39 268-19 493 18" />
-            </svg>
-            <span>Local photography and rights record required</span>
-          </div>
-          <figcaption>
-            Prototype image plate · Final media will include alt text, credit, rights, date,
-            and geographic scope.
-          </figcaption>
-        </figure>
+        {leadImage ? (
+          <figure className="place-hero">
+            <Image
+              src={leadImage.src}
+              alt={leadImage.alt}
+              width={leadImage.width}
+              height={leadImage.height}
+              sizes="(max-width: 780px) 94vw, 90vw"
+              priority
+            />
+            <figcaption>
+              Photo: {leadImage.credit ?? "Credit not supplied"}
+              {leadImage.rights ? ` · ${leadImage.rights}` : null}
+            </figcaption>
+          </figure>
+        ) : null}
 
         <div className="place-detail__body">
-          <section aria-labelledby="place-story-title">
-            <p className="section-kicker">Place notes</p>
-            <h2 id="place-story-title">The story to be told here</h2>
-            <p>
-              {place.story ??
-                "This listing is intentionally brief while local reporting and source review are completed."}
-            </p>
+          <section aria-labelledby="place-record-title">
+            <p className="section-kicker">Place register</p>
+            <h2 id="place-record-title">What is currently recorded</h2>
+            <p>{place.summary}</p>
             <div className="feature-list" aria-label="Listing notes">
               {place.features.map((feature) => (
                 <span key={feature}>{feature}</span>
@@ -96,40 +104,53 @@ export default async function PlacePage({
 
           <aside className="practical-note" aria-labelledby="before-you-go-title">
             <p className="section-kicker">Before you go</p>
-            <h2 id="before-you-go-title">Confirm the practical details</h2>
-            {place.address ? (
+            <h2 id="before-you-go-title">Confirm practical details</h2>
+            {place.address || place.barangay ? (
               <dl>
-                <div>
-                  <dt>Source-recorded address</dt>
-                  <dd>{place.address}</dd>
-                </div>
+                {place.address ? (
+                  <div>
+                    <dt>Source-recorded address</dt>
+                    <dd>{place.address}</dd>
+                  </div>
+                ) : null}
+                {place.barangay ? (
+                  <div>
+                    <dt>Barangay</dt>
+                    <dd>{place.barangay}</dd>
+                  </div>
+                ) : null}
               </dl>
             ) : null}
             <p>
-              Hours, prices, transport advice, contacts, and accessibility conditions are
-              omitted until they receive a fresh publication check.
+              {place.accessibility?.verificationNotes ??
+                "Current access conditions require local confirmation."}
             </p>
-            {place.coordinates ? (
+            <p>
+              The official listing does not publish current hours, prices, contacts, or
+              accessibility details, so this guide does not guess them.
+            </p>
+            {place.directionsUrl ? (
               <a
                 className="secondary-action"
-                href={`https://www.openstreetmap.org/?mlat=${place.coordinates.latitude}&mlon=${place.coordinates.longitude}#map=17/${place.coordinates.latitude}/${place.coordinates.longitude}`}
+                href={place.directionsUrl}
                 target="_blank"
                 rel="noreferrer"
               >
-                Open source map <span className="sr-only">for {place.name}</span>
+                Open official directions <span className="sr-only">for {place.name}</span>
               </a>
-            ) : (
-              <p className="coordinate-note">Directions withheld pending coordinate review.</p>
-            )}
+            ) : null}
           </aside>
         </div>
 
         <section className="source-sheet" aria-labelledby="source-title">
           <div>
             <p className="section-kicker">Editorial record</p>
-            <h2 id="source-title">Sources & verification</h2>
+            <h2 id="source-title">Sources &amp; verification</h2>
           </div>
-          <p className="verification-status" data-reviewed={place.verificationStatus === "source-reviewed" || undefined}>
+          <p
+            className="verification-status"
+            data-reviewed={place.verificationStatus === "source-reviewed" || undefined}
+          >
             {place.verificationStatus === "source-reviewed"
               ? "Source reviewed"
               : "Local verification needed"}
@@ -146,19 +167,20 @@ export default async function PlacePage({
                 )}
                 {source.publisher ? ` · ${source.publisher}` : ""}
                 <small>Accessed {source.accessedAt}</small>
+                {source.notes ? <small>{source.notes}</small> : null}
               </li>
             ))}
           </ul>
           <p>
             Source review does not replace an on-the-ground check of time-sensitive visitor
-            information.
+            information. Image reuse terms also need confirmation before public launch.
           </p>
         </section>
       </article>
 
       <nav className="place-page__back" aria-label="Continue exploring">
         <Link className="primary-action" href="/explore">
-          Back to all place notes <span aria-hidden="true">←</span>
+          Back to the city map <span aria-hidden="true">←</span>
         </Link>
       </nav>
     </main>

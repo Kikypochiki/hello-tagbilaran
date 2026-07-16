@@ -61,6 +61,11 @@ export function ExploreClient({ places }: { places: Place[] }) {
     });
   }, [category, places, query]);
 
+  const availableCategories = useMemo(
+    () => categoryOrder.filter((item) => places.some((place) => place.category === item)),
+    [places],
+  );
+
   const mappablePlaces = useMemo(
     () => places.filter((place) => Boolean(place.coordinates)),
     [places],
@@ -155,7 +160,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
               >
                 All
               </button>
-              {categoryOrder.map((item) => (
+              {availableCategories.map((item) => (
                 <button
                   key={item}
                   type="button"
@@ -169,6 +174,12 @@ export function ExploreClient({ places }: { places: Place[] }) {
                 </button>
               ))}
             </fieldset>
+
+            <p className="map-index__source">
+              This index contains all {places.length} entries in the project register. City
+              sources and map records were reviewed where available; time-sensitive visitor
+              details remain withheld when no current source publishes them.
+            </p>
 
             {filteredPlaces.length ? (
               <ol className="map-index__places">

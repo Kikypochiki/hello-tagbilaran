@@ -65,6 +65,8 @@ export interface Place {
   story?: string;
   /** Omitted in the prototype until a source-backed coordinate is available. */
   coordinates?: Coordinates;
+  /** Source-provided directions link. Omit when the source does not publish one. */
+  directionsUrl?: string;
   address?: string;
   barangay?: string;
   visitDurationMinutes?: { min: number; max: number };
