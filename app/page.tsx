@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { historyChapters } from "@/content/history";
 import { StoryExit } from "@/components/story/story-exit";
 import { StoryProgress } from "@/components/story/story-progress";
@@ -17,28 +18,67 @@ export default function Home() {
     <main id="main-content" className="story-journal">
       <StoryUnfolding />
       <section className="journal-cover" aria-labelledby="cover-title">
-        <div className="journal-cover__registration" aria-hidden="true">
-          FIELD JOURNAL · NO. 01
+        <div className="journal-cover__layout">
+          <div className="journal-cover__content">
+            <div className="journal-cover__registration">
+              <span>Field journal · No. 01</span>
+              <span>Tagbilaran City · Bohol</span>
+            </div>
+            <p className="kicker">Meet the city before the island itinerary</p>
+            <h1 id="cover-title">
+              <span>Hello,</span>
+              Tagbilaran.
+            </h1>
+            <p className="journal-cover__dek">
+              A guide to Bohol’s capital told through its coast, civic heart, food,
+              neighborhoods, and the people who keep the city moving.
+            </p>
+            <div className="journal-cover__actions">
+              <a className="cover-scroll" href="#coast-and-current">
+                Begin the city story <span aria-hidden="true">↓</span>
+              </a>
+              <Link className="cover-explore" href="/explore">
+                Explore places <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+            <dl className="journal-cover__index" aria-label="What this guide offers">
+              <div>
+                <dt>Read</dt>
+                <dd>Five sourced city chapters</dd>
+              </div>
+              <div>
+                <dt>Find</dt>
+                <dd>Heritage, food, stays, and daily life</dd>
+              </div>
+              <div>
+                <dt>Keep</dt>
+                <dd>Save stops for your own city route</dd>
+              </div>
+            </dl>
+          </div>
+
+          <figure className="journal-cover__postcard">
+            <div className="journal-cover__photo">
+              <Image
+                src="/images/places/plaza-rizal.jpg"
+                alt="Plaza Jose P. Rizal and St. Joseph the Worker Cathedral in central Tagbilaran"
+                width={2048}
+                height={1152}
+                sizes="(max-width: 780px) 92vw, 44vw"
+                priority
+              />
+            </div>
+            <figcaption>
+              <span>City plate · 01</span>
+              <strong>Plaza Jose P. Rizal</strong>
+              <span>Central Tagbilaran · Photo: City Government of Tagbilaran</span>
+            </figcaption>
+            <div className="journal-cover__postmark" aria-hidden="true">
+              <span>TAGBILARAN</span>
+              <span>BOHOL · PH</span>
+            </div>
+          </figure>
         </div>
-        <div className="journal-cover__content">
-          <p className="kicker">A city field journal from Bohol</p>
-          <h1 id="cover-title">
-            Hello,
-            <span>Tagbilaran.</span>
-          </h1>
-          <p className="journal-cover__dek">
-            Where every street leads to a story. Begin with the city itself—its memory,
-            everyday rhythms, and the people who keep it moving.
-          </p>
-          <a className="cover-scroll" href="#coast-and-current">
-            Open the first chapter <span aria-hidden="true">↓</span>
-          </a>
-        </div>
-        <div className="journal-cover__postmark" aria-hidden="true">
-          <span>TAGBILARAN</span>
-          <span>BOHOL · PH</span>
-        </div>
-        <div className="journal-cover__sun" aria-hidden="true" />
       </section>
 
       <div className="story-layout">
