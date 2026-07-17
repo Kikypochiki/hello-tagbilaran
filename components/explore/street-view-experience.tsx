@@ -1,0 +1,142 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Place } from "@/types/content";
+
+type StreetViewStage = "zooming" | "loading" | "ready" | "unavailable";
+
+export function StreetViewExperience({
+  place,
+  onClose,
+}: {
+  place: Place;
+  onClose: () => void;
+}) {
+  const backButtonRef = useRef<HTMLButtonElement>(null);
+  const transitionFinishedRef = useRef(false);
+  const frameLoadedRef = useRef(false);
+  const revealTimerRef = useRef<number | undefined>(undefined);
+  const [stage, setStage] = useState<StreetViewStage>("zooming");
+
+  const streetViewUrl = useMemo(() => {
+    if (!place.coordinates) return undefined;
+    const parameters = new URLSearchParams({
+      layer: "c",
+      cbll: `${place.coordinates.latitude},${place.coordinates.longitude}`,
+      cbp: "12,0,,0,0",
+      source: "embed",
+      output: "svembed",
+      hl: "en",
+    });
+    return `https://maps.google.com/maps?${parameters.toString()}`;
+  }, [place.coordinates]);
+
+  const queuePanoramaReveal = useCallback(() => {
+    if (revealTimerRef.current) return;
+    setStage("loading");
+    revealTimerRef.current = window.setTimeout(() => {
+      setStage("ready");
+      backButtonRef.current?.focus();
+    }, 3600);
+  }, []);
+
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const transitionTimer = window.setTimeout(
+      () => {
+        transitionFinishedRef.current = true;
+        if (!streetViewUrl) {
+          setStage("unavailable");
+        } else if (frameLoadedRef.current) {
+          queuePanoramaReveal();
+        } else {
+          setStage("loading");
+        }
+      },
+      reducedMotion ? 0 : 620,
+    );
+
+    return () => {
+      window.clearTimeout(transitionTimer);
+      if (revealTimerRef.current) window.clearTimeout(revealTimerRef.current);
+    };
+  }, [queuePanoramaReveal, streetViewUrl]);
+
+  function handleFrameLoad() {
+    frameLoadedRef.current = true;
+    if (transitionFinishedRef.current) {
+      queuePanoramaReveal();
+    }
+  }
+
+  return (
+    <section
+      className="street-view-experience"
+      data-stage={stage}
+      aria-labelledby="street-view-title"
+    >
+      {streetViewUrl ? (
+        <iframe
+          className="street-view-experience__panorama"
+          src={streetViewUrl}
+          title={`Google Street View near ${place.name}`}
+          loading="eager"
+          referrerPolicy="strict-origin-when-cross-origin"
+          onLoad={handleFrameLoad}
+        />
+      ) : (
+        <div className="street-view-experience__panorama" />
+      )}
+
+      <div className="street-view-experience__transition" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </div>
+
+      <header className="street-view-hud">
+        <button ref={backButtonRef} type="button" onClick={onClose}>
+          <span aria-hidden="true">←</span> Go back to map
+        </button>
+        <div>
+          <span>Street View near</span>
+          <h2 id="street-view-title">{place.name}</h2>
+        </div>
+      </header>
+
+      {stage === "zooming" || stage === "loading" ? (
+        <div className="street-view-loading" role="status">
+          <span className="street-view-loading__rings" aria-hidden="true" />
+          <strong>{stage === "zooming" ? "Moving into the street…" : "Loading panorama…"}</strong>
+        </div>
+      ) : null}
+
+      {stage === "ready" ? (
+        <aside className="street-view-instructions" id="street-view-instructions">
+          <strong>Look around</strong>
+          <p>Drag or swipe to turn. Scroll or pinch to zoom. Use the map button when finished.</p>
+        </aside>
+      ) : null}
+
+      {stage === "unavailable" ? (
+        <div className="street-view-fallback" role="alert">
+          <p className="section-kicker">Street View unavailable</p>
+          <h3>This place has no mapped coordinate.</h3>
+          <p>Return to the city map and continue with the complete place information.</p>
+          <button className="primary-action" type="button" onClick={onClose}>
+            Go back to map
+          </button>
+        </div>
+      ) : null}
+    </section>
+  );
+}

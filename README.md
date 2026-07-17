@@ -18,6 +18,16 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
+## Google Street View
+
+The explore map loads a keyless Google Maps share/embed iframe only after a visitor
+selects a map marker and chooses **Street View**. The iframe uses the
+source-verified place coordinate to resolve a nearby panorama, so no Maps JavaScript
+API, API key, or environment variable is required.
+
+Google owns the interface inside the cross-origin iframe. Its attribution and any
+controls supplied by Google must remain visible and cannot be restyled from this app.
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More

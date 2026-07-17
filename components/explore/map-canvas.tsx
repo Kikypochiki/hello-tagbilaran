@@ -9,6 +9,7 @@ import maplibregl, {
 import "maplibre-gl/dist/maplibre-gl.css";
 import barangayBoundariesJson from "@/content/tagbilaran-barangays.json";
 import cityBoundaryJson from "@/content/tagbilaran-city-boundary.json";
+import type { MapChoiceAnchor } from "@/components/explore/map-place-choice";
 import type { Place } from "@/types/content";
 
 interface BarangayProperties {
@@ -54,35 +55,87 @@ function mapPadding() {
     : { top: 150, right: 90, bottom: 90, left: 90 };
 }
 
+function choiceAnchorForMarker(
+  markerButton: HTMLElement,
+  container: HTMLElement,
+): MapChoiceAnchor {
+  const containerBounds = container.getBoundingClientRect();
+  const markerBounds = markerButton.getBoundingClientRect();
+  const popoverHalfWidth = Math.min(175, containerBounds.width / 2 - 8);
+  const popoverHeight = 72;
+  const rawX = markerBounds.left + markerBounds.width / 2 - containerBounds.left;
+  const markerTop = markerBounds.top - containerBounds.top;
+  const markerBottom = markerBounds.bottom - containerBounds.top;
+  const placement = markerTop < popoverHeight + 20 ? "below" : "above";
+
+  return {
+    x: Math.min(
+      Math.max(rawX, popoverHalfWidth + 8),
+      containerBounds.width - popoverHalfWidth - 8,
+    ),
+    y:
+      placement === "above"
+        ? Math.min(
+            Math.max(markerTop - 10, popoverHeight + 8),
+            containerBounds.height - 8,
+          )
+        : Math.min(
+            Math.max(markerBottom + 10, 8),
+            containerBounds.height - popoverHeight - 8,
+          ),
+    placement,
+  };
+}
+
 export function MapCanvas({
   places,
   highlightedIds,
   previewedId,
+  activePlaceId,
+  streetViewTarget,
   selectedBarangayCode,
   onPreview,
   onActivate,
+  onChoiceAnchorChange,
   onSelectBarangay,
 }: {
   places: Place[];
   highlightedIds: string[];
   previewedId?: string;
+  activePlaceId?: string;
+  streetViewTarget?: Place;
   selectedBarangayCode?: string;
   onPreview: (id?: string) => void;
-  onActivate: (id: string) => void;
+  onActivate: (
+    id: string,
+    anchor: MapChoiceAnchor,
+  ) => void;
+  onChoiceAnchorChange: (anchor: MapChoiceAnchor) => void;
   onSelectBarangay: (code?: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
+  const previousStreetViewTargetRef = useRef<string | undefined>(undefined);
+  const activePlaceIdRef = useRef(activePlaceId);
   const onPreviewRef = useRef(onPreview);
   const onActivateRef = useRef(onActivate);
+  const onChoiceAnchorChangeRef = useRef(onChoiceAnchorChange);
   const onSelectBarangayRef = useRef(onSelectBarangay);
 
   useEffect(() => {
+    activePlaceIdRef.current = activePlaceId;
     onPreviewRef.current = onPreview;
     onActivateRef.current = onActivate;
+    onChoiceAnchorChangeRef.current = onChoiceAnchorChange;
     onSelectBarangayRef.current = onSelectBarangay;
-  }, [onActivate, onPreview, onSelectBarangay]);
+  }, [
+    activePlaceId,
+    onActivate,
+    onChoiceAnchorChange,
+    onPreview,
+    onSelectBarangay,
+  ]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -206,14 +259,19 @@ export function MapCanvas({
       markerButton.className = "journal-marker";
       markerButton.dataset.placeId = place.id;
       markerButton.dataset.markerNumber = String(index + 1).padStart(2, "0");
-      markerButton.setAttribute("aria-label", `Show information for ${place.name}`);
+      markerButton.setAttribute("aria-label", `Choose how to explore ${place.name}`);
       markerButton.addEventListener("pointerenter", () => onPreviewRef.current(place.id));
       markerButton.addEventListener("pointerleave", () => onPreviewRef.current(undefined));
       markerButton.addEventListener("focus", () => onPreviewRef.current(place.id));
       markerButton.addEventListener("blur", () => onPreviewRef.current(undefined));
       markerButton.addEventListener("click", (event) => {
         event.stopPropagation();
-        onActivateRef.current(place.id);
+        const container = containerRef.current;
+        if (!container) return;
+        onActivateRef.current(
+          place.id,
+          choiceAnchorForMarker(markerButton, container),
+        );
       });
 
       const marker = new maplibregl.Marker({ element: markerButton, anchor: "bottom" })
@@ -234,12 +292,33 @@ export function MapCanvas({
     const clearPointer = () => {
       map.getCanvas().style.cursor = "";
     };
+    let choiceAnimationFrame = 0;
+    const updateChoiceAnchor = () => {
+      choiceAnimationFrame = 0;
+      const activeId = activePlaceIdRef.current;
+      const marker = activeId ? markers.get(activeId) : undefined;
+      const container = containerRef.current;
+      if (!marker || !container) return;
+      onChoiceAnchorChangeRef.current(
+        choiceAnchorForMarker(marker.getElement(), container),
+      );
+    };
+    const scheduleChoiceAnchorUpdate = () => {
+      if (!choiceAnimationFrame) {
+        choiceAnimationFrame = window.requestAnimationFrame(updateChoiceAnchor);
+      }
+    };
 
     map.on("click", "barangay-fill", handleBarangayClick);
     map.on("mouseenter", "barangay-fill", showPointer);
     map.on("mouseleave", "barangay-fill", clearPointer);
+    map.on("move", scheduleChoiceAnchorUpdate);
+    map.on("resize", scheduleChoiceAnchorUpdate);
 
     return () => {
+      map.off("move", scheduleChoiceAnchorUpdate);
+      map.off("resize", scheduleChoiceAnchorUpdate);
+      if (choiceAnimationFrame) window.cancelAnimationFrame(choiceAnimationFrame);
       markers.clear();
       map.remove();
       mapRef.current = null;
@@ -253,8 +332,40 @@ export function MapCanvas({
       element.toggleAttribute("data-highlighted", highlighted.has(id));
       element.toggleAttribute("data-muted", !highlighted.has(id));
       element.toggleAttribute("data-previewed", id === previewedId);
+      element.toggleAttribute("data-selected", id === activePlaceId);
     });
-  }, [highlightedIds, previewedId]);
+  }, [activePlaceId, highlightedIds, previewedId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!streetViewTarget?.coordinates) {
+      if (!previousStreetViewTargetRef.current) return;
+      previousStreetViewTargetRef.current = undefined;
+      map.easeTo({
+        zoom: Math.min(map.getZoom(), 15.8),
+        pitch: 0,
+        bearing: 0,
+        duration: reducedMotion ? 0 : 420,
+      });
+      return;
+    }
+
+    previousStreetViewTargetRef.current = streetViewTarget.id;
+    map.easeTo({
+      center: [
+        streetViewTarget.coordinates.longitude,
+        streetViewTarget.coordinates.latitude,
+      ],
+      zoom: 18.4,
+      pitch: reducedMotion ? 0 : 52,
+      bearing: reducedMotion ? 0 : 18,
+      duration: reducedMotion ? 0 : 620,
+      easing: (time) => 1 - Math.pow(1 - time, 4),
+    });
+  }, [streetViewTarget]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -5,7 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useCallback, useMemo, useState } from "react";
+import {
+  MapPlaceChoice,
+  type MapChoiceAnchor,
+} from "@/components/explore/map-place-choice";
 import { PlaceDialog } from "@/components/explore/place-dialog";
+import { StreetViewExperience } from "@/components/explore/street-view-experience";
 import { ScopeBadge } from "@/components/scope-badge";
 import {
   tagbilaranBarangays,
@@ -39,6 +44,9 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const category = isCategory(categoryParam) ? categoryParam : null;
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [previewedId, setPreviewedId] = useState<string>();
+  const [promptedPlace, setPromptedPlace] = useState<Place>();
+  const [promptAnchor, setPromptAnchor] = useState<MapChoiceAnchor>();
+  const [streetViewPlace, setStreetViewPlace] = useState<Place>();
 
   const selectedPlace = places.find(
     (place) => place.slug === searchParams.get("place"),
@@ -99,6 +107,22 @@ export function ExploreClient({ places }: { places: Place[] }) {
     },
     [replaceParams],
   );
+
+  const promptForPlace = useCallback(
+    (place: Place, anchor: MapChoiceAnchor) => {
+      setPreviewedId(undefined);
+      setStreetViewPlace(undefined);
+      replaceParams({ place: null });
+      setPromptedPlace(place);
+      setPromptAnchor(anchor);
+    },
+    [replaceParams],
+  );
+
+  const dismissPlaceChoice = useCallback(() => {
+    setPromptedPlace(undefined);
+    setPromptAnchor(undefined);
+  }, []);
 
   function updateQuery(value: string) {
     setQuery(value);
@@ -289,12 +313,15 @@ export function ExploreClient({ places }: { places: Place[] }) {
         places={mappablePlaces}
         highlightedIds={highlightedIds}
         previewedId={previewedId}
+        activePlaceId={promptedPlace?.id ?? streetViewPlace?.id}
+        streetViewTarget={streetViewPlace}
         selectedBarangayCode={selectedBarangay?.code}
         onPreview={setPreviewedId}
-        onActivate={(id) => {
+        onActivate={(id, anchor) => {
           const place = places.find((item) => item.id === id);
-          if (place) openPlace(place);
+          if (place) promptForPlace(place, anchor);
         }}
+        onChoiceAnchorChange={setPromptAnchor}
         onSelectBarangay={(code) => replaceParams({ barangay: code ?? null })}
       />
 
@@ -305,7 +332,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
         </div>
       ) : null}
 
-      {previewedPlace && !selectedPlace ? (
+      {previewedPlace && !selectedPlace && !promptedPlace && !streetViewPlace ? (
         <aside className="map-place-preview map-place-preview--map-only" aria-live="polite">
           <Image
             className="map-place-preview__photo"
@@ -352,6 +379,31 @@ export function ExploreClient({ places }: { places: Place[] }) {
           key={selectedPlace.id}
           place={selectedPlace}
           onClose={() => replaceParams({ place: null })}
+        />
+      ) : null}
+
+      {promptedPlace && promptAnchor ? (
+        <MapPlaceChoice
+          key={promptedPlace.id}
+          place={promptedPlace}
+          anchor={promptAnchor}
+          onClose={dismissPlaceChoice}
+          onDetails={() => {
+            dismissPlaceChoice();
+            openPlace(promptedPlace);
+          }}
+          onStreetView={() => {
+            dismissPlaceChoice();
+            setStreetViewPlace(promptedPlace);
+          }}
+        />
+      ) : null}
+
+      {streetViewPlace ? (
+        <StreetViewExperience
+          key={streetViewPlace.id}
+          place={streetViewPlace}
+          onClose={() => setStreetViewPlace(undefined)}
         />
       ) : null}
     </section>
