@@ -81,7 +81,7 @@ export default async function PlacePage({
               width={leadImage.width}
               height={leadImage.height}
               sizes="(max-width: 780px) 94vw, 90vw"
-              priority
+              loading="lazy"
             />
             <figcaption>
               Photo: {leadImage.credit ?? "Credit not supplied"}
@@ -136,7 +136,7 @@ export default async function PlacePage({
                 target="_blank"
                 rel="noreferrer"
               >
-                Open official directions <span className="sr-only">for {place.name}</span>
+                Open in Google Maps <span className="sr-only">for {place.name}</span>
               </a>
             ) : null}
           </aside>

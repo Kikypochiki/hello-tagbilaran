@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { categoryLabels } from "@/lib/place-labels";
 import type { Place } from "@/types/content";
@@ -13,19 +14,26 @@ export function PlaceCard({
   selected?: boolean;
   onSelectId?: string;
 }) {
+  const leadImage = place.images[0];
+
   return (
     <article
       className="place-card"
       data-selected={selected || undefined}
       id={`place-${place.id}`}
     >
-      <div className="place-card__photo" aria-hidden="true">
-        <span>{categoryLabels[place.category]}</span>
-        <svg viewBox="0 0 300 150" preserveAspectRatio="none">
-          <path d="M0 118 54 83l35 21 48-57 35 42 39-25 89 54v32H0Z" />
-          <path d="M0 126c52-14 82 4 134-2 68-8 87-22 166-6v32H0Z" />
-        </svg>
-      </div>
+      {leadImage ? (
+        <div className="place-card__photo">
+          <Image
+            src={leadImage.src}
+            alt={leadImage.alt}
+            width={leadImage.width}
+            height={leadImage.height}
+            sizes="(max-width: 780px) 94vw, 360px"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
       <div className="place-card__content">
         <div className="place-card__labels">
           <ScopeBadge scope={place.scope} />
@@ -44,14 +52,14 @@ export function PlaceCard({
           <Link className="text-link" href={`/places/${place.slug}`}>
             Read place notes <span aria-hidden="true">→</span>
           </Link>
-          {place.coordinates ? (
+          {place.directionsUrl ? (
             <a
               className="text-link"
-              href={`https://www.openstreetmap.org/?mlat=${place.coordinates.latitude}&mlon=${place.coordinates.longitude}#map=17/${place.coordinates.latitude}/${place.coordinates.longitude}`}
+              href={place.directionsUrl}
               target="_blank"
               rel="noreferrer"
             >
-              Open map <span className="sr-only">for {place.name}</span>
+              Google Maps <span className="sr-only">for {place.name}</span>
             </a>
           ) : null}
           <SaveButton placeId={place.id} placeName={place.name} />

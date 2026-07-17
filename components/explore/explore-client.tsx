@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useCallback, useMemo, useState } from "react";
@@ -10,7 +11,7 @@ import {
   tagbilaranBarangays,
   tagbilaranBoundarySource,
 } from "@/content/barangays";
-import { categoryLabels, categoryOrder } from "@/lib/place-labels";
+import { categoryLabels, categoryOrder, scopeLabels } from "@/lib/place-labels";
 import type { Place, PlaceCategory } from "@/types/content";
 
 const MapCanvas = dynamic(
@@ -109,7 +110,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
     <section className="map-only-workspace" aria-label="Explore Tagbilaran city map">
       <h1 className="sr-only">Explore Tagbilaran</h1>
 
-      <details className="map-index">
+      <details className="map-index" open>
         <summary>
           <span>
             <span className="section-kicker">Journal index</span>
@@ -176,16 +177,18 @@ export function ExploreClient({ places }: { places: Place[] }) {
             </fieldset>
 
             <p className="map-index__source">
-              This index contains all {places.length} entries in the project register. City
-              sources and map records were reviewed where available; time-sensitive visitor
-              details remain withheld when no current source publishes them.
+              This curated index contains {places.length} project-listed, source-reviewed places.
+              Every entry includes a photo, a mapped point, and a direct Google Maps link.
+              Time-sensitive visitor details remain withheld when no current authoritative
+              source publishes them.
             </p>
 
             {filteredPlaces.length ? (
               <ol className="map-index__places">
                 {filteredPlaces.map((place) => (
-                  <li key={place.id}>
+                  <li className="map-index__place-entry" key={place.id}>
                     <Link
+                      className="map-index__place-link"
                       href={`/places/${place.slug}`}
                       onClick={(event) => {
                         if (
@@ -209,10 +212,33 @@ export function ExploreClient({ places }: { places: Place[] }) {
                       }}
                       onBlur={() => setPreviewedId(undefined)}
                     >
-                      <span className="map-index__place-name">{place.name}</span>
-                      <span>{categoryLabels[place.category]}</span>
-                      <span>{place.coordinates ? "Map pin" : "Index only"}</span>
+                      <Image
+                        className="map-index__place-photo"
+                        src={place.images[0].src}
+                        alt=""
+                        width={place.images[0].width}
+                        height={place.images[0].height}
+                        sizes="72px"
+                        loading="lazy"
+                      />
+                      <span className="map-index__place-copy">
+                        <span className="map-index__place-name">{place.name}</span>
+                        <span className="map-index__place-meta">
+                          <span>{categoryLabels[place.category]}</span>
+                          <span>{scopeLabels[place.scope]}</span>
+                        </span>
+                      </span>
                     </Link>
+                    <a
+                      className="map-index__directions"
+                      href={place.directionsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Maps
+                      <span aria-hidden="true">↗</span>
+                      <span className="sr-only">Open Google Maps for {place.name}</span>
+                    </a>
                   </li>
                 ))}
               </ol>
@@ -286,6 +312,15 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
       {previewedPlace && !selectedPlace ? (
         <aside className="map-place-preview map-place-preview--map-only" aria-live="polite">
+          <Image
+            className="map-place-preview__photo"
+            src={previewedPlace.images[0].src}
+            alt=""
+            width={previewedPlace.images[0].width}
+            height={previewedPlace.images[0].height}
+            sizes="(max-width: 780px) calc(100vw - 1.5rem), 390px"
+            loading="lazy"
+          />
           <div className="map-place-preview__labels">
             <ScopeBadge scope={previewedPlace.scope} />
             <span className="category-label">

@@ -61,6 +61,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
               width={leadImage.width}
               height={leadImage.height}
               sizes="(max-width: 780px) 88vw, 640px"
+              loading="lazy"
             />
             <figcaption>
               Photo: {leadImage.credit ?? "Credit not supplied"}
@@ -131,7 +132,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
           <div className="place-dialog__links">
             {place.directionsUrl ? (
               <a className="secondary-action" href={place.directionsUrl} target="_blank" rel="noreferrer">
-                Directions <span className="sr-only">for {place.name}</span>
+                Google Maps <span className="sr-only">for {place.name}</span>
               </a>
             ) : null}
             <Link className="text-link" href={`/places/${place.slug}`}>
