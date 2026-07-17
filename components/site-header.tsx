@@ -37,10 +37,6 @@ export function SiteHeader() {
             <small>Tagbilaran City · Bohol</small>
           </span>
         </Link>
-        <p className="site-header__descriptor">
-          <span>City field journal</span>
-          History, food, places, and everyday life
-        </p>
         <nav className="site-nav" aria-label="Primary navigation">
           {navigation.map((item, index) => {
             const active =

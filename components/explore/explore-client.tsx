@@ -123,15 +123,12 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
         <div className="map-index__body">
           <section className="map-index__section" aria-labelledby="places-index-title">
-            <header className="map-index__heading">
-              <div>
-                <p className="section-kicker">City guide</p>
-                <h2 id="places-index-title">Find a place</h2>
-              </div>
-              <span aria-live="polite">
-                {highlightedIds.length} mapped · {filteredPlaces.length} indexed
-              </span>
-            </header>
+            <h2 className="sr-only" id="places-index-title">
+              Search and filter places
+            </h2>
+            <p className="sr-only" aria-live="polite">
+              {filteredPlaces.length} places shown
+            </p>
 
             <label className="search-field search-field--index">
               <span>Search the place index</span>

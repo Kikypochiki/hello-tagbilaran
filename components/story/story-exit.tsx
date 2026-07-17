@@ -50,9 +50,6 @@ export function StoryExit() {
         <Link className="primary-action" href="/explore" onClick={handleExplore}>
           Explore the map <span aria-hidden="true">→</span>
         </Link>
-        <p className="gesture-note">
-          Button and keyboard access are always available. No swipe is required.
-        </p>
       </div>
     </section>
   );

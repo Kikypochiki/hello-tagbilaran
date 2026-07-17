@@ -24,7 +24,6 @@ export default function Home() {
               <span>Field journal · No. 01</span>
               <span>Tagbilaran City · Bohol</span>
             </div>
-            <p className="kicker">Meet the city before the island itinerary</p>
             <h1 id="cover-title">
               <span>Hello,</span>
               Tagbilaran.
@@ -41,20 +40,6 @@ export default function Home() {
                 Explore places <span aria-hidden="true">→</span>
               </Link>
             </div>
-            <dl className="journal-cover__index" aria-label="What this guide offers">
-              <div>
-                <dt>Read</dt>
-                <dd>Five sourced city chapters</dd>
-              </div>
-              <div>
-                <dt>Find</dt>
-                <dd>Heritage, food, stays, and daily life</dd>
-              </div>
-              <div>
-                <dt>Keep</dt>
-                <dd>Save stops for your own city route</dd>
-              </div>
-            </dl>
           </div>
 
           <figure className="journal-cover__postcard">
@@ -86,14 +71,6 @@ export default function Home() {
           chapters={historyChapters.map(({ id, title }) => ({ id, title }))}
         />
         <article className="history-article" aria-label="A five-chapter history of Tagbilaran">
-          <header className="editorial-notice">
-            <strong>About this journal</strong>
-            <p>
-              Five sourced chapters follow the city from its coastal beginnings to everyday
-              Tagbilaran today. Where an origin or interpretation remains uncertain, the
-              journal says so.
-            </p>
-          </header>
           {historyChapters.map((chapter) => (
             <section
               className="history-chapter"
@@ -113,24 +90,18 @@ export default function Home() {
               <div className="history-chapter__number" aria-hidden="true">
                 {String(chapter.order).padStart(2, "0")}
               </div>
-              <header className="history-chapter__header">
-                <p className="chapter-eyebrow">{chapter.eyebrow}</p>
-                <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
-                {chapter.dateLabel ? (
-                  <p className="chapter-date">{chapter.dateLabel}</p>
-                ) : null}
-              </header>
               <div className="history-chapter__spread">
+                <header className="history-chapter__header">
+                  <p className="chapter-eyebrow">{chapter.eyebrow}</p>
+                  <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
+                  {chapter.dateLabel ? (
+                    <p className="chapter-date">{chapter.dateLabel}</p>
+                  ) : null}
+                </header>
                 <div className="history-chapter__copy">
                   <p className="chapter-intro">{chapter.introduction}</p>
                   {chapter.body.map((paragraph) => (
                     <p key={paragraph}>{paragraph}</p>
-                  ))}
-                  {chapter.annotations?.map((annotation) => (
-                    <aside className="margin-note" key={annotation.label}>
-                      <span>{annotation.label}</span>
-                      <p>{annotation.text}</p>
-                    </aside>
                   ))}
                 </div>
                 <div className="history-chapter__media">
@@ -151,6 +122,12 @@ export default function Home() {
                         {media.date ? ` · ${media.date}` : null}
                       </figcaption>
                     </figure>
+                  ))}
+                  {chapter.annotations?.map((annotation) => (
+                    <aside className="margin-note" key={annotation.label}>
+                      <span>{annotation.label}</span>
+                      <p>{annotation.text}</p>
+                    </aside>
                   ))}
                 </div>
               </div>
