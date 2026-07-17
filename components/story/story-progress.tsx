@@ -15,18 +15,34 @@ export function StoryProgress({
       .filter((section): section is HTMLElement => Boolean(section));
     if (!sections.length) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActiveId(visible.target.id);
-      },
-      { rootMargin: "-25% 0px -55%", threshold: [0, 0.15, 0.5] },
-    );
+    let animationFrame = 0;
 
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    function updateActiveChapter() {
+      animationFrame = 0;
+      const readingLine = window.innerHeight * 0.48;
+      let activeSection = sections[0];
+
+      sections.forEach((section) => {
+        if (section.getBoundingClientRect().top <= readingLine) activeSection = section;
+      });
+
+      setActiveId(activeSection.id);
+    }
+
+    function scheduleUpdate() {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(updateActiveChapter);
+    }
+
+    updateActiveChapter();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
   }, [chapters]);
 
   const activeIndex = Math.max(

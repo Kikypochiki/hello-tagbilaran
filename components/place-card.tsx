@@ -43,14 +43,9 @@ export function PlaceCard({
           <Link href={`/places/${place.slug}`}>{place.name}</Link>
         </h2>
         <p>{place.summary}</p>
-        <p className="verification-note">
-          {place.verificationStatus === "source-reviewed"
-            ? "Source reviewed · practical details still require a launch check"
-            : "Prototype listing · local verification needed"}
-        </p>
         <div className="place-card__actions">
           <Link className="text-link" href={`/places/${place.slug}`}>
-            Read place notes <span aria-hidden="true">→</span>
+            View details <span aria-hidden="true">→</span>
           </Link>
           {place.directionsUrl ? (
             <a

@@ -99,6 +99,15 @@ const suppliedPlaceRegisterSource: SourceRecord = {
     "Place name, editorial category, and coordinates were supplied directly for this listing milestone.",
 };
 
+const barangayBoundarySource: SourceRecord = {
+  title: "Indicative Tagbilaran barangay boundaries",
+  url: "https://ulap-nga.georisk.gov.ph/arcgis/rest/services/PSA/BarangayPopMF/MapServer/0",
+  publisher: "GeoRisk Philippines / Philippine Statistics Authority",
+  accessedAt,
+  notes:
+    "Used to identify the barangay containing each supplied map point. Boundary geometry is indicative, not a legal boundary survey.",
+};
+
 interface SuppliedPlaceInput {
   slug: string;
   name: string;
@@ -118,7 +127,7 @@ interface SuppliedPlaceInput {
 }
 
 const googlePhotoRights =
-  "Google Maps community image used for prototype reference; confirm contributor permission and Google attribution requirements before publication.";
+  "Google Maps community image used as a place reference; confirm contributor permission and Google attribution requirements before publication.";
 
 function suppliedPlace(input: SuppliedPlaceInput): Place {
   const mapQuery = `${input.name}, ${input.latitude}, ${input.longitude}`;
@@ -153,6 +162,7 @@ function suppliedPlace(input: SuppliedPlaceInput): Place {
     sources: [
       suppliedPlaceRegisterSource,
       googleMapsPlaceSource(input.name, mapQuery),
+      barangayBoundarySource,
       ...(input.additionalSources ?? []),
     ],
     verifiedAt: accessedAt,
@@ -1098,6 +1108,227 @@ const placeEntries: Place[] = [
   ...suppliedPlaceEntries,
 ];
 
+type PlaceEnhancement = Pick<Place, "story" | "features"> &
+  Partial<Pick<Place, "barangay" | "localTip">>;
+
+function guideDetails(
+  story: string,
+  features: string[],
+  barangay?: string,
+  localTip?: string,
+): PlaceEnhancement {
+  return { story, features, barangay, localTip };
+}
+
+const placeEnhancements: Record<string, PlaceEnhancement> = {
+  "blood-compact-shrine": guideDetails(
+    "Napoleon Abueva’s bronze tableau stands above the coast at Bool, marking the city’s best-known memorial to the 1565 Sandugo. The monument is both a major visitor landmark and a prompt to read the encounter within the wider history of Spanish colonization.",
+    ["Sandugo memorial", "Waterfront heritage stop"],
+    undefined,
+    "Friendship Park, Ocean Suites, and the Bool dining cluster are close enough to combine in one area visit.",
+  ),
+  "national-museum-bohol": guideDetails(
+    "The Bohol Area Museum occupies the restored former Provincial Capitol. Built from 1855 to 1860, the structure served civic and military functions, survived major earthquake damage in 2013, and reopened as a National Museum site in 2018.",
+    ["Former Provincial Capitol", "Bohol art, history, and natural-history galleries"],
+    undefined,
+    "Plaza Rizal and the cathedral sit beside the museum in the compact civic core.",
+  ),
+  "carlos-p-garcia-heritage-museum": guideDetails(
+    "This heritage house and museum keeps the memory of Carlos P. Garcia—Boholano statesman and the Philippines’ eighth president—within Tagbilaran’s central heritage district.",
+    ["Presidential heritage museum", "Central heritage district"],
+    "Poblacion III",
+    "Include it in a downtown heritage walk with the National Museum, Plaza Rizal, and the cathedral.",
+  ),
+  "plaza-rizal": guideDetails(
+    "Plaza Jose P. Rizal is the green center of Tagbilaran’s historic civic ensemble. Its paths and monument connect the cathedral, National Museum, city hall area, and nearby downtown streets.",
+    ["Central public plaza", "Walkable civic and heritage core"],
+    undefined,
+    "Use the plaza as the starting point for the downtown heritage cluster.",
+  ),
+  "st-joseph-cathedral": guideDetails(
+    "The Cathedral Shrine of St. Joseph the Worker is the principal Catholic seat in Bohol. Its stone facade, bell tower, and position beside Plaza Rizal make it one of Tagbilaran’s defining pieces of faith architecture.",
+    ["Cathedral and diocesan seat", "Part of the Plaza Rizal civic ensemble"],
+    undefined,
+    "Dress and move respectfully when liturgies or parish activities are underway.",
+  ),
+  "our-lady-of-lourdes-parish": guideDetails(
+    "Our Lady of Lourdes Parish is a neighborhood Catholic church just north of the central civic core, serving worshippers around Poblacion II and nearby downtown streets.",
+    ["Catholic parish church", "Downtown neighborhood landmark"],
+    "Poblacion II",
+  ),
+  "birhen-sa-barangay-parish": guideDetails(
+    "Birhen sa Barangay Parish is recognizable for its broad worship space and radial interior ceiling. It serves the Cogon area within Tagbilaran’s northern urban center.",
+    ["Catholic parish church", "Distinctive radial interior"],
+    "Cogon",
+  ),
+  "immaculate-heart-of-mary-parish": guideDetails(
+    "The Immaculate Heart of Mary Parish is a Catholic parish in Taloto, adding a northern neighborhood church to the guide beyond the downtown heritage cluster.",
+    ["Catholic parish church", "Taloto neighborhood landmark"],
+    "Taloto",
+  ),
+  "al-fresco-bay-cafe-restobar": guideDetails(
+    "Al Fresco Bay combines café and restobar service near the central waterfront side of Poblacion II, making it a city dining stop close to the port-facing streets.",
+    ["Café and restobar", "Central waterfront vicinity"],
+    "Poblacion II",
+  ),
+  "red-house-city-taiwan-shabu-shabu": guideDetails(
+    "Red House City specializes in Taiwanese-style shabu-shabu, built around hot-pot dining in Tagbilaran’s Dampas district.",
+    ["Taiwanese-style hot pot", "Dampas dining stop"],
+    "Dampas",
+  ),
+  "just-sizzlin-resto": guideDetails(
+    "Just Sizzlin’ is a casual central-city restaurant focused on sizzling-plate dining, positioned in Poblacion I close to several cafés and downtown stops.",
+    ["Casual sizzling-plate restaurant", "Central Poblacion location"],
+    "Poblacion I",
+  ),
+  "gerardas-family-restaurant": guideDetails(
+    "Gerarda’s Place serves Filipino family-style cooking from a home-like setting on J. S. Torralba Street. Its longstanding local identity makes it a useful introduction to Tagbilaran dining beyond mall and hotel restaurants.",
+    ["Filipino family-style cooking", "Heritage-house atmosphere"],
+    undefined,
+    "This is the main city location recorded by the guide; confirm the branch when opening directions.",
+  ),
+  "smoque-bistro": guideDetails(
+    "SMOQUE Bistro is a contemporary restaurant in Bool with a bistro menu and an open-kitchen dining room, close to the Blood Compact area.",
+    ["Contemporary bistro", "Bool dining cluster"],
+    "Bool",
+  ),
+  "garden-cafe": guideDetails(
+    "Garden Café sits beside the Plaza Rizal and cathedral area, offering a convenient café-and-restaurant stop within Tagbilaran’s central heritage walk.",
+    ["Café and restaurant", "Beside the downtown heritage core"],
+    "Poblacion I",
+  ),
+  "punjabi-rasoi": guideDetails(
+    "Punjabi Rasoi adds Indian cooking to Tagbilaran’s restaurant mix from its location in Cogon, north of the central civic district.",
+    ["Indian restaurant", "Cogon dining stop"],
+    "Cogon",
+  ),
+  "crave-cafe-bohol": guideDetails(
+    "Crave Cafe Bohol is a contemporary neighborhood café in Cogon, suited to a coffee or casual meal stop while moving through the northern side of central Tagbilaran.",
+    ["Contemporary café", "Cogon neighborhood stop"],
+    "Cogon",
+  ),
+  "bark-coffee": guideDetails(
+    "Bark Coffee is a roadside specialty-coffee stop in Mansasa, away from the denser downtown café cluster and closer to the city’s southern approach.",
+    ["Specialty coffee shop", "Mansasa roadside location"],
+    "Mansasa",
+  ),
+  "tamper-coffee-brunch": guideDetails(
+    "Tamper Coffee & Brunch pairs coffee with daytime brunch dining in Poblacion I, within the same compact central area as several restaurants and heritage stops.",
+    ["Coffee and brunch", "Central Poblacion location"],
+    "Poblacion I",
+  ),
+  "mosia-cafe": guideDetails(
+    "Mosia Cafe is a bright, contemporary café in Mansasa that adds a quieter coffee stop on the southern side of the city center.",
+    ["Contemporary café", "Mansasa neighborhood stop"],
+    "Mansasa",
+  ),
+  "chido-cafe": guideDetails(
+    "Chido Cafe occupies a sea-facing space in Bool and serves a broad café menu in a relaxed setting. Its position makes it easy to combine with the Blood Compact waterfront cluster.",
+    ["Sea-facing café", "Bool waterfront cluster"],
+    undefined,
+    "Pair the stop with the Blood Compact Monument and Friendship Park nearby.",
+  ),
+  "ocean-suites": guideDetails(
+    "Ocean Suites is a hotel in Bool beside the Blood Compact area, with an elevated position facing the water east of central Tagbilaran.",
+    ["City hotel", "Water-facing Bool location"],
+    "Bool",
+    "Its location is best suited to visitors planning time around the Bool heritage and dining cluster.",
+  ),
+  "kew-hotel": guideDetails(
+    "Kew Hotel Tagbilaran is a full-service city hotel on J. A. Clarin Street, with rooms, dining, and event facilities in the Dampas district near major commercial stops.",
+    ["Full-service city hotel", "Dining and event facilities"],
+    undefined,
+  ),
+  "belian-hotel": guideDetails(
+    "Belian Hotel is a city hotel on the port side of Cogon, positioned for access to the downtown commercial area and Tagbilaran’s sea-terminal district.",
+    ["City hotel", "Near the port and downtown"],
+    "Cogon",
+  ),
+  "kasagpan-resort": guideDetails(
+    "Kasagpan Resort is a cliffside property in Booy with landscaped grounds, pools, and a broad sea-facing outlook on Tagbilaran’s western coast.",
+    ["Cliffside resort", "Pools and sea views"],
+    "Booy",
+  ),
+  "bohol-ecotel": guideDetails(
+    "Bohol Ecotel is a compact lodging option in Poblacion III, close to central Tagbilaran’s government, museum, dining, and shopping streets.",
+    ["Central city lodging", "Poblacion III location"],
+    "Poblacion III",
+  ),
+  "travelbee-seaside-inn": guideDetails(
+    "Travelbee Seaside Inn is a city inn in Poblacion II, positioned near the port, waterfront streets, and Tagbilaran’s downtown core.",
+    ["City inn", "Near the port and waterfront"],
+    "Poblacion II",
+  ),
+  "dao-diamond-hotel-restaurant": guideDetails(
+    "Dao Diamond Hotel and Restaurant is a hotel-and-dining property in Dao, north of the central district and close to the city’s major transport and shopping corridor.",
+    ["Hotel and restaurant", "Dao district location"],
+    "Dao",
+  ),
+  "island-city-mall": guideDetails(
+    "Island City Mall is a major retail and community destination in Dao, bringing shops, dining, cinema, services, and events together beside Tagbilaran’s northern commercial corridor.",
+    ["Shopping, dining, and cinema", "Major Dao commercial landmark"],
+    undefined,
+  ),
+  "bq-mall": guideDetails(
+    "Bohol Quality Mall is a locally rooted downtown mall close to Plaza Rizal. It anchors shopping and everyday services in the compact central business district.",
+    ["Downtown shopping and services", "Near Plaza Rizal"],
+    undefined,
+  ),
+  "alturas-mall-tagbilaran": guideDetails(
+    "Alturas Mall is a longstanding downtown shopping destination in Poblacion II, embedded in the traditional commercial streets of central Tagbilaran.",
+    ["Downtown department-store shopping", "Central commercial district"],
+    "Poblacion II",
+  ),
+  "galleria-luisa-mall": guideDetails(
+    "Galleria Luisa is a central mall in Poblacion II, close to the port-facing side of downtown and within walking distance of the civic core.",
+    ["Central shopping center", "Poblacion II location"],
+    "Poblacion II",
+  ),
+  "tagbilaran-city-square": guideDetails(
+    "Tagbilaran City Square is a downtown shopping center in Poblacion II, positioned near BQ Mall, Alturas, and the city’s busiest central retail streets.",
+    ["Downtown shopping center", "Central retail cluster"],
+    "Poblacion II",
+  ),
+  "tagbilaran-city-central-public-market": guideDetails(
+    "The City Central Public Market is an everyday trading hub in Dampas where produce, household goods, and small local businesses meet the routines of city life.",
+    ["Public market", "Everyday local commerce"],
+    "Dampas",
+    "Visit as a working community market and be considerate when photographing vendors or customers.",
+  ),
+  "barangay-manga-public-market": guideDetails(
+    "Barangay Manga Public Market serves the city’s northern coastal community, keeping neighborhood-scale trade close to Manga’s residential streets and fish-port activity.",
+    ["Neighborhood public market", "Northern coastal community"],
+    "Manga",
+  ),
+  "cpg-park": guideDetails(
+    "President Carlos P. Garcia Park is a waterfront public space used for walking, jogging, informal gatherings, and views across the coast.",
+    ["Waterfront public park", "Walking and sunset views"],
+    undefined,
+  ),
+  "tagbilaran-city-friendship-park": guideDetails(
+    "Friendship Park is the landscaped public space around the Blood Compact area in Bool, joining the monument and waterfront outlook into one open-air stop.",
+    ["Public waterfront park", "Blood Compact monument setting"],
+    "Bool",
+  ),
+  "banat-i-hill": guideDetails(
+    "Banat-i Hill is a southern Tagbilaran viewpoint in Bool, valued for its elevated perspective across the city edge, coast, and neighboring water.",
+    ["Elevated city viewpoint", "Coastal outlook"],
+    "Bool",
+    "Conditions on viewpoint access can change, so check the current approach before setting out.",
+  ),
+  "manga-fish-port": guideDetails(
+    "Manga Fish Port is a working coastal landing place in northern Tagbilaran, where fishing activity and the city’s relationship with the sea remain visible.",
+    ["Working fish port", "Northern coastal outlook"],
+    "Manga",
+    "Treat the port as a workplace: keep routes clear and ask before photographing people at work.",
+  ),
+  "baclayon-church": guideDetails(
+    "Baclayon Church is a major historic church in the neighboring municipality of Baclayon. It remains in the guide as a clearly labeled nearby heritage stop, not as a Tagbilaran City listing.",
+    ["Historic church complex", "Nearby stop outside Tagbilaran City"],
+    undefined,
+  ),
+};
+
 const categoryRank: Record<Place["category"], number> = {
   "history-culture": 0,
   "faith-architecture": 1,
@@ -1109,7 +1340,10 @@ const categoryRank: Record<Place["category"], number> = {
   "visitor-essential": 7,
 };
 
-export const places = [...placeEntries].sort(
+export const places = placeEntries.map((place) => ({
+  ...place,
+  ...placeEnhancements[place.slug],
+})).sort(
   (a, b) => categoryRank[a.category] - categoryRank[b.category],
 );
 

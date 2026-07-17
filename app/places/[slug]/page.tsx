@@ -91,11 +91,11 @@ export default async function PlacePage({
         ) : null}
 
         <div className="place-detail__body">
-          <section aria-labelledby="place-record-title">
-            <p className="section-kicker">Place register</p>
-            <h2 id="place-record-title">What is currently recorded</h2>
-            <p>{place.summary}</p>
-            <div className="feature-list" aria-label="Listing notes">
+          <section aria-labelledby="place-about-title">
+            <p className="section-kicker">About this place</p>
+            <h2 id="place-about-title">Why it belongs in the guide</h2>
+            <p>{place.story ?? place.summary}</p>
+            <div className="feature-list" aria-label="Place highlights">
               {place.features.map((feature) => (
                 <span key={feature}>{feature}</span>
               ))}
@@ -103,31 +103,28 @@ export default async function PlacePage({
           </section>
 
           <aside className="practical-note" aria-labelledby="before-you-go-title">
-            <p className="section-kicker">Before you go</p>
-            <h2 id="before-you-go-title">Confirm practical details</h2>
+            <p className="section-kicker">Plan your stop</p>
+            <h2 id="before-you-go-title">Location &amp; visit notes</h2>
             {place.address || place.barangay ? (
               <dl>
                 {place.address ? (
                   <div>
-                    <dt>Source-recorded address</dt>
+                    <dt>Address</dt>
                     <dd>{place.address}</dd>
                   </div>
                 ) : null}
                 {place.barangay ? (
                   <div>
-                    <dt>Barangay</dt>
+                    <dt>{place.scope === "tagbilaran" ? "Barangay" : "Area"}</dt>
                     <dd>{place.barangay}</dd>
                   </div>
                 ) : null}
               </dl>
             ) : null}
-            <p>
-              {place.accessibility?.verificationNotes ??
-                "Current access conditions require local confirmation."}
-            </p>
-            <p>
-              The official listing does not publish current hours, prices, contacts, or
-              accessibility details, so this guide does not guess them.
+            {place.localTip ? <p className="place-local-tip">{place.localTip}</p> : null}
+            <p className="practical-note__check">
+              Opening times, prices, booking needs, and access conditions can change. Check
+              the current place record before visiting.
             </p>
             {place.directionsUrl ? (
               <a
@@ -142,19 +139,14 @@ export default async function PlacePage({
           </aside>
         </div>
 
-        <section className="source-sheet" aria-labelledby="source-title">
-          <div>
-            <p className="section-kicker">Editorial record</p>
-            <h2 id="source-title">Sources &amp; verification</h2>
-          </div>
-          <p
-            className="verification-status"
-            data-reviewed={place.verificationStatus === "source-reviewed" || undefined}
-          >
-            {place.verificationStatus === "source-reviewed"
-              ? "Source reviewed"
-              : "Local verification needed"}
-          </p>
+        <details className="source-sheet">
+          <summary>
+            <span>
+              <span className="section-kicker">Sources</span>
+              <strong>View research and photo notes</strong>
+            </span>
+            <span aria-hidden="true">+</span>
+          </summary>
           <ul>
             {place.sources.map((source) => (
               <li key={`${source.title}-${source.accessedAt}`}>
@@ -171,11 +163,7 @@ export default async function PlacePage({
               </li>
             ))}
           </ul>
-          <p>
-            Source review does not replace an on-the-ground check of time-sensitive visitor
-            information. Image reuse terms also need confirmation before public launch.
-          </p>
-        </section>
+        </details>
       </article>
 
       <nav className="place-page__back" aria-label="Continue exploring">

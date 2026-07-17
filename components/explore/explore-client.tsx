@@ -125,7 +125,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
           <section className="map-index__section" aria-labelledby="places-index-title">
             <header className="map-index__heading">
               <div>
-                <p className="section-kicker">Place register</p>
+                <p className="section-kicker">City guide</p>
                 <h2 id="places-index-title">Find a place</h2>
               </div>
               <span aria-live="polite">
@@ -177,10 +177,8 @@ export function ExploreClient({ places }: { places: Place[] }) {
             </fieldset>
 
             <p className="map-index__source">
-              This curated index contains {places.length} project-listed, source-reviewed places.
-              Every entry includes a photo, a mapped point, and a direct Google Maps link.
-              Time-sensitive visitor details remain withheld when no current authoritative
-              source publishes them.
+              Explore {places.length} curated places with a photo, a mapped point, and a
+              direct Google Maps link for current visitor information.
             </p>
 
             {filteredPlaces.length ? (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { historyChapters } from "@/content/history";
 import { StoryExit } from "@/components/story/story-exit";
 import { StoryProgress } from "@/components/story/story-progress";
@@ -10,26 +11,6 @@ export const metadata: Metadata = {
     "Begin with Tagbilaran City's five-chapter field journal, then explore a practical city guide.",
   alternates: { canonical: "/" },
 };
-
-function ArchivalPlaceholder({ chapter }: { chapter: number }) {
-  return (
-    <figure className="archive-figure">
-      <div className="archive-figure__image" role="img" aria-label="Archival image placeholder">
-        <svg aria-hidden="true" viewBox="0 0 680 450" preserveAspectRatio="xMidYMid slice">
-          <path className="archive-figure__wash" d="M0 330 135 205l87 62 95-145 110 127 93-85 160 160v126H0Z" />
-          <path d="M0 363c130-50 237 41 367-7 116-42 197-24 313 12" />
-          <circle cx={chapter % 2 ? 516 : 148} cy="100" r="38" />
-          <path d="M38 40h604v370H38z" />
-        </svg>
-        <span>Image research in progress</span>
-      </div>
-      <figcaption>
-        Placeholder plate {String(chapter).padStart(2, "0")} · Rights-cleared local or
-        archival image required before publication.
-      </figcaption>
-    </figure>
-  );
-}
 
 export default function Home() {
   return (
@@ -64,16 +45,16 @@ export default function Home() {
         <StoryProgress
           chapters={historyChapters.map(({ id, title }) => ({ id, title }))}
         />
-        <article className="history-article" aria-label="A prototype history of Tagbilaran">
+        <article className="history-article" aria-label="A five-chapter history of Tagbilaran">
           <header className="editorial-notice">
-            <strong>Sourced working journal</strong>
+            <strong>About this journal</strong>
             <p>
-              This synthesis begins with the City Government of Tagbilaran’s published
-              history. Final publication still requires corroboration, local editorial
-              review, and image rights.
+              Five sourced chapters follow the city from its coastal beginnings to everyday
+              Tagbilaran today. Where an origin or interpretation remains uncertain, the
+              journal says so.
             </p>
           </header>
-          {historyChapters.map((chapter, index) => (
+          {historyChapters.map((chapter) => (
             <section
               className="history-chapter"
               id={chapter.id}
@@ -112,11 +93,30 @@ export default function Home() {
                     </aside>
                   ))}
                 </div>
-                <ArchivalPlaceholder chapter={index + 1} />
+                <div className="history-chapter__media">
+                  {chapter.media.map((media) => (
+                    <figure className="archive-figure" key={media.src}>
+                      <div className="archive-figure__image">
+                        <Image
+                          src={media.src}
+                          alt={media.alt}
+                          width={media.width}
+                          height={media.height}
+                          sizes="(max-width: 780px) 88vw, (max-width: 1060px) 68vw, 42vw"
+                          loading="lazy"
+                        />
+                      </div>
+                      <figcaption>
+                        Photo: {media.credit ?? "Credit not supplied"}
+                        {media.date ? ` · ${media.date}` : null}
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
               </div>
               {chapter.sources.length ? (
                 <footer className="history-chapter__sources">
-                  <span>Chapter source</span>
+                  <span>{chapter.sources.length === 1 ? "Chapter source" : "Chapter sources"}</span>
                   {chapter.sources.map((source) =>
                     source.url ? (
                       <a key={source.title} href={source.url} target="_blank" rel="noreferrer">

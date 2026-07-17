@@ -10,24 +10,39 @@ export function StoryUnfolding() {
 
     if (!article || !chapters.length || reducedMotion) return;
 
-    article.classList.add("history-motion-ready");
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.setAttribute("data-unfolded", "true");
-          observer.unobserve(entry.target);
-        });
-      },
-      { rootMargin: "-8% 0px -12%", threshold: 0.12 },
-    );
+    let animationFrame = 0;
 
-    chapters.forEach((chapter) => observer.observe(chapter));
+    function updatePageStates() {
+      animationFrame = 0;
+      const readingLine = window.innerHeight * 0.48;
+      let activeIndex = 0;
+
+      chapters.forEach((chapter, index) => {
+        if (chapter.getBoundingClientRect().top <= readingLine) activeIndex = index;
+      });
+
+      chapters.forEach((chapter, index) => {
+        chapter.dataset.pageState =
+          index < activeIndex ? "turned" : index === activeIndex ? "current" : "upcoming";
+      });
+    }
+
+    function scheduleUpdate() {
+      if (animationFrame) return;
+      animationFrame = window.requestAnimationFrame(updatePageStates);
+    }
+
+    article.classList.add("history-page-turn-ready");
+    updatePageStates();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
 
     return () => {
-      observer.disconnect();
-      article.classList.remove("history-motion-ready");
-      chapters.forEach((chapter) => chapter.removeAttribute("data-unfolded"));
+      if (animationFrame) window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      article.classList.remove("history-page-turn-ready");
+      chapters.forEach((chapter) => delete chapter.dataset.pageState);
     };
   }, []);
 
