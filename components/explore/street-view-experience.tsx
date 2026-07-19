@@ -108,8 +108,14 @@ export function StreetViewExperience({
       </div>
 
       <header className="street-view-hud">
-        <button ref={backButtonRef} type="button" onClick={onClose}>
-          <span aria-hidden="true">←</span> Go back to map
+        <button
+          ref={backButtonRef}
+          type="button"
+          aria-label="Go back to map"
+          onClick={onClose}
+        >
+          <span aria-hidden="true">←</span>
+          <span className="street-view-hud__back-label">Go back to map</span>
         </button>
         <div className="street-view-hud__place">
           <div className="street-view-hud__title">

@@ -4180,26 +4180,60 @@ h3 {
   }
 
   .street-view-hud {
-    align-items: stretch;
-    flex-direction: column-reverse;
+    top: 0.55rem;
+    right: 0.55rem;
+    left: 0.55rem;
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 0.5rem;
   }
 
   .street-view-hud__place {
-    width: 100%;
-    justify-items: stretch;
+    width: min(68vw, 260px);
+    justify-items: end;
+    margin-left: auto;
+    gap: 0;
   }
 
   .street-view-hud__title {
-    max-width: none;
-    text-align: left;
+    width: 100%;
+    padding: 0.45rem 0.55rem;
+    border-left-width: 3px;
+    box-shadow: 2px 3px 0 rgb(19 28 18 / 20%);
+    text-align: right;
+  }
+
+  .street-view-hud__title > span,
+  .street-view-hud__title > small {
+    display: none;
+  }
+
+  .street-view-hud h2 {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    font-size: clamp(0.82rem, 3.5vw, 1rem);
+    line-height: 1.18;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .street-view-hud button {
-    align-self: flex-start;
+    width: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    justify-content: center;
+    padding: 0;
+    box-shadow: 2px 3px 0 var(--sunlight-yellow);
+    font-size: 1.15rem;
+  }
+
+  .street-view-hud__back-label {
+    display: none;
   }
 
   .street-view-instructions {
-    width: 100%;
+    display: none;
   }
 
   .street-view-loading {
@@ -4229,8 +4263,7 @@ h3 {
 }
 
 /* Focused responsive and trust improvements */
-.chapter-rail__mobile-controls,
-.map-view-switch {
+.chapter-rail__mobile-controls {
   display: none;
 }
 
@@ -4406,77 +4439,22 @@ h3 {
     text-transform: uppercase;
   }
 
-  .map-view-switch {
-    position: absolute;
-    z-index: 25;
-    top: 0.75rem;
-    right: 0.75rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 142px;
-    padding: 0.25rem;
-    background: var(--paper-light);
-    border: 1px solid var(--heritage-green);
-    box-shadow: 3px 4px 0 rgb(62 46 20 / 16%);
-  }
-
-  .map-view-switch button {
-    min-height: 44px;
-    padding: 0.35rem;
-    color: var(--heritage-green-dark);
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    font-size: 0.75rem;
-    font-weight: 760;
-  }
-
-  .map-view-switch button[aria-pressed="true"] {
-    color: var(--paper-light);
-    background: var(--heritage-green);
-  }
-
   .map-index {
-    top: 4.4rem;
+    top: 0.75rem;
   }
 
-  .map-only-workspace[data-mobile-view="map"] .map-index__body {
+  .map-index:not([data-mobile-ready]) .map-index__body,
+  .map-index:not([open]) .map-index__body {
     display: none;
   }
 
-  .map-only-workspace[data-mobile-view="map"] .map-index[open] > summary {
-    border-bottom: 0;
-  }
-
-  .map-only-workspace[data-mobile-view="map"] .map-index > summary::after {
-    display: none;
-  }
-
-  .map-only-workspace[data-mobile-view="list"] {
+  .map-index[open] .map-index__body {
+    max-height: calc(100svh - 11rem);
+    overflow-x: hidden;
     overflow-y: auto;
-    background: var(--paper);
-  }
-
-  .map-only-workspace[data-mobile-view="list"] .map-index {
-    position: relative;
-    top: 4.4rem;
-    right: auto;
-    left: auto;
-    width: calc(100% - 1.5rem);
-    margin: 0 auto 5.2rem;
-  }
-
-  .map-only-workspace[data-mobile-view="list"] .map-index__body {
-    max-height: none;
-  }
-
-  .map-only-workspace[data-mobile-view="list"] .map-canvas,
-  .map-only-workspace[data-mobile-view="list"] > .map-loading,
-  .map-only-workspace[data-mobile-view="list"] .map-boundary-note,
-  .map-only-workspace[data-mobile-view="list"] .selected-barangay,
-  .map-only-workspace[data-mobile-view="list"] .map-place-preview,
-  .map-only-workspace[data-mobile-view="list"] .map-category-empty {
-    display: none;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .map-index__place-link {
@@ -4959,11 +4937,6 @@ h3 {
   .map-index > summary {
     min-height: 62px;
     padding-block: 0.65rem;
-  }
-
-  .map-view-switch {
-    width: 150px;
-    box-shadow: 3px 4px 0 rgb(62 46 20 / 12%);
   }
 
   .map-place-preview--map-only {

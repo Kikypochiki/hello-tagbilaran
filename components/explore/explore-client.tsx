@@ -8,6 +8,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -51,8 +52,8 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const categoryParam = searchParams.get("category");
   const category = isCategory(categoryParam) ? categoryParam : null;
   const savedOnly = searchParams.get("saved") === "1";
-  const mobileView = searchParams.get("view") === "list" ? "list" : "map";
   const queryParam = searchParams.get("q") ?? "";
+  const indexRef = useRef<HTMLDetailsElement>(null);
   const [query, setQuery] = useState(queryParam);
   const [previewedId, setPreviewedId] = useState<string>();
   const [promptedPlace, setPromptedPlace] = useState<Place>();
@@ -73,6 +74,13 @@ export function ExploreClient({ places }: { places: Place[] }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuery(queryParam);
   }, [queryParam]);
+
+  useEffect(() => {
+    const index = indexRef.current;
+    if (!index) return;
+    if (window.matchMedia("(max-width: 780px)").matches) index.open = false;
+    index.dataset.mobileReady = "true";
+  }, []);
 
   const selectedPlace = places.find(
     (place) => place.slug === searchParams.get("place"),
@@ -158,29 +166,11 @@ export function ExploreClient({ places }: { places: Place[] }) {
   return (
     <section
       className="map-only-workspace"
-      data-mobile-view={mobileView}
       aria-label="Explore Tagbilaran city map"
     >
       <h1 className="sr-only">Explore Tagbilaran</h1>
 
-      <nav className="map-view-switch" aria-label="Explore display">
-        <button
-          type="button"
-          aria-pressed={mobileView === "map"}
-          onClick={() => replaceParams({ view: null })}
-        >
-          Map
-        </button>
-        <button
-          type="button"
-          aria-pressed={mobileView === "list"}
-          onClick={() => replaceParams({ view: "list" })}
-        >
-          List
-        </button>
-      </nav>
-
-      <details className="map-index" open>
+      <details className="map-index" ref={indexRef} open>
         <summary>
           <span>
             <span className="section-kicker">Journal index</span>

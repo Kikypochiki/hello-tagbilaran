@@ -23,12 +23,23 @@ test("Story remains within the viewport and offers direct navigation", async ({
 test("Explore keeps list access, URL filters, and stable navigation", async ({
   page,
 }, testInfo) => {
-  await page.goto("/explore?view=list");
+  await page.goto("/explore");
   if (testInfo.project.name === "mobile") {
-    await expect(page.getByRole("button", { name: "List" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    await expect(page.getByRole("combobox", { name: "Explore display" })).toHaveCount(0);
+    const index = page.locator("details.map-index");
+    await expect(index).not.toHaveAttribute("open", "");
+    await index.locator("summary").click();
+    await expect(index).toHaveAttribute("open", "");
+    const indexBody = index.locator(".map-index__body");
+    const listDimensions = await indexBody.evaluate((element) => ({
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+    }));
+    expect(listDimensions.scrollHeight).toBeGreaterThan(listDimensions.clientHeight);
+    await indexBody.evaluate((element) => element.scrollTo({ top: 600 }));
+    await expect
+      .poll(() => indexBody.evaluate((element) => element.scrollTop))
+      .toBeGreaterThan(0);
   }
   await page.getByPlaceholder("Name, barangay, or category").fill("museum");
   await expect(page).toHaveURL(/q=museum/);
@@ -41,10 +52,13 @@ test("Explore keeps list access, URL filters, and stable navigation", async ({
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
 });
 
-test("Only reviewed Street View actions are exposed", async ({ page }) => {
+test("Only reviewed Street View actions are exposed", async ({ page }, testInfo) => {
   await page.goto("/places/national-museum-bohol");
   await expect(page.getByText(/Sources reviewed/).first()).toBeVisible();
-  await page.goto("/explore?view=list&q=BQ+Mall");
+  await page.goto("/explore?q=BQ+Mall");
+  if (testInfo.project.name === "mobile") {
+    await page.locator("details.map-index > summary").click();
+  }
   await page
     .locator("a.map-index__place-link")
     .filter({ hasText: "Bohol Quality Mall" })
@@ -100,7 +114,7 @@ test("Barangays remain selected after click", async ({
 test("Representative routes have no serious automated accessibility violations", async ({
   page,
 }) => {
-  for (const route of ["/", "/explore?view=list", "/places/plaza-rizal"]) {
+  for (const route of ["/", "/explore", "/places/plaza-rizal"]) {
     await page.goto(route);
     const results = await new AxeBuilder({ page }).analyze();
     expect(
