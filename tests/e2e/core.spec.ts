@@ -11,6 +11,11 @@ test("Story remains within the viewport and offers direct navigation", async ({
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
+  const guideLink = page.getByRole("link", { name: "Continue to city guide" });
+  await guideLink.scrollIntoViewIfNeeded();
+  await expect(guideLink).toBeVisible();
+  await guideLink.click();
+  await expect(page).toHaveURL("/explore");
 });
 
 test("Explore keeps list access, URL filters, and stable navigation", async ({

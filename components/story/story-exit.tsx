@@ -31,27 +31,12 @@ export function StoryExit() {
 
   return (
     <section className="story-exit" aria-labelledby="story-exit-title">
-      <div className="story-exit__map-preview" aria-hidden="true">
-        <svg viewBox="0 0 760 420" preserveAspectRatio="xMidYMid slice">
-          <path d="M-40 92c110 45 142-10 242 38s151 4 247 50 173-5 342 45" />
-          <path d="M45 356c90-80 151-56 228-131s184-44 222-115 144-53 230-29" />
-          <path d="M212 0c-9 80 38 109 12 184s28 115 11 236" />
-          <path d="M528 0c28 84-19 117 13 191s-31 129 18 229" />
-          <circle cx="380" cy="214" r="17" />
-          <circle cx="380" cy="214" r="5" />
-        </svg>
-      </div>
-      <div className="story-exit__paper">
-        <span className="story-exit__eyebrow">The journal opens outward</span>
-        <h2 id="story-exit-title">The story continues in the streets of Tagbilaran.</h2>
-        <p>
-          Move from the editorial timeline to a searchable city field guide. The map is
-          optional; every stop remains available as an accessible list.
-        </p>
-        <Link className="primary-action" href="/explore" onClick={handleExplore}>
-          Explore the map <span aria-hidden="true">→</span>
-        </Link>
-      </div>
+      <h2 className="sr-only" id="story-exit-title">
+        Continue to the Tagbilaran city guide
+      </h2>
+      <Link className="primary-action story-exit__guide-link" href="/explore" onClick={handleExplore}>
+        Continue to city guide <span aria-hidden="true">→</span>
+      </Link>
     </section>
   );
 }
