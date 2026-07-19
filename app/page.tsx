@@ -1,65 +1,155 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
+import { historyChapters } from "@/content/history";
+import { StoryExit } from "@/components/story/story-exit";
+import { StoryProgress } from "@/components/story/story-progress";
+import { StoryUnfolding } from "@/components/story/story-unfolding";
+
+export const metadata: Metadata = {
+  title: "A city, unfolded",
+  description:
+    "Begin with Tagbilaran City's five-chapter field journal, then explore a practical city guide.",
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main id="main-content" className="story-journal">
+      <StoryUnfolding />
+      <section className="journal-cover" aria-labelledby="cover-title">
+        <div className="journal-cover__layout">
+          <div className="journal-cover__content">
+            <div className="journal-cover__registration">
+              <span>Field journal · No. 01</span>
+              <span>Tagbilaran City · Bohol</span>
+            </div>
+            <h1 id="cover-title">
+              <span>Hello,</span>
+              Tagbilaran.
+            </h1>
+            <p className="journal-cover__dek">
+              A guide to Bohol’s capital told through its coast, civic heart, food,
+              neighborhoods, and the people who keep the city moving.
+            </p>
+            <div className="journal-cover__actions">
+              <a className="cover-scroll" href="#coast-and-current">
+                Begin the city story <span aria-hidden="true">↓</span>
+              </a>
+              <Link className="cover-explore" href="/explore">
+                Explore places <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+
+          <figure className="journal-cover__postcard">
+            <div className="journal-cover__photo">
+              <Image
+                src="/images/places/plaza-rizal.jpg"
+                alt="Plaza Jose P. Rizal and St. Joseph the Worker Cathedral in central Tagbilaran"
+                width={2048}
+                height={1152}
+                sizes="(max-width: 780px) 92vw, 44vw"
+                priority
+              />
+            </div>
+            <figcaption>
+              <span>City plate · 01</span>
+              <strong>Plaza Jose P. Rizal</strong>
+              <span>Central Tagbilaran · Photo: City Government of Tagbilaran</span>
+            </figcaption>
+            <div className="journal-cover__postmark" aria-hidden="true">
+              <span>TAGBILARAN</span>
+              <span>BOHOL · PH</span>
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <div className="story-layout">
+        <StoryProgress
+          chapters={historyChapters.map(({ id, title }) => ({ id, title }))}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+        <article className="history-article" aria-label="A five-chapter history of Tagbilaran">
+          {historyChapters.map((chapter) => (
+            <section
+              className="history-chapter"
+              id={chapter.id}
+              key={chapter.id}
+              aria-labelledby={`${chapter.id}-title`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+              <div className="history-chapter__binding" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="history-chapter__folio" aria-hidden="true">
+                <span>Hello Tagbilaran</span>
+                <span>Journal leaf {String(chapter.order).padStart(2, "0")}</span>
+              </div>
+              <div className="history-chapter__number" aria-hidden="true">
+                {String(chapter.order).padStart(2, "0")}
+              </div>
+              <div className="history-chapter__spread">
+                <header className="history-chapter__header">
+                  <p className="chapter-eyebrow">{chapter.eyebrow}</p>
+                  <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
+                  {chapter.dateLabel ? (
+                    <p className="chapter-date">{chapter.dateLabel}</p>
+                  ) : null}
+                </header>
+                <div className="history-chapter__copy">
+                  <p className="chapter-intro">{chapter.introduction}</p>
+                  {chapter.body.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+                <div className="history-chapter__media">
+                  {chapter.media.map((media) => (
+                    <figure className="archive-figure" key={media.src}>
+                      <div className="archive-figure__image">
+                        <Image
+                          src={media.src}
+                          alt={media.alt}
+                          width={media.width}
+                          height={media.height}
+                          sizes="(max-width: 780px) 88vw, (max-width: 1060px) 68vw, 42vw"
+                          loading="lazy"
+                        />
+                      </div>
+                      <figcaption>
+                        Photo: {media.credit ?? "Credit not supplied"}
+                        {media.date ? ` · ${media.date}` : null}
+                      </figcaption>
+                    </figure>
+                  ))}
+                  {chapter.annotations?.map((annotation) => (
+                    <aside className="margin-note" key={annotation.label}>
+                      <span>{annotation.label}</span>
+                      <p>{annotation.text}</p>
+                    </aside>
+                  ))}
+                </div>
+              </div>
+              {chapter.sources.length ? (
+                <footer className="history-chapter__sources">
+                  <span>{chapter.sources.length === 1 ? "Chapter source" : "Chapter sources"}</span>
+                  {chapter.sources.map((source) =>
+                    source.url ? (
+                      <a key={source.title} href={source.url} target="_blank" rel="noreferrer">
+                        {source.title} · {source.publisher}
+                      </a>
+                    ) : (
+                      <span key={source.title}>{source.title}</span>
+                    ),
+                  )}
+                </footer>
+              ) : null}
+            </section>
+          ))}
+        </article>
+      </div>
+      <StoryExit />
+    </main>
   );
 }
