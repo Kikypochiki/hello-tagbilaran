@@ -1,33 +1,27 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
+import { categoryLabels, scopeLabels } from "@/lib/place-labels";
+import { isStreetViewCurrent } from "@/lib/verification";
 import type { Place } from "@/types/content";
-
-export interface MapChoiceAnchor {
-  x: number;
-  y: number;
-  placement: "above" | "below";
-}
 
 export function MapPlaceChoice({
   place,
-  anchor,
+  mountNode,
   onClose,
   onDetails,
   onStreetView,
 }: {
   place: Place;
-  anchor: MapChoiceAnchor;
+  mountNode: HTMLElement;
   onClose: () => void;
   onDetails: () => void;
   onStreetView: () => void;
 }) {
   const detailsButtonRef = useRef<HTMLButtonElement>(null);
-  const style = {
-    "--map-choice-x": `${anchor.x}px`,
-    "--map-choice-y": `${anchor.y}px`,
-  } as CSSProperties;
+  const headingId = `map-place-choice-${place.id}`;
+  const streetViewAvailable = isStreetViewCurrent(place.streetView);
 
   useEffect(() => {
     detailsButtonRef.current?.focus();
@@ -40,14 +34,30 @@ export function MapPlaceChoice({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  return (
+  return createPortal(
     <aside
       className="map-place-choice"
-      data-placement={anchor.placement}
-      style={style}
-      aria-label={`Options for ${place.name}`}
+      aria-labelledby={headingId}
     >
-      <span className="sr-only">Choose how to explore {place.name}</span>
+      <header className="map-place-choice__heading">
+        <div>
+          <p className="map-place-choice__eyebrow">Selected map stop</p>
+          <h2 id={headingId}>{place.name}</h2>
+        </div>
+        <button
+          className="map-place-choice__close"
+          type="button"
+          aria-label={`Close options for ${place.name}`}
+          onClick={onClose}
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </header>
+      <p className="map-place-choice__meta">
+        <span>{scopeLabels[place.scope]}</span>
+        <span aria-hidden="true">·</span>
+        <span>{categoryLabels[place.category]}</span>
+      </p>
       <div className="map-place-choice__actions">
         <button
           ref={detailsButtonRef}
@@ -57,10 +67,17 @@ export function MapPlaceChoice({
         >
           View details
         </button>
-        <button className="primary-action" type="button" onClick={onStreetView}>
-          Street View <span aria-hidden="true">→</span>
-        </button>
+        {streetViewAvailable ? (
+          <button className="primary-action" type="button" onClick={onStreetView}>
+            Street View <span aria-hidden="true">→</span>
+          </button>
+        ) : (
+          <p className="map-place-choice__street-view-note">
+            No current panorama has been verified at this exact place.
+          </p>
+        )}
       </div>
-    </aside>
+    </aside>,
+    mountNode,
   );
 }

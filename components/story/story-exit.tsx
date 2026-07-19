@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { MouseEvent } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export function StoryExit() {
   const router = useRouter();
 
   function handleExplore(event: MouseEvent<HTMLAnchorElement>) {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = prefersReducedMotion();
     if (
       reducedMotion ||
       event.button !== 0 ||

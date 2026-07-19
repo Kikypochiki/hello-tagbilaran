@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
+import { isStreetViewCurrent } from "@/lib/verification";
 import type { Place } from "@/types/content";
 
 type StreetViewStage = "zooming" | "loading" | "ready" | "unavailable";
@@ -19,25 +21,26 @@ export function StreetViewExperience({
   const [stage, setStage] = useState<StreetViewStage>("zooming");
 
   const streetViewUrl = useMemo(() => {
-    if (!place.coordinates) return undefined;
+    if (!isStreetViewCurrent(place.streetView) || !place.streetView) return undefined;
     const parameters = new URLSearchParams({
       layer: "c",
-      cbll: `${place.coordinates.latitude},${place.coordinates.longitude}`,
+      cbll: `${place.streetView.coordinates.latitude},${place.streetView.coordinates.longitude}`,
       cbp: "12,0,,0,0",
       source: "embed",
       output: "svembed",
       hl: "en",
     });
     return `https://maps.google.com/maps?${parameters.toString()}`;
-  }, [place.coordinates]);
+  }, [place.streetView]);
 
   const queuePanoramaReveal = useCallback(() => {
     if (revealTimerRef.current) return;
     setStage("loading");
+    const reducedMotion = prefersReducedMotion();
     revealTimerRef.current = window.setTimeout(() => {
       setStage("ready");
       backButtonRef.current?.focus();
-    }, 3600);
+    }, reducedMotion ? 0 : 420);
   }, []);
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export function StreetViewExperience({
   }, [onClose]);
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = prefersReducedMotion();
     const transitionTimer = window.setTimeout(
       () => {
         transitionFinishedRef.current = true;
@@ -83,12 +86,13 @@ export function StreetViewExperience({
       className="street-view-experience"
       data-stage={stage}
       aria-labelledby="street-view-title"
+      aria-describedby={stage === "ready" ? "street-view-instructions" : undefined}
     >
       {streetViewUrl ? (
         <iframe
           className="street-view-experience__panorama"
           src={streetViewUrl}
-          title={`Google Street View near ${place.name}`}
+          title={`Google Street View at ${place.name}`}
           loading="eager"
           referrerPolicy="strict-origin-when-cross-origin"
           onLoad={handleFrameLoad}
@@ -107,31 +111,57 @@ export function StreetViewExperience({
         <button ref={backButtonRef} type="button" onClick={onClose}>
           <span aria-hidden="true">←</span> Go back to map
         </button>
-        <div>
-          <span>Street View near</span>
-          <h2 id="street-view-title">{place.name}</h2>
+        <div className="street-view-hud__place">
+          <div className="street-view-hud__title">
+            <span>Street View at</span>
+            <h2 id="street-view-title">{place.name}</h2>
+            {place.streetView ? (
+              <small>
+                {place.streetView.label}
+                {" · "}
+                {place.streetView.captureDate}
+                {" · "}
+                {place.streetView.contributor}
+              </small>
+            ) : null}
+          </div>
+          {stage === "ready" ? (
+            <aside className="street-view-instructions" id="street-view-instructions">
+              <strong>Look around</strong>
+              <p>
+                Drag or swipe to turn. Scroll or pinch to zoom. Use the map button when
+                finished.
+              </p>
+            </aside>
+          ) : null}
         </div>
       </header>
 
       {stage === "zooming" || stage === "loading" ? (
         <div className="street-view-loading" role="status">
-          <span className="street-view-loading__rings" aria-hidden="true" />
-          <strong>{stage === "zooming" ? "Moving into the street…" : "Loading panorama…"}</strong>
+          <span className="street-view-loading__route" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+          <span className="street-view-loading__copy">
+            <small>Street entry</small>
+            <strong>
+              {stage === "zooming" ? "Leaving the city map…" : "Opening the panorama…"}
+            </strong>
+            <span>{place.name}</span>
+          </span>
         </div>
-      ) : null}
-
-      {stage === "ready" ? (
-        <aside className="street-view-instructions" id="street-view-instructions">
-          <strong>Look around</strong>
-          <p>Drag or swipe to turn. Scroll or pinch to zoom. Use the map button when finished.</p>
-        </aside>
       ) : null}
 
       {stage === "unavailable" ? (
         <div className="street-view-fallback" role="alert">
           <p className="section-kicker">Street View unavailable</p>
-          <h3>This place has no mapped coordinate.</h3>
-          <p>Return to the city map and continue with the complete place information.</p>
+          <h3>No eligible recent panorama was found.</h3>
+          <p>
+            This guide only opens professionally reviewed Google Maps panoramas
+            dated from 2022 through 2026 that depict the listed place itself.
+          </p>
           <button className="primary-action" type="button" onClick={onClose}>
             Go back to map
           </button>

@@ -1,46 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hello Tagbilaran
 
-## Getting Started
+An editorial tourism guide for Tagbilaran City, Bohol. The product keeps a focused
+three-route structure:
 
-First, run the development server:
+- `/` — five-chapter paper-journal Story
+- `/explore` — synchronized place index and MapLibre map
+- `/places/[slug]` — independently indexable place details
+
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Copy `.env.example` to `.env.local` and replace `NEXT_PUBLIC_SITE_URL` before a
+public deployment. Until it is configured, generated robots metadata prevents
+indexing so localhost canonicals cannot be published accidentally.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation
 
-## Google Street View
+```bash
+npm run lint
+npm run typecheck
+npm run content:validate
+npm run test:unit
+npm run build
+npm run test:e2e
+```
 
-The explore map loads a keyless Google Maps share/embed iframe only after a visitor
-selects a map marker and chooses **Street View**. The iframe uses the
-source-verified place coordinate to resolve a nearby panorama, so no Maps JavaScript
-API, API key, or environment variable is required.
+`npm run validate` runs the complete sequence. Browser tests use installed Chrome
+locally and Playwright Chromium in CI.
 
-Google owns the interface inside the cross-origin iframe. Its attribution and any
-controls supplied by Google must remain visible and cannot be restyled from this app.
+Run `npm run images:optimize` after adding large JPEG photography. It recompresses
+only files above 350 KB and does not enlarge images.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Content and publication rules
 
-## Learn More
+- Place identity, location, operating status, media rights, and review dates are
+  tracked separately.
+- Unknown hours, contacts, prices, schedules, and accessibility conditions are
+  omitted.
+- The Philippine Statistics Authority PSGC record is canonical for Tagbilaran's
+  15 barangays and codes. Boundary geometry remains indicative.
+- `npm run content:validate` reports stale reviews, missing evidence, invalid
+  coordinates, media-rights issues, and expired Street View.
+- Set `CONTENT_STRICT=1` in a publication pipeline to convert unresolved warnings
+  into release failures.
 
-To learn more about Next.js, take a look at the following resources:
+Current photography remains blocked for a strict public launch until its listed
+permissions and reuse terms are resolved. Credits and rights notes remain visible
+on place pages while the project is reviewed.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Street View
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Street View is available only for manually reviewed panoramas that depict the
+listed venue itself. Nearby imagery is never substituted. Each eligible record
+stores its capture position, contributor, capture date, exact-match state, review
+date, and six-month review deadline. Expired records automatically lose the
+Street View action.
 
-## Deploy on Vercel
+The viewer uses a keyless Google Maps embed opened only after visitor action.
+Google's attribution and controls must remain visible.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Maps and offline behavior
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The map source is configurable with `NEXT_PUBLIC_MAP_TILE_URL`; OpenStreetMap
+attribution remains visible. The complete searchable list is the accessible and
+network-failure fallback.
+
+An older prototype registered a service worker. Keep
+`NEXT_PUBLIC_ENABLE_LEGACY_SW_CLEANUP=true` for the first migration deployment,
+confirm stale registrations are gone, then set it to `false` and remove the
+cleanup component and `public/sw.js` in the following release.

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export function StoryUnfolding() {
   useEffect(() => {
     const article = document.querySelector<HTMLElement>(".history-article");
     const chapters = [...document.querySelectorAll<HTMLElement>(".history-chapter")];
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = prefersReducedMotion();
 
     if (!article || !chapters.length || reducedMotion) return;
 

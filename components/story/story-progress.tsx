@@ -50,10 +50,31 @@ export function StoryProgress({
     chapters.findIndex((chapter) => chapter.id === activeId),
   );
   const progress = chapters.length > 1 ? activeIndex / (chapters.length - 1) : 0;
+  const previousChapter = chapters[activeIndex - 1];
+  const nextChapter = chapters[activeIndex + 1];
 
   return (
     <nav className="chapter-rail" aria-label="History chapters">
       <p>Field notes</p>
+      <div className="chapter-rail__mobile-controls">
+        {previousChapter ? (
+          <a href={`#${previousChapter.id}`} aria-label={`Previous: ${previousChapter.title}`}>
+            ← Previous
+          </a>
+        ) : (
+          <span />
+        )}
+        <strong>
+          Chapter {activeIndex + 1} of {chapters.length}
+        </strong>
+        {nextChapter ? (
+          <a href={`#${nextChapter.id}`} aria-label={`Next: ${nextChapter.title}`}>
+            Next →
+          </a>
+        ) : (
+          <a href="#story-exit-title">Continue →</a>
+        )}
+      </div>
       <div className="chapter-rail__track" aria-hidden="true">
         <span style={{ transform: `scaleY(${progress})` }} />
       </div>

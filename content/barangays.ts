@@ -21,6 +21,14 @@ export const tagbilaranBarangays: TagbilaranBarangay[] = [
   { code: "071242016", name: "Ubujan" },
 ];
 
+export const tagbilaranAdministrativeSource = {
+  title: "City of Tagbilaran — Philippine Standard Geographic Code",
+  publisher: "Philippine Statistics Authority",
+  url: "https://psa.gov.ph/classification/psgc/barangays/0701242000",
+  accessedAt: "2026-07-19",
+  note: "Canonical source for the current count, names, and PSGC codes of 15 barangays.",
+};
+
 export const tagbilaranBoundarySource = {
   title: "Indicative Tagbilaran administrative boundaries",
   publisher: "GeoRisk Philippines / Philippine Statistics Authority",

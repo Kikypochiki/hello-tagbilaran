@@ -1,0 +1,25 @@
+:root {
+  --sunlight-yellow: #f4c542;
+  --heritage-green: #005c09;
+  --heritage-green-dark: #003f07;
+  --paper: #f4e8ce;
+  --paper-light: #fff9eb;
+  --paper-deep: #ddcba8;
+  --ink: #26251f;
+  --ink-muted: #696253;
+  --sandugo-red: #a84332;
+  --sea-blue: #477a86;
+  --focus: #1f5fbf;
+  --rule: rgba(77, 68, 50, 0.24);
+  --shadow-paper: 0 18px 48px rgba(52, 42, 22, 0.16),
+    0 2px 5px rgba(52, 42, 22, 0.1);
+  --space-page: clamp(1rem, 4vw, 4.5rem);
+  --content-width: 90rem;
+}
+
+@theme inline {
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}

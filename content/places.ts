@@ -1,4 +1,9 @@
-import type { ImageAsset, Place, SourceRecord } from "@/types/content";
+import type {
+  ImageAsset,
+  Place,
+  SourceRecord,
+  StreetViewReference,
+} from "@/types/content";
 
 const accessedAt = "2026-07-17";
 
@@ -129,6 +134,39 @@ interface SuppliedPlaceInput {
 const googlePhotoRights =
   "Google Maps community image used as a place reference; confirm contributor permission and Google attribution requirements before publication.";
 
+function reviewDueAt(category: Place["category"]) {
+  return category === "food-drink" ||
+    category === "accommodation" ||
+    category === "shopping-market"
+    ? "2026-10-15"
+    : "2027-07-17";
+}
+
+function mediaRightsStatus(images: ImageAsset[]): Place["verification"]["mediaRights"] {
+  if (!images.length) return "not-applicable";
+  return images.some((image) =>
+    /confirm|obtain|permission|required|before publication/i.test(image.rights ?? ""),
+  )
+    ? "needs-permission"
+    : "cleared";
+}
+
+function sourceReviewedVerification(
+  category: Place["category"],
+  images: ImageAsset[],
+  hasCoordinates: boolean,
+  fallbackMediaRights: Place["verification"]["mediaRights"] = "needs-permission",
+): Place["verification"] {
+  return {
+    identity: "source-reviewed",
+    location: hasCoordinates ? "source-reviewed" : "unverified",
+    operatingStatus: "needs-confirmation",
+    mediaRights: images.length ? mediaRightsStatus(images) : fallbackMediaRights,
+    reviewedAt: accessedAt,
+    reviewDueAt: reviewDueAt(category),
+  };
+}
+
 function suppliedPlace(input: SuppliedPlaceInput): Place {
   const mapQuery = `${input.name}, ${input.latitude}, ${input.longitude}`;
 
@@ -166,7 +204,20 @@ function suppliedPlace(input: SuppliedPlaceInput): Place {
       ...(input.additionalSources ?? []),
     ],
     verifiedAt: accessedAt,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification(
+      input.category,
+      [
+        localImage(
+          input.image.filename,
+          input.image.alt,
+          input.image.width,
+          input.image.height,
+          input.image.credit ?? "Google Maps community contributor",
+          input.image.rights ?? googlePhotoRights,
+        ),
+      ],
+      true,
+    ),
   };
 }
 
@@ -656,7 +707,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("history-culture", [], true),
   },
   {
     id: "national-museum-bohol",
@@ -708,7 +759,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("history-culture", [], true),
   },
   {
     id: "st-joseph-cathedral",
@@ -754,7 +805,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("faith-architecture", [], true),
   },
   {
     id: "plaza-rizal",
@@ -791,7 +842,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("history-culture", [], true),
   },
   {
     id: "cpg-park",
@@ -828,7 +879,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("outdoors", [], true),
   },
   {
     id: "chido-cafe",
@@ -872,7 +923,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("food-drink", [], true),
   },
   {
     id: "gerardas-family-restaurant",
@@ -920,7 +971,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("food-drink", [], true),
   },
   {
     id: "kew-hotel",
@@ -966,7 +1017,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("accommodation", [], true),
   },
   {
     id: "island-city-mall",
@@ -1019,7 +1070,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("shopping-market", [], true),
   },
   {
     id: "bq-mall",
@@ -1065,7 +1116,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("shopping-market", [], true),
   },
   {
     id: "baclayon-church",
@@ -1103,7 +1154,7 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verificationStatus: "source-reviewed",
+    verification: sourceReviewedVerification("faith-architecture", [], true),
   },
   ...suppliedPlaceEntries,
 ];
@@ -1340,12 +1391,67 @@ const categoryRank: Record<Place["category"], number> = {
   "visitor-essential": 7,
 };
 
-export const places = placeEntries.map((place) => ({
-  ...place,
-  ...placeEnhancements[place.slug],
-})).sort(
-  (a, b) => categoryRank[a.category] - categoryRank[b.category],
-);
+const reviewedStreetViews = {
+  nationalMuseum: {
+    panoId: "CIABIhA0PJrzmUK6HV6cIY56Z_bE",
+    coordinates: { latitude: 9.640203021384755, longitude: 123.8564854360567 },
+    captureDate: "2025-11",
+    provider: "Google Maps",
+    contributor: "EARL JOHN LASQUITE",
+    label: "National Museum of the Philippines – Bohol",
+    verifiedAt: "2026-07-19",
+    match: "exact-venue",
+    reviewDueAt: "2027-01-19",
+  },
+  cathedralInterior: {
+    panoId: "CIHM0ogKEICAgICtvJiUxgE",
+    coordinates: { latitude: 9.638943034894051, longitude: 123.8556794610127 },
+    captureDate: "2024-01",
+    provider: "Google Maps",
+    contributor: "Jeremy Bowling",
+    label: "St. Joseph the Worker Cathedral Shrine",
+    verifiedAt: "2026-07-19",
+    match: "exact-venue",
+    reviewDueAt: "2027-01-19",
+  },
+  kewHotel: {
+    panoId: "CIABIhDo-O7eMDbhHPr-6st_p_Sy",
+    coordinates: { latitude: 9.654375974433567, longitude: 123.8670299977546 },
+    captureDate: "2025-09",
+    provider: "Google Maps",
+    contributor: "KEW GC",
+    label: "Kew Hotel Tagbilaran",
+    verifiedAt: "2026-07-19",
+    match: "exact-venue",
+    reviewDueAt: "2027-01-19",
+  },
+  kasagpan: {
+    panoId: "CIABIhAYRKnu_dwktfbXPmuKn5lQ",
+    coordinates: { latitude: 9.663289990796574, longitude: 123.8445793869299 },
+    captureDate: "2025-05",
+    provider: "Google Maps",
+    contributor: "360 Tour Philippines",
+    label: "Kasagpan Resort",
+    verifiedAt: "2026-07-19",
+    match: "exact-venue",
+    reviewDueAt: "2027-01-19",
+  },
+} satisfies Record<string, StreetViewReference>;
+
+const streetViewByPlace: Partial<Record<string, StreetViewReference>> = {
+  "national-museum-bohol": reviewedStreetViews.nationalMuseum,
+  "st-joseph-cathedral": reviewedStreetViews.cathedralInterior,
+  "kew-hotel": reviewedStreetViews.kewHotel,
+  "kasagpan-resort": reviewedStreetViews.kasagpan,
+};
+
+export const places = placeEntries
+  .map((place) => ({
+    ...place,
+    ...placeEnhancements[place.slug],
+    streetView: streetViewByPlace[place.slug],
+  }))
+  .sort((a, b) => categoryRank[a.category] - categoryRank[b.category]);
 
 export function getPlace(slug: string) {
   return places.find((place) => place.slug === slug);

@@ -3,20 +3,29 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { startTransition, useCallback, useMemo, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
-  MapPlaceChoice,
-  type MapChoiceAnchor,
-} from "@/components/explore/map-place-choice";
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import { MapPlaceChoice } from "@/components/explore/map-place-choice";
+import { MapErrorBoundary } from "@/components/explore/map-error-boundary";
 import { PlaceDialog } from "@/components/explore/place-dialog";
 import { StreetViewExperience } from "@/components/explore/street-view-experience";
+import { PlaceVerificationNote } from "@/components/place-verification-note";
 import { ScopeBadge } from "@/components/scope-badge";
 import {
+  tagbilaranAdministrativeSource,
   tagbilaranBarangays,
   tagbilaranBoundarySource,
 } from "@/content/barangays";
+import { filterPlaces } from "@/lib/explore-filters";
 import { categoryLabels, categoryOrder, scopeLabels } from "@/lib/place-labels";
+import { readSavedPlaceIds, subscribeToSavedPlaces } from "@/lib/saved-places";
+import { hasReviewedLocation } from "@/lib/verification";
 import type { Place, PlaceCategory } from "@/types/content";
 
 const MapCanvas = dynamic(
@@ -37,16 +46,33 @@ function isCategory(value: string | null): value is PlaceCategory {
 }
 
 export function ExploreClient({ places }: { places: Place[] }) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
   const category = isCategory(categoryParam) ? categoryParam : null;
-  const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const savedOnly = searchParams.get("saved") === "1";
+  const mobileView = searchParams.get("view") === "list" ? "list" : "map";
+  const queryParam = searchParams.get("q") ?? "";
+  const [query, setQuery] = useState(queryParam);
   const [previewedId, setPreviewedId] = useState<string>();
   const [promptedPlace, setPromptedPlace] = useState<Place>();
-  const [promptAnchor, setPromptAnchor] = useState<MapChoiceAnchor>();
+  const [promptMountNode, setPromptMountNode] = useState<HTMLElement>();
   const [streetViewPlace, setStreetViewPlace] = useState<Place>();
+  const savedSnapshot = useSyncExternalStore(
+    subscribeToSavedPlaces,
+    () => readSavedPlaceIds().join("\u0000"),
+    () => "",
+  );
+  const savedIds = useMemo(
+    () => new Set(savedSnapshot ? savedSnapshot.split("\u0000") : []),
+    [savedSnapshot],
+  );
+
+  useEffect(() => {
+    // Browser back/forward is an external state change that must update the draft.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setQuery(queryParam);
+  }, [queryParam]);
 
   const selectedPlace = places.find(
     (place) => place.slug === searchParams.get("place"),
@@ -55,29 +81,24 @@ export function ExploreClient({ places }: { places: Place[] }) {
     (barangay) => barangay.code === searchParams.get("barangay"),
   );
 
-  const filteredPlaces = useMemo(() => {
-    const normalized = query.trim().toLocaleLowerCase();
-    return places.filter((place) => {
-      const matchesCategory = !category || place.category === category;
-      const matchesQuery =
-        !normalized ||
-        [place.name, place.summary, categoryLabels[place.category], place.barangay]
-          .filter(Boolean)
-          .join(" ")
-          .toLocaleLowerCase()
-          .includes(normalized);
-      return matchesCategory && matchesQuery;
-    });
-  }, [category, places, query]);
+  const filteredPlaces = useMemo(
+    () =>
+      filterPlaces(places, {
+        category,
+        query,
+        savedOnly,
+        savedIds,
+      }),
+    [category, places, query, savedIds, savedOnly],
+  );
 
   const availableCategories = useMemo(
     () => categoryOrder.filter((item) => places.some((place) => place.category === item)),
     [places],
   );
 
-  const mappablePlaces = useMemo(
-    () => places.filter((place) => Boolean(place.coordinates)),
-    [places],
+  const [mappablePlaces] = useState(() =>
+    places.filter(hasReviewedLocation),
   );
   const highlightedIds = useMemo(
     () => filteredPlaces.filter((place) => place.coordinates).map((place) => place.id),
@@ -92,12 +113,17 @@ export function ExploreClient({ places }: { places: Place[] }) {
         if (value) next.set(key, value);
         else next.delete(key);
       });
-      startTransition(() => {
-        const suffix = next.toString();
-        router.replace(suffix ? `${pathname}?${suffix}` : pathname, { scroll: false });
-      });
+      const current = searchParams.toString();
+      const suffix = next.toString();
+      if (suffix === current) return;
+
+      window.history.replaceState(
+        null,
+        "",
+        suffix ? `${pathname}?${suffix}` : pathname,
+      );
     },
-    [pathname, router, searchParams],
+    [pathname, searchParams],
   );
 
   const openPlace = useCallback(
@@ -109,30 +135,50 @@ export function ExploreClient({ places }: { places: Place[] }) {
   );
 
   const promptForPlace = useCallback(
-    (place: Place, anchor: MapChoiceAnchor) => {
+    (place: Place, mountNode: HTMLElement) => {
       setPreviewedId(undefined);
       setStreetViewPlace(undefined);
-      replaceParams({ place: null });
       setPromptedPlace(place);
-      setPromptAnchor(anchor);
+      setPromptMountNode(mountNode);
     },
-    [replaceParams],
+    [],
   );
 
   const dismissPlaceChoice = useCallback(() => {
     setPromptedPlace(undefined);
-    setPromptAnchor(undefined);
+    setPromptMountNode(undefined);
   }, []);
 
   function updateQuery(value: string) {
     setQuery(value);
     setPreviewedId(undefined);
-    replaceParams({ q: value.trim() || null, place: null });
+    replaceParams({ q: value || null, place: null });
   }
 
   return (
-    <section className="map-only-workspace" aria-label="Explore Tagbilaran city map">
+    <section
+      className="map-only-workspace"
+      data-mobile-view={mobileView}
+      aria-label="Explore Tagbilaran city map"
+    >
       <h1 className="sr-only">Explore Tagbilaran</h1>
+
+      <nav className="map-view-switch" aria-label="Explore display">
+        <button
+          type="button"
+          aria-pressed={mobileView === "map"}
+          onClick={() => replaceParams({ view: null })}
+        >
+          Map
+        </button>
+        <button
+          type="button"
+          aria-pressed={mobileView === "list"}
+          onClick={() => replaceParams({ view: "list" })}
+        >
+          List
+        </button>
+      </nav>
 
       <details className="map-index" open>
         <summary>
@@ -195,11 +241,20 @@ export function ExploreClient({ places }: { places: Place[] }) {
                   {categoryLabels[item]}
                 </button>
               ))}
+              <button
+                type="button"
+                aria-pressed={savedOnly}
+                onClick={() =>
+                  replaceParams({ saved: savedOnly ? null : "1", place: null })
+                }
+              >
+                Saved ({savedIds.size})
+              </button>
             </fieldset>
 
             <p className="map-index__source">
-              Explore {places.length} curated places with a photo, a mapped point, and a
-              direct Google Maps link for current visitor information.
+              Explore {places.length} curated entries. Map points and directions appear
+              only where the location has been source-reviewed.
             </p>
 
             {filteredPlaces.length ? (
@@ -246,8 +301,10 @@ export function ExploreClient({ places }: { places: Place[] }) {
                           <span>{categoryLabels[place.category]}</span>
                           <span>{scopeLabels[place.scope]}</span>
                         </span>
+                        <PlaceVerificationNote place={place} compact />
                       </span>
                     </Link>
+                    {hasReviewedLocation(place) && place.directionsUrl ? (
                     <a
                       className="map-index__directions"
                       href={place.directionsUrl}
@@ -258,6 +315,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
                       <span aria-hidden="true">↗</span>
                       <span className="sr-only">Open Google Maps for {place.name}</span>
                     </a>
+                    ) : null}
                   </li>
                 ))}
               </ol>
@@ -268,7 +326,12 @@ export function ExploreClient({ places }: { places: Place[] }) {
                   type="button"
                   onClick={() => {
                     setQuery("");
-                    replaceParams({ q: null, category: null, place: null });
+                    replaceParams({
+                      q: null,
+                      category: null,
+                      saved: null,
+                      place: null,
+                    });
                   }}
                 >
                   Clear filters
@@ -303,27 +366,31 @@ export function ExploreClient({ places }: { places: Place[] }) {
               ))}
             </div>
             <p className="map-index__source">
-              {tagbilaranBoundarySource.note} Source: {tagbilaranBoundarySource.publisher}.
+              Names and codes: {tagbilaranAdministrativeSource.publisher}.{" "}
+              {tagbilaranBoundarySource.note} Boundary source:{" "}
+              {tagbilaranBoundarySource.publisher}.
             </p>
           </section>
         </div>
       </details>
 
-      <MapCanvas
-        places={mappablePlaces}
-        highlightedIds={highlightedIds}
-        previewedId={previewedId}
-        activePlaceId={promptedPlace?.id ?? streetViewPlace?.id}
-        streetViewTarget={streetViewPlace}
-        selectedBarangayCode={selectedBarangay?.code}
-        onPreview={setPreviewedId}
-        onActivate={(id, anchor) => {
-          const place = places.find((item) => item.id === id);
-          if (place) promptForPlace(place, anchor);
-        }}
-        onChoiceAnchorChange={setPromptAnchor}
-        onSelectBarangay={(code) => replaceParams({ barangay: code ?? null })}
-      />
+      <MapErrorBoundary>
+        <MapCanvas
+          places={mappablePlaces}
+          highlightedIds={highlightedIds}
+          previewedId={previewedId}
+          activePlaceId={promptedPlace?.id ?? streetViewPlace?.id}
+          choicePlaceId={promptedPlace?.id}
+          streetViewTarget={streetViewPlace}
+          selectedBarangayCode={selectedBarangay?.code}
+          onPreview={setPreviewedId}
+          onActivate={(id, mountNode) => {
+            const place = places.find((item) => item.id === id);
+            if (place) promptForPlace(place, mountNode);
+          }}
+          onSelectBarangay={(code) => replaceParams({ barangay: code ?? null })}
+        />
+      </MapErrorBoundary>
 
       {highlightedIds.length === 0 ? (
         <div className="map-category-empty map-category-empty--map-only" role="status">
@@ -382,11 +449,11 @@ export function ExploreClient({ places }: { places: Place[] }) {
         />
       ) : null}
 
-      {promptedPlace && promptAnchor ? (
+      {promptedPlace && promptMountNode ? (
         <MapPlaceChoice
           key={promptedPlace.id}
           place={promptedPlace}
-          anchor={promptAnchor}
+          mountNode={promptMountNode}
           onClose={dismissPlaceChoice}
           onDetails={() => {
             dismissPlaceChoice();

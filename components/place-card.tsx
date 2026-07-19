@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { categoryLabels } from "@/lib/place-labels";
+import { hasReviewedLocation } from "@/lib/verification";
 import type { Place } from "@/types/content";
+import { PlaceVerificationNote } from "./place-verification-note";
 import { SaveButton } from "./save-button";
 import { ScopeBadge } from "./scope-badge";
 
@@ -42,12 +44,13 @@ export function PlaceCard({
         <h2>
           <Link href={`/places/${place.slug}`}>{place.name}</Link>
         </h2>
+        <PlaceVerificationNote place={place} compact />
         <p>{place.summary}</p>
         <div className="place-card__actions">
           <Link className="text-link" href={`/places/${place.slug}`}>
             View details <span aria-hidden="true">→</span>
           </Link>
-          {place.directionsUrl ? (
+          {hasReviewedLocation(place) && place.directionsUrl ? (
             <a
               className="text-link"
               href={place.directionsUrl}

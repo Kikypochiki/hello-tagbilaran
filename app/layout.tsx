@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Libre_Baskerville } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { StaleServiceWorkerCleanup } from "@/components/stale-service-worker-cleanup";
+import { hasProductionSiteUrl, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const sans = Geist({
@@ -23,6 +25,7 @@ const serif = Libre_Baskerville({
 });
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: {
     default: "Hello Tagbilaran",
     template: "%s · Hello Tagbilaran",
@@ -43,6 +46,10 @@ export const metadata: Metadata = {
     title: "Hello Tagbilaran",
     description: "Where every street leads to a story.",
   },
+  robots: hasProductionSiteUrl
+    ? { index: true, follow: true }
+    : { index: false, follow: false },
+  manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {
@@ -51,12 +58,28 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const websiteStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Hello Tagbilaran",
+    url: siteUrl.toString(),
+    description:
+      "An editorial tourism and local-discovery field journal for Tagbilaran City, Bohol.",
+  };
+
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteStructuredData).replace(/</g, "\\u003c"),
+          }}
+        />
         <a className="skip-link" href="#main-content">
           Skip to main content
         </a>
+        <StaleServiceWorkerCleanup />
         <SiteHeader />
         {children}
       </body>

@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PlaceVerificationNote } from "@/components/place-verification-note";
 import { SaveButton } from "@/components/save-button";
 import { ScopeBadge } from "@/components/scope-badge";
 import { getPlace, places } from "@/content/places";
 import { categoryLabels } from "@/lib/place-labels";
+import { hasReviewedLocation } from "@/lib/verification";
 
 export function generateStaticParams() {
   return places.map((place) => ({ slug: place.slug }));
@@ -24,7 +26,8 @@ export async function generateMetadata({
     title: place.name,
     description: place.summary,
     alternates: { canonical: `/places/${place.slug}` },
-    openGraph: place.images[0]
+    openGraph:
+      place.images[0] && place.verification.mediaRights === "cleared"
       ? {
           title: place.name,
           description: place.summary,
@@ -43,9 +46,35 @@ export default async function PlacePage({
   const place = getPlace(slug);
   if (!place) notFound();
   const leadImage = place.images[0];
+  const reviewedLocation = hasReviewedLocation(place);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Place",
+    name: place.name,
+    description: place.summary,
+    image:
+      leadImage && place.verification.mediaRights === "cleared"
+        ? leadImage.src
+        : undefined,
+    address: reviewedLocation ? place.address : undefined,
+    geo:
+      reviewedLocation && place.coordinates
+        ? {
+            "@type": "GeoCoordinates",
+            latitude: place.coordinates.latitude,
+            longitude: place.coordinates.longitude,
+          }
+        : undefined,
+  };
 
   return (
     <main id="main-content" className="place-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <ol>
           <li>
@@ -65,6 +94,7 @@ export default async function PlacePage({
               <ScopeBadge scope={place.scope} />
               <span className="category-label">{categoryLabels[place.category]}</span>
             </div>
+            <PlaceVerificationNote place={place} />
             <h1>{place.name}</h1>
             <p className="place-detail__summary">{place.summary}</p>
           </div>
@@ -80,8 +110,8 @@ export default async function PlacePage({
               alt={leadImage.alt}
               width={leadImage.width}
               height={leadImage.height}
-              sizes="(max-width: 780px) 94vw, 90vw"
-              loading="lazy"
+              sizes="(max-width: 780px) calc(100vw - 2rem), min(1180px, 90vw)"
+              priority
             />
             <figcaption>
               Photo: {leadImage.credit ?? "Credit not supplied"}
@@ -123,10 +153,10 @@ export default async function PlacePage({
             ) : null}
             {place.localTip ? <p className="place-local-tip">{place.localTip}</p> : null}
             <p className="practical-note__check">
-              Opening times, prices, booking needs, and access conditions can change. Check
-              the current place record before visiting.
+              Unconfirmed opening times, prices, contacts, and access conditions are
+              intentionally omitted. Check directly with the place before visiting.
             </p>
-            {place.directionsUrl ? (
+            {reviewedLocation && place.directionsUrl ? (
               <a
                 className="secondary-action"
                 href={place.directionsUrl}

@@ -3,14 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { PlaceVerificationNote } from "@/components/place-verification-note";
 import { SaveButton } from "@/components/save-button";
 import { ScopeBadge } from "@/components/scope-badge";
 import { categoryLabels } from "@/lib/place-labels";
+import { hasReviewedLocation } from "@/lib/verification";
 import type { Place } from "@/types/content";
 
 export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => void }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const leadImage = place.images[0];
+  const reviewedLocation = hasReviewedLocation(place);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -49,6 +52,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
 
         <div className="place-dialog__title">
           <p className="section-kicker">City guide</p>
+          <PlaceVerificationNote place={place} compact />
           <h2 id="place-dialog-title">{place.name}</h2>
           <p className="place-dialog__summary">{place.summary}</p>
         </div>
@@ -97,7 +101,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
         <footer className="place-dialog__actions">
           <SaveButton placeId={place.id} placeName={place.name} />
           <div className="place-dialog__links">
-            {place.directionsUrl ? (
+            {reviewedLocation && place.directionsUrl ? (
               <a className="secondary-action" href={place.directionsUrl} target="_blank" rel="noreferrer">
                 Google Maps <span className="sr-only">for {place.name}</span>
               </a>
