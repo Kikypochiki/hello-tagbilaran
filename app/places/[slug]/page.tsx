@@ -89,7 +89,7 @@ export default async function PlacePage({
 
       <article className="place-detail">
         <header className="place-detail__header">
-          <div>
+          <div className="place-detail__identity">
             <div className="place-detail__labels">
               <ScopeBadge scope={place.scope} />
               <span className="category-label">{categoryLabels[place.category]}</span>

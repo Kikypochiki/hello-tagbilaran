@@ -436,10 +436,25 @@ export function ExploreClient({ places }: { places: Place[] }) {
         </aside>
       ) : null}
 
-      <p className="map-boundary-note">
-        Yellow marks the selected barangay. The green line marks the indicative Tagbilaran
-        City boundary. Boundary geometry requires local confirmation.
-      </p>
+      <aside className="map-boundary-note map-legend" aria-label="Map symbol legend">
+        <span className="map-legend__items">
+          <span>
+            <i data-symbol="place" aria-hidden="true" />
+            Place
+          </span>
+          <span>
+            <i data-symbol="group" aria-hidden="true" />
+            Group
+          </span>
+          <span>
+            <i data-symbol="boundary" aria-hidden="true" />
+            City boundary
+          </span>
+        </span>
+        <small>
+          Yellow marks a selected barangay. Boundary geometry requires local confirmation.
+        </small>
+      </aside>
 
       {selectedPlace ? (
         <PlaceDialog
