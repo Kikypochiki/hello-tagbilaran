@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: siteUrl,
   title: {
     default: "Hello Tagbilaran",
-    template: "%s · Hello Tagbilaran",
+    template: "%s | Hello Tagbilaran",
   },
   description:
     "An editorial tourism and local-discovery field journal for Tagbilaran City, Bohol.",
@@ -49,6 +49,10 @@ export const metadata: Metadata = {
   robots: hasProductionSiteUrl
     ? { index: true, follow: true }
     : { index: false, follow: false },
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: "/icon.svg",
+  },
   manifest: "/manifest.webmanifest",
 };
 

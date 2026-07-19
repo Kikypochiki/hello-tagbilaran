@@ -5,6 +5,8 @@ test("Story remains within the viewport and offers direct navigation", async ({
   page,
 }) => {
   await page.goto("/");
+  await expect(page).toHaveTitle("Hello Tagbilaran");
+  await expect(page.locator('link[rel="icon"][href*="/icon.svg"]').first()).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Hello, Tagbilaran." })).toBeVisible();
   await expect(page.getByRole("link", { name: /Explore places/ })).toBeVisible();
   const overflow = await page.evaluate(

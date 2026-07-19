@@ -7,7 +7,7 @@ import { StoryProgress } from "@/components/story/story-progress";
 import { StoryUnfolding } from "@/components/story/story-unfolding";
 
 export const metadata: Metadata = {
-  title: "A city, unfolded",
+  title: { absolute: "Hello Tagbilaran" },
   description:
     "Begin with Tagbilaran City's five-chapter field journal, then explore a practical city guide.",
   alternates: { canonical: "/" },
