@@ -65,6 +65,7 @@ function storyImage(
 export const historyChapters: HistoryChapter[] = [
   {
     id: "coast-and-current",
+    visualMode: "coastal-chart",
     order: 1,
     eyebrow: "Chapter one · coast and current",
     title: "A settlement shaped by the shore",
@@ -93,6 +94,7 @@ export const historyChapters: HistoryChapter[] = [
   },
   {
     id: "sandugo-and-friendship",
+    visualMode: "memory-folio",
     order: 2,
     eyebrow: "Chapter two · encounter and memory",
     title: "Sandugo, retold with care",
@@ -121,6 +123,7 @@ export const historyChapters: HistoryChapter[] = [
   },
   {
     id: "streets-of-stone",
+    visualMode: "town-ledger",
     order: 3,
     eyebrow: "Chapter three · a town takes shape",
     title: "From port settlement to town",
@@ -149,6 +152,7 @@ export const historyChapters: HistoryChapter[] = [
   },
   {
     id: "repair-and-cityhood",
+    visualMode: "mended-archive",
     order: 4,
     eyebrow: "Chapter four · plans and rebuilding",
     title: "The long road to cityhood",
@@ -177,6 +181,7 @@ export const historyChapters: HistoryChapter[] = [
   },
   {
     id: "city-in-motion",
+    visualMode: "city-contact-sheet",
     order: 5,
     eyebrow: "Chapter five · living city",
     title: "Tagbilaran, in the present tense",
@@ -184,7 +189,7 @@ export const historyChapters: HistoryChapter[] = [
     introduction:
       "Tagbilaran is Bohol’s capital and a component city whose story is visible not only in monuments, but in the ordinary movement between waterfront, plaza, parish, school, market, and neighborhood.",
     body: [
-      "The compact civic core brings Plaza Rizal, the cathedral, and the former Provincial Capitol within the same walkable district. Beyond it, public markets, local malls, cafés, hotels, parish churches, parks, and the working coast connect the city’s sixteen barangays.",
+      "The compact civic core brings Plaza Rizal, the cathedral, and the former Provincial Capitol within the same walkable district. Beyond it, public markets, local malls, cafés, hotels, parish churches, parks, and the working coast connect the city’s 15 barangays.",
       "That everyday city is the point of this guide: Tagbilaran is not simply a transfer point for somewhere else. Its history continues in the routines, businesses, faith communities, and public spaces that residents make and remake each day.",
     ],
     media: [

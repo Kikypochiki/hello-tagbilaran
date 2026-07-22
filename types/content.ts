@@ -131,4 +131,10 @@ export interface HistoryChapter {
   media: ImageAsset[];
   annotations?: { label: string; text: string }[];
   sources: SourceRecord[];
+  visualMode:
+    | "coastal-chart"
+    | "memory-folio"
+    | "town-ledger"
+    | "mended-archive"
+    | "city-contact-sheet";
 }
