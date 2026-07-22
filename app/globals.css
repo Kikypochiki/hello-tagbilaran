@@ -4519,6 +4519,294 @@ h3 {
   box-shadow: var(--shadow-sheet);
 }
 
+/* Living archive: every chapter is a different research artifact. */
+.story-layout {
+  position: relative;
+}
+
+.story-survey-thread {
+  position: absolute;
+  z-index: 0;
+  top: 3rem;
+  bottom: 0;
+  left: calc(var(--space-page) + 6px);
+  width: 12px;
+  pointer-events: none;
+}
+
+.story-survey-thread::before,
+.story-survey-thread span {
+  position: absolute;
+  left: 5px;
+  width: 2px;
+  content: "";
+  background: var(--sandugo-red);
+}
+
+.story-survey-thread::before {
+  inset-block: 0;
+  opacity: 0.16;
+}
+
+.story-survey-thread span {
+  top: 0;
+  height: 28%;
+  box-shadow: 0 0 0 4px var(--paper-deep);
+}
+
+.chapter-artifact {
+  position: relative;
+  display: grid;
+  grid-area: media;
+  gap: 1.2rem;
+}
+
+.chapter-artifact__drawing {
+  position: absolute;
+  z-index: 0;
+  inset: -3.5rem -2rem auto;
+  color: var(--heritage-green);
+  opacity: 0.26;
+  pointer-events: none;
+}
+
+.chapter-artifact__drawing svg {
+  width: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.chapter-artifact__drawing text {
+  fill: currentColor;
+  stroke: none;
+  font: 700 14px var(--font-mono), monospace;
+  letter-spacing: 0.12em;
+}
+
+.chapter-artifact__drawing .artifact-dash {
+  stroke-dasharray: 8 8;
+}
+
+.chapter-artifact__drawing .artifact-route {
+  stroke: var(--sandugo-red);
+  stroke-width: 4;
+}
+
+.chapter-artifact__media,
+.chapter-artifact .margin-note {
+  position: relative;
+  z-index: 1;
+}
+
+.history-chapter {
+  border-radius: 0;
+  transition-duration: 700ms !important;
+}
+
+.history-page-turn-ready .history-chapter[data-page-state="upcoming"] {
+  opacity: 0.58;
+  transform: perspective(1200px) rotateY(-5deg) translateX(2%) scale(0.99);
+}
+
+.history-page-turn-ready .history-chapter[data-page-state="turned"] {
+  opacity: 0.88;
+  transform: perspective(1200px) rotateY(2deg) translateX(-0.5%) scale(0.995);
+}
+
+.history-chapter[data-visual-mode="coastal-chart"] {
+  background-color: #f4ecd8;
+  background-image: repeating-radial-gradient(ellipse at 78% 42%, transparent 0 35px, rgb(71 122 134 / 7%) 36px 37px),
+    linear-gradient(90deg, rgb(71 122 134 / 6%) 1px, transparent 1px);
+  background-size: auto, 42px 42px;
+  border-top: 8px solid var(--sea-blue);
+}
+
+.history-chapter[data-visual-mode="coastal-chart"] .archive-figure {
+  padding: 0;
+  background: transparent;
+  border: 10px solid var(--paper-light);
+  box-shadow: 12px 15px 0 rgb(71 122 134 / 16%);
+  transform: rotate(-1deg);
+}
+
+.history-chapter[data-visual-mode="coastal-chart"] .margin-note {
+  margin-left: auto;
+  background: #dce8e5;
+  border: 1px solid var(--sea-blue);
+  border-left-width: 5px;
+}
+
+.history-chapter[data-visual-mode="memory-folio"] {
+  background: linear-gradient(90deg, #f9eed6 0 49.7%, rgb(92 72 43 / 24%) 50%, #efe0c2 50.3% 100%);
+  border-top: 8px solid var(--sandugo-red);
+}
+
+.history-chapter[data-visual-mode="memory-folio"] .history-chapter__copy {
+  padding: 1.4rem;
+  background: rgb(255 249 235 / 62%);
+  outline: 1px solid rgb(168 67 50 / 24%);
+  outline-offset: -7px;
+}
+
+.history-chapter[data-visual-mode="memory-folio"] .archive-figure {
+  border-radius: 50% 50% 4px 4px;
+  box-shadow: 0 0 0 9px var(--paper-light), 0 0 0 11px var(--sandugo-red);
+}
+
+.history-chapter[data-visual-mode="town-ledger"] {
+  background-color: #f5ead2;
+  background-image: linear-gradient(rgb(71 122 134 / 12%) 1px, transparent 1px),
+    linear-gradient(90deg, transparent 0 11%, rgb(168 67 50 / 22%) 11% calc(11% + 1px), transparent calc(11% + 1px));
+  background-size: 100% 32px, 100% 100%;
+  border-top: 8px solid var(--heritage-green);
+}
+
+.history-chapter[data-visual-mode="town-ledger"] .chapter-date {
+  background: transparent;
+  border: 1px solid var(--heritage-green);
+  box-shadow: 4px 4px 0 var(--sunlight-yellow);
+}
+
+.history-chapter[data-visual-mode="town-ledger"] .archive-figure {
+  transform: rotate(0.7deg);
+  border: 1px solid var(--ink-muted);
+  box-shadow: 8px 8px 0 rgb(0 92 9 / 15%);
+}
+
+.history-chapter[data-visual-mode="mended-archive"] {
+  background: linear-gradient(112deg, #efe1c3 0 41%, #f9efdb 41.3% 66%, #e8d5b1 66.3%);
+  border-top: 8px solid var(--sunlight-yellow);
+}
+
+.history-chapter[data-visual-mode="mended-archive"]::after {
+  opacity: 0.34;
+  background: repeating-linear-gradient(135deg, transparent 0 10px, rgb(168 67 50 / 22%) 10px 12px);
+  transform: none;
+}
+
+.history-chapter[data-visual-mode="mended-archive"] .archive-figure {
+  padding: 1.3rem 1.3rem 2rem;
+  box-shadow: -12px 13px 0 rgb(168 67 50 / 13%), 12px -12px 0 rgb(244 197 66 / 22%);
+  transform: rotate(-0.8deg);
+}
+
+.history-chapter[data-visual-mode="city-contact-sheet"] {
+  color: var(--paper-light);
+  background-color: var(--heritage-green-dark);
+  background-image: linear-gradient(90deg, rgb(244 197 66 / 10%) 1px, transparent 1px),
+    linear-gradient(rgb(244 197 66 / 8%) 1px, transparent 1px);
+  background-size: 34px 34px;
+  border-color: var(--heritage-green-dark);
+  border-top: 8px solid var(--sunlight-yellow);
+}
+
+.history-chapter[data-visual-mode="city-contact-sheet"] :is(h2, .chapter-intro) {
+  color: var(--paper-light);
+}
+
+.history-chapter[data-visual-mode="city-contact-sheet"] :is(.history-chapter__copy > p, .history-chapter__folio, .history-chapter__sources) {
+  color: #e9dec5;
+}
+
+.history-chapter[data-visual-mode="city-contact-sheet"] .archive-figure {
+  background: var(--sunlight-yellow);
+  box-shadow: 13px 13px 0 var(--sandugo-red);
+  transform: rotate(1deg);
+}
+
+.history-chapter[data-visual-mode="city-contact-sheet"] .margin-note {
+  color: var(--ink);
+  transform: rotate(-1deg);
+}
+
+.history-chapter[data-visual-mode="city-contact-sheet"] .chapter-artifact__drawing {
+  color: var(--sunlight-yellow);
+  opacity: 0.7;
+}
+
+.journal-cover__postcard {
+  transition: transform 600ms cubic-bezier(.2,.8,.2,1), box-shadow 600ms ease;
+}
+
+.journal-cover:has(.cover-scroll:hover) .journal-cover__postcard {
+  transform: rotate(-1.5deg) translateY(-10px);
+  box-shadow: 25px 34px 0 rgb(0 38 4 / 30%), 0 35px 70px rgb(29 24 14 / 25%);
+}
+
+.story-exit {
+  position: relative;
+  min-height: min(70vh, 680px);
+  overflow: hidden;
+  background: linear-gradient(100deg, var(--paper-light) 0 64%, var(--heritage-green-dark) 64%);
+}
+
+.story-exit::before {
+  position: absolute;
+  inset: 16% -5% 16% 38%;
+  content: "";
+  background: repeating-linear-gradient(12deg, transparent 0 42px, rgb(244 197 66 / 46%) 43px 45px),
+    repeating-linear-gradient(102deg, transparent 0 58px, rgb(255 249 235 / 20%) 59px 61px);
+  transform: rotate(-3deg);
+}
+
+.story-exit__guide-link {
+  z-index: 1;
+  min-height: 74px;
+  padding-inline: 2rem;
+  box-shadow: 10px 10px 0 var(--sunlight-yellow);
+}
+
+@media (max-width: 1060px) {
+  .chapter-artifact__drawing {
+    inset: -2rem 0 auto;
+  }
+}
+
+@media (max-width: 780px) {
+  .story-survey-thread {
+    display: none;
+  }
+
+  .history-chapter {
+    border-top-width: 6px !important;
+  }
+
+  .history-page-turn-ready .history-chapter[data-page-state="upcoming"],
+  .history-page-turn-ready .history-chapter[data-page-state="turned"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .chapter-artifact__drawing {
+    position: relative;
+    inset: auto;
+    height: 110px;
+    margin-bottom: -4rem;
+    overflow: hidden;
+  }
+
+  .history-chapter[data-visual-mode="memory-folio"] {
+    background: linear-gradient(180deg, #f9eed6 0 49.7%, rgb(92 72 43 / 24%) 50%, #efe0c2 50.3% 100%);
+  }
+
+  .story-exit {
+    min-height: 52vh;
+    background: linear-gradient(180deg, var(--paper-light) 0 64%, var(--heritage-green-dark) 64%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-cover__postcard,
+  .history-page-turn-ready .history-chapter {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
 .map-index > summary {
   min-height: 74px;
   padding: 0.85rem 3.25rem 0.85rem 1.15rem;

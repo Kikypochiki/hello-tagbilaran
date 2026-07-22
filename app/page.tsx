@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
+import { ChapterArtifact } from "@/components/story/chapter-artifact";
 import { historyChapters } from "@/content/history";
 import { StoryExit } from "@/components/story/story-exit";
 import { StoryProgress } from "@/components/story/story-progress";
@@ -67,6 +68,7 @@ export default function Home() {
       </section>
 
       <div className="story-layout">
+        <div className="story-survey-thread" aria-hidden="true"><span /></div>
         <StoryProgress
           chapters={historyChapters.map(({ id, title }) => ({ id, title }))}
         />
@@ -74,6 +76,7 @@ export default function Home() {
           {historyChapters.map((chapter) => (
             <section
               className="history-chapter"
+              data-visual-mode={chapter.visualMode}
               id={chapter.id}
               key={chapter.id}
               aria-labelledby={`${chapter.id}-title`}
@@ -104,32 +107,7 @@ export default function Home() {
                     <p key={paragraph}>{paragraph}</p>
                   ))}
                 </div>
-                <div className="history-chapter__media">
-                  {chapter.media.map((media) => (
-                    <figure className="archive-figure" key={media.src}>
-                      <div className="archive-figure__image">
-                        <Image
-                          src={media.src}
-                          alt={media.alt}
-                          width={media.width}
-                          height={media.height}
-                          sizes="(max-width: 780px) 88vw, (max-width: 1060px) 68vw, 42vw"
-                          loading="lazy"
-                        />
-                      </div>
-                      <figcaption>
-                        Photo: {media.credit ?? "Credit not supplied"}
-                        {media.date ? ` · ${media.date}` : null}
-                      </figcaption>
-                    </figure>
-                  ))}
-                  {chapter.annotations?.map((annotation) => (
-                    <aside className="margin-note" key={annotation.label}>
-                      <span>{annotation.label}</span>
-                      <p>{annotation.text}</p>
-                    </aside>
-                  ))}
-                </div>
+                <ChapterArtifact chapter={chapter} />
               </div>
               {chapter.sources.length ? (
                 <footer className="history-chapter__sources">
