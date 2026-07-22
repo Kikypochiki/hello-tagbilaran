@@ -5,7 +5,9 @@ import { usePathname } from "next/navigation";
 
 const navigation = [
   { href: "/", label: "Story", meta: "Read" },
+  { href: "/#barangays", label: "Neighborhoods", meta: "Meet" },
   { href: "/explore", label: "Explore", meta: "Map" },
+  { href: "/about", label: "About", meta: "Project" },
 ];
 
 function CompassMark() {
@@ -40,8 +42,8 @@ export function SiteHeader() {
         <nav className="site-nav" aria-label="Primary navigation">
           {navigation.map((item, index) => {
             const active =
-              item.href === "/"
-                ? pathname === "/"
+              item.href === "/" || item.href.startsWith("/#")
+                ? pathname === "/" && item.href === "/"
                 : pathname.startsWith(item.href) ||
                   (item.href === "/explore" && pathname.startsWith("/places"));
             return (

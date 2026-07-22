@@ -17,6 +17,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9,
     },
+    {
+      url: new URL("/about", siteUrl).toString(),
+      lastModified: reviewedAt,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
     ...places.map((place) => ({
       url: new URL(`/places/${place.slug}`, siteUrl).toString(),
       lastModified: new Date(`${place.verification.reviewedAt}T00:00:00+08:00`),

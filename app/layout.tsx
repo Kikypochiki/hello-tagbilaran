@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Libre_Baskerville } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import { StaleServiceWorkerCleanup } from "@/components/stale-service-worker-cleanup";
 import { hasProductionSiteUrl, siteUrl } from "@/lib/site";
 import "./globals.css";
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <StaleServiceWorkerCleanup />
         <SiteHeader />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

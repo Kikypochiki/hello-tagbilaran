@@ -2333,6 +2333,197 @@ h3 {
   .hazard-sheet__tabs { position: sticky; z-index: 1; top: -1.35rem; background: var(--paper-light); }
 }
 
+/* Colophon, developer profile, support, and global closing folio. */
+.about-page {
+  padding: clamp(2rem, 5vw, 5rem) var(--space-page) clamp(5rem, 9vw, 9rem);
+  background: var(--paper-deep);
+}
+
+.about-journal {
+  width: min(var(--content-width), 100%);
+  margin-inline: auto;
+  background: var(--paper-light);
+  border: 1px solid var(--border-sheet);
+  box-shadow: 0 32px 70px rgb(53 38 17 / 22%);
+}
+
+.about-cover,
+.developer-spread,
+.project-method,
+.support-spread {
+  padding: clamp(2rem, 6vw, 6rem);
+}
+
+.about-cover {
+  position: relative;
+  min-height: min(66vh, 660px);
+  overflow: hidden;
+  background: linear-gradient(110deg, var(--paper-light) 0 61%, var(--heritage-green-dark) 61%);
+}
+
+.about-cover::after {
+  position: absolute;
+  inset: 12% -6% 12% 55%;
+  content: "";
+  background: repeating-linear-gradient(14deg, transparent 0 38px, rgb(244 197 66 / 55%) 39px 42px),
+    repeating-linear-gradient(104deg, transparent 0 54px, rgb(255 249 235 / 18%) 55px 58px);
+  transform: rotate(-4deg);
+}
+
+.about-cover h1 {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin-top: 1rem;
+  color: var(--heritage-green-dark);
+  font-size: clamp(4rem, 9vw, 8.4rem);
+  font-weight: 400;
+  letter-spacing: -0.07em;
+  line-height: 0.86;
+}
+
+.about-cover > p:last-child {
+  position: relative;
+  z-index: 1;
+  max-width: 53ch;
+  margin-top: 2rem;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.developer-spread {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
+  align-items: center;
+  background: #efe0c2;
+  border-block: 1px solid var(--border-sheet);
+  gap: clamp(2.5rem, 7vw, 7rem);
+}
+
+.developer-spread figure,
+.support-spread figure {
+  margin: 0;
+  padding: 0.8rem 0.8rem 1.5rem;
+  background: var(--paper-light);
+  box-shadow: 14px 17px 0 rgb(0 92 9 / 14%);
+  transform: rotate(-1.2deg);
+}
+
+.developer-spread figure img,
+.support-spread figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.developer-spread figcaption,
+.support-spread figcaption {
+  margin-top: 0.8rem;
+  color: var(--sandugo-red);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.developer-spread h2,
+.project-method h2,
+.support-spread h2 {
+  margin: 0.35rem 0 1rem;
+  color: var(--heritage-green-dark);
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.developer-spread__role {
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 760;
+  text-transform: uppercase;
+}
+
+.project-method > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 2rem;
+  border: 1px solid var(--rule);
+}
+
+.project-method > div p {
+  margin: 0;
+  padding: 1.3rem;
+  border: 1px solid var(--rule);
+}
+
+.project-method aside {
+  margin-top: 2rem;
+  padding: 1rem;
+  color: var(--ink);
+  background: var(--sunlight-yellow);
+  border-left: 6px solid var(--sandugo-red);
+  font-weight: 680;
+}
+
+.support-spread {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  align-items: center;
+  color: var(--paper-light);
+  background: var(--heritage-green-dark);
+  gap: clamp(2.5rem, 7vw, 7rem);
+}
+
+.support-spread h2 { color: var(--paper-light); }
+.support-spread dl { display: grid; grid-template-columns: 1fr 1fr; margin: 1.5rem 0; border-block: 1px solid rgb(255 249 235 / 25%); }
+.support-spread dl div { padding: 0.8rem 0; }
+.support-spread dt { font-family: var(--font-mono), monospace; font-size: 0.58rem; text-transform: uppercase; }
+.support-spread dd { margin: 0.3rem 0 0; font-weight: 760; }
+.support-spread__pending { padding: 0.85rem; color: var(--ink); background: var(--sunlight-yellow); font-weight: 760; }
+.support-spread small { display: block; max-width: 68ch; margin-top: 1rem; color: #ddd0b4; line-height: 1.5; }
+.support-spread figure { max-width: 390px; justify-self: end; transform: rotate(1.3deg); }
+
+.site-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  padding: clamp(2rem, 5vw, 4rem) var(--space-page);
+  color: var(--paper-light);
+  background: #002f05;
+  border-top: 7px solid var(--sunlight-yellow);
+  gap: 2rem;
+}
+
+.site-footer strong { display: block; font-family: var(--font-serif), Georgia, serif; font-size: 1.8rem; font-weight: 400; }
+.site-footer p { margin: 0.35rem 0 0; }
+.site-footer nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.5rem 1.2rem; }
+.site-footer a { color: var(--paper-light); min-height: 44px; display: inline-flex; align-items: center; }
+.site-footer > small { grid-column: 1 / -1; padding-top: 1rem; color: #cdbf9f; border-top: 1px solid rgb(255 249 235 / 18%); }
+
+@media (max-width: 1060px) {
+  .site-nav__link { min-width: 92px; }
+  .site-nav__link small { display: none; }
+}
+
+@media (max-width: 780px) {
+  .site-header__inner { grid-template-columns: 1fr; padding-top: 0.55rem; }
+  .site-nav { width: calc(100% + 1.6rem); margin-inline: -0.8rem; overflow-x: auto; justify-content: flex-start; border-top: 1px solid var(--rule); }
+  .site-nav__link { min-width: max-content; flex: 1 0 auto; }
+  .about-page { padding-inline: 0.7rem; }
+  .about-cover { min-height: 600px; background: linear-gradient(180deg, var(--paper-light) 0 70%, var(--heritage-green-dark) 70%); }
+  .about-cover h1 { font-size: clamp(3.5rem, 16vw, 5.6rem); }
+  .developer-spread,
+  .support-spread { grid-template-columns: 1fr; }
+  .project-method > div { grid-template-columns: 1fr; }
+  .support-spread figure { width: min(360px, 100%); justify-self: center; }
+  .site-footer { grid-template-columns: 1fr; }
+  .site-footer nav { justify-content: flex-start; }
+}
+
 /* Map-only exploration workspace */
 .explore-page--map-only {
   width: 100%;
