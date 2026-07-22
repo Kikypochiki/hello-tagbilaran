@@ -1,25 +1,26 @@
 export interface TagbilaranBarangay {
   code: string;
   name: string;
+  slug: string;
+  summary: string;
+  highlights: string[];
+  officialDirectoryUrl: string;
 }
 
 export const tagbilaranBarangays: TagbilaranBarangay[] = [
-  { code: "071242001", name: "Bool" },
-  { code: "071242002", name: "Booy" },
-  { code: "071242003", name: "Cabawan" },
-  { code: "071242004", name: "Cogon" },
-  { code: "071242005", name: "Dao" },
-  { code: "071242006", name: "Dampas" },
-  { code: "071242008", name: "Manga" },
-  { code: "071242009", name: "Mansasa" },
-  { code: "071242010", name: "Poblacion I" },
-  { code: "071242011", name: "Poblacion II" },
-  { code: "071242012", name: "Poblacion III" },
-  { code: "071242013", name: "San Isidro" },
-  { code: "071242014", name: "Taloto" },
-  { code: "071242015", name: "Tiptip" },
-  { code: "071242016", name: "Ubujan" },
-];
+  "Bool", "Booy", "Cabawan", "Cogon", "Dao", "Dampas", "Manga", "Mansasa",
+  "Poblacion I", "Poblacion II", "Poblacion III", "San Isidro", "Taloto", "Tiptip", "Ubujan",
+].map((name, index) => {
+  const codeNumber = index < 6 ? index + 1 : index + 2;
+  return {
+    code: `071242${String(codeNumber).padStart(3, "0")}`,
+    name,
+    slug: name.toLowerCase().replaceAll(" ", "-"),
+    summary: `Open the field index for ${name} and discover source-reviewed places connected to this barangay.`,
+    highlights: ["Indicative mapped boundary", "Curated place index"],
+    officialDirectoryUrl: "https://tagbilaran.gov.ph/barangays/",
+  };
+});
 
 export const tagbilaranAdministrativeSource = {
   title: "City of Tagbilaran — Philippine Standard Geographic Code",

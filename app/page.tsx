@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ChapterArtifact } from "@/components/story/chapter-artifact";
+import { BarangayFoldout } from "@/components/story/barangay-foldout";
 import { historyChapters } from "@/content/history";
 import { StoryExit } from "@/components/story/story-exit";
 import { StoryProgress } from "@/components/story/story-progress";
@@ -127,6 +128,7 @@ export default function Home() {
           ))}
         </article>
       </div>
+      <BarangayFoldout />
       <StoryExit />
     </main>
   );

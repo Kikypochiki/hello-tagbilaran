@@ -16,6 +16,8 @@ import { MapPlaceChoice } from "@/components/explore/map-place-choice";
 import { MapErrorBoundary } from "@/components/explore/map-error-boundary";
 import { PlaceDialog } from "@/components/explore/place-dialog";
 import { StreetViewExperience } from "@/components/explore/street-view-experience";
+import { BarangaySheet } from "@/components/explore/barangay-sheet";
+import { HazardControls } from "@/components/explore/hazard-controls";
 import { PlaceVerificationNote } from "@/components/place-verification-note";
 import { ScopeBadge } from "@/components/scope-badge";
 import {
@@ -27,6 +29,7 @@ import { filterPlaces } from "@/lib/explore-filters";
 import { categoryLabels, categoryOrder, scopeLabels } from "@/lib/place-labels";
 import { readSavedPlaceIds, subscribeToSavedPlaces } from "@/lib/saved-places";
 import { hasReviewedLocation } from "@/lib/verification";
+import { isHazardKind } from "@/lib/hazards";
 import type { Place, PlaceCategory } from "@/types/content";
 
 const MapCanvas = dynamic(
@@ -53,6 +56,9 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const category = isCategory(categoryParam) ? categoryParam : null;
   const savedOnly = searchParams.get("saved") === "1";
   const queryParam = searchParams.get("q") ?? "";
+  const hazardMode = searchParams.get("mode") === "hazards";
+  const hazardParam = searchParams.get("hazard");
+  const activeHazard = isHazardKind(hazardParam) ? hazardParam : "flood";
   const indexRef = useRef<HTMLDetailsElement>(null);
   const [query, setQuery] = useState(queryParam);
   const [previewedId, setPreviewedId] = useState<string>();
@@ -88,6 +94,9 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const selectedBarangay = tagbilaranBarangays.find(
     (barangay) => barangay.code === searchParams.get("barangay"),
   );
+  const selectedBarangayIndex = selectedBarangay
+    ? tagbilaranBarangays.findIndex((item) => item.code === selectedBarangay.code)
+    : -1;
 
   const filteredPlaces = useMemo(
     () =>
@@ -134,6 +143,15 @@ export function ExploreClient({ places }: { places: Place[] }) {
     [pathname, searchParams],
   );
 
+  useEffect(() => {
+    if (!selectedBarangay) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") replaceParams({ barangay: null });
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [replaceParams, selectedBarangay]);
+
   const openPlace = useCallback(
     (place: Place) => {
       setPreviewedId(undefined);
@@ -169,6 +187,11 @@ export function ExploreClient({ places }: { places: Place[] }) {
       aria-label="Explore Tagbilaran city map"
     >
       <h1 className="sr-only">Explore Tagbilaran</h1>
+
+      <div className="map-mode-switch" role="group" aria-label="Map mode">
+        <button type="button" aria-pressed={!hazardMode} onClick={() => replaceParams({ mode: null, hazard: null })}>Places</button>
+        <button type="button" aria-pressed={hazardMode} onClick={() => replaceParams({ mode: "hazards", hazard: activeHazard })}>Hazards</button>
+      </div>
 
       <details className="map-index" ref={indexRef} open>
         <summary>
@@ -341,6 +364,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
               {tagbilaranBarangays.map((barangay) => (
                 <button
                   key={barangay.code}
+                  data-barangay-code={barangay.code}
                   type="button"
                   aria-pressed={selectedBarangay?.code === barangay.code}
                   onClick={() =>
@@ -382,7 +406,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
         />
       </MapErrorBoundary>
 
-      {highlightedIds.length === 0 ? (
+      {highlightedIds.length === 0 && !hazardMode ? (
         <div className="map-category-empty map-category-empty--map-only" role="status">
           <strong>No source-located pins in this filter.</strong>
           <span>Matching entries remain available inside the map index.</span>
@@ -415,15 +439,23 @@ export function ExploreClient({ places }: { places: Place[] }) {
         </aside>
       ) : null}
 
+      {hazardMode ? (
+        <HazardControls activeHazard={activeHazard} onSelect={(hazard) => replaceParams({ mode: "hazards", hazard })} />
+      ) : null}
+
       {selectedBarangay ? (
-        <aside className="selected-barangay" aria-live="polite">
-          <p className="section-kicker">Highlighted barangay</p>
-          <h2>{selectedBarangay.name}</h2>
-          <p>Indicative administrative area · PSGC {selectedBarangay.code}</p>
-          <button type="button" onClick={() => replaceParams({ barangay: null })}>
-            Clear highlight
-          </button>
-        </aside>
+        <BarangaySheet
+          barangay={selectedBarangay}
+          places={places}
+          previous={tagbilaranBarangays[(selectedBarangayIndex - 1 + tagbilaranBarangays.length) % tagbilaranBarangays.length]}
+          next={tagbilaranBarangays[(selectedBarangayIndex + 1) % tagbilaranBarangays.length]}
+          onChoose={(code) => replaceParams({ barangay: code })}
+          onClose={() => {
+            const code = selectedBarangay.code;
+            replaceParams({ barangay: null });
+            window.setTimeout(() => document.querySelector<HTMLButtonElement>(`[data-barangay-code="${code}"]`)?.focus());
+          }}
+        />
       ) : null}
 
       <aside className="map-boundary-note map-legend" aria-label="Map symbol legend">
