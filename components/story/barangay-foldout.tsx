@@ -5,7 +5,7 @@ import { placesForBarangay } from "@/lib/barangays";
 
 export function BarangayFoldout() {
   return (
-    <section className="barangay-foldout" aria-labelledby="barangay-foldout-title">
+    <section className="barangay-foldout" id="barangays" aria-labelledby="barangay-foldout-title">
       <header>
         <p className="section-kicker">Field index · 15 barangays</p>
         <h2 id="barangay-foldout-title">Meet the city, neighborhood by neighborhood.</h2>

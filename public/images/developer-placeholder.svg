@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 900" role="img" aria-labelledby="title desc">
+  <title id="title">Developer portrait placeholder</title>
+  <desc id="desc">An abstract paper silhouette marking where the creator portrait will appear.</desc>
+  <rect width="720" height="900" fill="#ddcba8"/>
+  <path d="M96 790c35-180 123-270 264-270s229 90 264 270" fill="#005c09" opacity=".84"/>
+  <circle cx="360" cy="318" r="150" fill="#fff9eb" stroke="#26251f" stroke-width="8"/>
+  <path d="M124 84h472M124 816h472" stroke="#a84332" stroke-width="8" stroke-dasharray="18 14"/>
+  <text x="360" y="850" text-anchor="middle" fill="#26251f" font-family="monospace" font-size="25">PORTRAIT PENDING</text>
+</svg>

@@ -1,6 +1,10 @@
 import { tagbilaranBarangays } from "../content/barangays";
 import { places } from "../content/places";
 import { isStreetViewCurrent } from "../lib/verification";
+import { hazardLayers } from "../content/hazards";
+import { siteOwner, supportProfile } from "../content/site-owner";
+import { validateHazardLayer } from "../lib/hazards";
+import { validateSiteOwner } from "../lib/site-owner";
 
 const warnings: string[] = [];
 const errors: string[] = [];
@@ -95,6 +99,15 @@ if (tagbilaranBarangays.length !== 15) {
 }
 if (new Set(tagbilaranBarangays.map((barangay) => barangay.code)).size !== 15) {
   error("Tagbilaran barangay codes must be unique.");
+}
+
+if (!hazardLayers.every(validateHazardLayer)) {
+  error("Hazard metadata is incomplete or includes unapproved placeholder geometry.");
+}
+
+const ownerErrors = validateSiteOwner(siteOwner, supportProfile);
+if (ownerErrors.length && process.env.ALLOW_PLACEHOLDER_CONTENT !== "1") {
+  ownerErrors.forEach(error);
 }
 
 for (const message of warnings) console.warn(`CONTENT WARNING: ${message}`);
