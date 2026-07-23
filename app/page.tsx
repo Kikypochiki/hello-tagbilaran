@@ -53,6 +53,7 @@ export default function Home() {
                 height={1152}
                 sizes="(max-width: 780px) 92vw, 44vw"
                 priority
+                loading="eager"
               />
             </div>
             <figcaption>

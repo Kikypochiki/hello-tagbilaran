@@ -23,6 +23,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
+    {
+      url: new URL("/hazard-assessment", siteUrl).toString(),
+      lastModified: reviewedAt,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     ...places.map((place) => ({
       url: new URL(`/places/${place.slug}`, siteUrl).toString(),
       lastModified: new Date(`${place.verification.reviewedAt}T00:00:00+08:00`),
