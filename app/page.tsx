@@ -74,10 +74,6 @@ export default function Home() {
           </figure>
         </div>
 
-        <p className="journal-cover__instruction">
-          <span aria-hidden="true" />
-          Scroll to enter
-        </p>
       </section>
 
       <StoryPortal
