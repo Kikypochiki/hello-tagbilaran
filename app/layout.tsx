@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { StaleServiceWorkerCleanup } from "@/components/stale-service-worker-cleanup";
 import { hasProductionSiteUrl, siteUrl } from "@/lib/site";
 import "./globals.css";
+import "./gallery-experience.css";
 
 const sans = Geist({
   variable: "--font-sans",

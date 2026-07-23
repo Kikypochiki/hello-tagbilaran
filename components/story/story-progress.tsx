@@ -55,7 +55,10 @@ export function StoryProgress({
 
   return (
     <nav className="chapter-rail" aria-label="History chapters">
-      <p>Field notes</p>
+      <div className="chapter-rail__heading">
+        <p>Gallery route</p>
+        <a href="#story-overview">Plan</a>
+      </div>
       <div className="chapter-rail__mobile-controls">
         {previousChapter ? (
           <a href={`#${previousChapter.id}`} aria-label={`Previous: ${previousChapter.title}`}>
@@ -91,6 +94,9 @@ export function StoryProgress({
           </li>
         ))}
       </ol>
+      <a className="chapter-rail__restart" href="#main-content">
+        Restart experience ↑
+      </a>
     </nav>
   );
 }

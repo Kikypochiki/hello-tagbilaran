@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <filter id="paper">
+    <feTurbulence type="fractalNoise" baseFrequency=".58" numOctaves="3" seed="17"/>
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncA type="table" tableValues="0 .12"/>
+    </feComponentTransfer>
+  </filter>
+  <rect width="180" height="180" filter="url(#paper)" opacity=".34"/>
+  <path d="M7 28h39M102 21h54M23 94h71M116 127h48M48 158h76" stroke="#766b55" stroke-width=".45" opacity=".18"/>
+</svg>
