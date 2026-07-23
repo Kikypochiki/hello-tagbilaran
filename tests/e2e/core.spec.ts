@@ -41,6 +41,47 @@ test("Living archive keeps five distinct readable scenes and a neighborhood fold
   await expect(page.locator(".barangay-foldout li")).toHaveCount(15);
 });
 
+test("Editorial layers do not collide at responsive breakpoints", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await expect(page.locator(".journal-cover__instruction")).toHaveCount(0);
+
+  const foldoutTitle = page.getByRole("heading", {
+    name: /Meet the city, neighborhood by neighborhood/,
+  });
+  const foldoutIntro = page.locator(".barangay-foldout header > p").last();
+  const [titleBounds, introBounds] = await Promise.all([
+    foldoutTitle.boundingBox(),
+    foldoutIntro.boundingBox(),
+  ]);
+  expect(titleBounds).not.toBeNull();
+  expect(introBounds).not.toBeNull();
+  expect((titleBounds?.y ?? 0) + (titleBounds?.height ?? 0)).toBeLessThanOrEqual(
+    introBounds?.y ?? 0,
+  );
+
+  if (testInfo.project.name === "mobile") {
+    const [headerHeight, railTop, railBackground] = await page.evaluate(() => {
+      const header = document.querySelector<HTMLElement>(".site-header__inner");
+      const rail = document.querySelector<HTMLElement>(".chapter-rail");
+      return [
+        header?.getBoundingClientRect().height ?? 0,
+        Number.parseFloat(getComputedStyle(rail!).top),
+        getComputedStyle(rail!).backgroundColor,
+      ] as const;
+    });
+    expect(railTop).toBeGreaterThanOrEqual(headerHeight);
+    expect(railBackground).not.toContain("0.94");
+  } else {
+    await expect(page.locator(".history-chapter__stage").first()).toHaveCSS(
+      "position",
+      "relative",
+    );
+  }
+
+  await page.goto("/about");
+  await expect(page.locator(".site-header")).toHaveCSS("position", "absolute");
+});
+
 test("Explore keeps list access, URL filters, and stable navigation", async ({
   page,
 }, testInfo) => {
