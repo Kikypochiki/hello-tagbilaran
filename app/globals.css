@@ -5876,6 +5876,8 @@ h3 {
     font-size: clamp(2.2rem, 10.5vw, 3.1rem);
   }
 }
+@media not all {
+/* Superseded cinematic experiment retained outside the cascade for branch history. */
 /* 2026 editorial rework: cinematic city portrait, restrained archival detail. */
 :root {
   --editorial-black: #07110b;
@@ -6315,4 +6317,5 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .journal-cover__photo img,
   .history-page-turn-ready .history-chapter { transform: none !important; }
+}
 }
