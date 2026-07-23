@@ -112,6 +112,7 @@ export default async function PlacePage({
               height={leadImage.height}
               sizes="(max-width: 780px) calc(100vw - 2rem), min(1180px, 90vw)"
               priority
+              loading="eager"
             />
             <figcaption>
               Photo: {leadImage.credit ?? "Credit not supplied"}

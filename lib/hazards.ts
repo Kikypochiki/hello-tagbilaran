@@ -6,7 +6,14 @@ export function isHazardKind(value: string | null): value is HazardKind {
 
 export function validateHazardLayer(layer: HazardLayerMetadata) {
   if (layer.status === "available") {
-    return Boolean(layer.version && layer.retrievedAt && layer.license && layer.dataUrl);
+    return Boolean(
+      layer.version &&
+      layer.retrievedAt &&
+      layer.license &&
+      layer.dataUrl &&
+      layer.geometry?.features.length &&
+      layer.classifications.length === 3,
+    );
   }
-  return !layer.dataUrl;
+  return !layer.dataUrl && !layer.geometry && layer.classifications.length === 3;
 }

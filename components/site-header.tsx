@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 
 const navigation = [
   { href: "/", label: "Story", meta: "Read" },
-  { href: "/#barangays", label: "Neighborhoods", meta: "Meet" },
   { href: "/explore", label: "Explore", meta: "Map" },
+  { href: "/hazard-assessment", label: "Hazards", meta: "Assess" },
   { href: "/about", label: "About", meta: "Project" },
 ];
 
@@ -30,7 +30,7 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <header className="site-header">
+    <header className="site-header" data-overlay={pathname === "/" || undefined}>
       <div className="site-header__inner">
         <Link className="brand" href="/" aria-label="Hello Tagbilaran home">
           <CompassMark />
@@ -40,7 +40,7 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="site-nav" aria-label="Primary navigation">
-          {navigation.map((item, index) => {
+          {navigation.map((item) => {
             const active =
               item.href === "/" || item.href.startsWith("/#")
                 ? pathname === "/" && item.href === "/"
@@ -54,13 +54,8 @@ export function SiteHeader() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
               >
-                <span className="site-nav__number" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span>
-                  <small>{item.meta}</small>
-                  <strong>{item.label}</strong>
-                </span>
+                <small>{item.meta}</small>
+                <strong>{item.label}</strong>
               </Link>
             );
           })}

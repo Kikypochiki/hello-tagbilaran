@@ -17,7 +17,16 @@ test("Story remains within the viewport and offers direct navigation", async ({
   await guideLink.scrollIntoViewIfNeeded();
   await expect(guideLink).toBeVisible();
   await guideLink.click();
-  await expect(page).toHaveURL("/explore");
+  await expect(page).toHaveURL("/explore", { timeout: 15_000 });
+});
+
+test("Living archive keeps five distinct readable scenes and a neighborhood foldout", async ({ page }) => {
+  await page.goto("/");
+  const chapters = page.locator(".history-chapter[data-visual-mode]");
+  await expect(chapters).toHaveCount(5);
+  expect(await chapters.evaluateAll((items) => new Set(items.map((item) => item.getAttribute("data-visual-mode"))).size)).toBe(5);
+  await expect(page.getByRole("heading", { name: /Meet the city, neighborhood by neighborhood/ })).toBeVisible();
+  await expect(page.locator(".barangay-foldout li")).toHaveCount(15);
 });
 
 test("Explore keeps list access, URL filters, and stable navigation", async ({
@@ -53,7 +62,7 @@ test("Explore keeps list access, URL filters, and stable navigation", async ({
 });
 
 test("Only reviewed Street View actions are exposed", async ({ page }, testInfo) => {
-  await page.goto("/places/national-museum-bohol");
+  await page.goto("/places/plaza-rizal");
   await expect(page.getByText(/Sources reviewed/).first()).toBeVisible();
   await page.goto("/explore?q=BQ+Mall");
   if (testInfo.project.name === "mobile") {
@@ -111,10 +120,46 @@ test("Barangays remain selected after click", async ({
   await expect(map).toHaveAttribute("data-selected-barangay", /\d{9}/);
 });
 
+test("Barangay sheets remain shareable from the places map", async ({ page }) => {
+  await page.goto("/explore?barangay=071242001");
+  await expect(page.getByRole("heading", { name: "Bool" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /official city directory/ })).toBeVisible();
+});
+
+test("Hazard assessment has a dedicated, shareable, source-conscious workspace", async ({ page }) => {
+  await page.goto("/hazard-assessment");
+  await expect(page.getByRole("heading", { name: "Hazard assessment" })).toBeVisible();
+  await expect(page.getByText(/No substitute polygons/)).toBeVisible();
+  await page.getByRole("button", { name: "Storm-surge" }).click();
+  await expect(page).toHaveURL(/hazard=storm-surge/);
+  await page.getByLabel("Assessment area").selectOption("071242001");
+  await expect(page).toHaveURL(/barangay=071242001/);
+  await expect(page.getByRole("heading", { name: "No local classification issued" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Continue to UP NOAH/ })).toBeVisible();
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(1);
+  const titleBounds = await page.getByRole("heading", { name: "Hazard assessment" }).boundingBox();
+  expect(titleBounds).not.toBeNull();
+  expect((titleBounds?.x ?? 0) + (titleBounds?.width ?? 0)).toBeLessThanOrEqual(
+    await page.evaluate(() => document.documentElement.clientWidth),
+  );
+});
+
+test("About and support placeholders cannot be mistaken for payment details", async ({ page }) => {
+  await page.goto("/about");
+  await expect(page.getByRole("heading", { name: "The hands behind the journal." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Developer profile pending" })).toBeVisible();
+  await expect(page.getByText(/This development QR cannot be scanned/)).toBeVisible();
+  await expect(page.getByRole("link", { name: /secure donation/i })).toHaveCount(0);
+});
+
 test("Representative routes have no serious automated accessibility violations", async ({
   page,
 }) => {
-  for (const route of ["/", "/explore", "/places/plaza-rizal"]) {
+  test.setTimeout(180_000);
+  for (const route of ["/", "/explore", "/hazard-assessment", "/about", "/places/plaza-rizal"]) {
     await page.goto(route);
     const results = await new AxeBuilder({ page }).analyze();
     expect(

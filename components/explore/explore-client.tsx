@@ -17,7 +17,6 @@ import { MapErrorBoundary } from "@/components/explore/map-error-boundary";
 import { PlaceDialog } from "@/components/explore/place-dialog";
 import { StreetViewExperience } from "@/components/explore/street-view-experience";
 import { BarangaySheet } from "@/components/explore/barangay-sheet";
-import { HazardControls } from "@/components/explore/hazard-controls";
 import { PlaceVerificationNote } from "@/components/place-verification-note";
 import { ScopeBadge } from "@/components/scope-badge";
 import {
@@ -29,7 +28,6 @@ import { filterPlaces } from "@/lib/explore-filters";
 import { categoryLabels, categoryOrder, scopeLabels } from "@/lib/place-labels";
 import { readSavedPlaceIds, subscribeToSavedPlaces } from "@/lib/saved-places";
 import { hasReviewedLocation } from "@/lib/verification";
-import { isHazardKind } from "@/lib/hazards";
 import type { Place, PlaceCategory } from "@/types/content";
 
 const MapCanvas = dynamic(
@@ -56,9 +54,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const category = isCategory(categoryParam) ? categoryParam : null;
   const savedOnly = searchParams.get("saved") === "1";
   const queryParam = searchParams.get("q") ?? "";
-  const hazardMode = searchParams.get("mode") === "hazards";
-  const hazardParam = searchParams.get("hazard");
-  const activeHazard = isHazardKind(hazardParam) ? hazardParam : "flood";
   const indexRef = useRef<HTMLDetailsElement>(null);
   const [query, setQuery] = useState(queryParam);
   const [previewedId, setPreviewedId] = useState<string>();
@@ -187,11 +182,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
       aria-label="Explore Tagbilaran city map"
     >
       <h1 className="sr-only">Explore Tagbilaran</h1>
-
-      <div className="map-mode-switch" role="group" aria-label="Map mode">
-        <button type="button" aria-pressed={!hazardMode} onClick={() => replaceParams({ mode: null, hazard: null })}>Places</button>
-        <button type="button" aria-pressed={hazardMode} onClick={() => replaceParams({ mode: "hazards", hazard: activeHazard })}>Hazards</button>
-      </div>
 
       <details className="map-index" ref={indexRef} open>
         <summary>
@@ -406,7 +396,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
         />
       </MapErrorBoundary>
 
-      {highlightedIds.length === 0 && !hazardMode ? (
+      {highlightedIds.length === 0 ? (
         <div className="map-category-empty map-category-empty--map-only" role="status">
           <strong>No source-located pins in this filter.</strong>
           <span>Matching entries remain available inside the map index.</span>
@@ -437,10 +427,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
             Open complete information <span aria-hidden="true">→</span>
           </button>
         </aside>
-      ) : null}
-
-      {hazardMode ? (
-        <HazardControls activeHazard={activeHazard} onSelect={(hazard) => replaceParams({ mode: "hazards", hazard })} />
       ) : null}
 
       {selectedBarangay ? (

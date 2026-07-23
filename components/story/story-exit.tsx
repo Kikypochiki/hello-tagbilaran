@@ -31,9 +31,11 @@ export function StoryExit() {
 
   return (
     <section className="story-exit" aria-labelledby="story-exit-title">
-      <h2 className="sr-only" id="story-exit-title">
-        Continue to the Tagbilaran city guide
-      </h2>
+      <div className="story-exit__copy">
+        <p className="section-kicker">Turn the page · enter the city</p>
+        <h2 id="story-exit-title">The story continues in the streets.</h2>
+        <p>Move from the archive into a living index of places, barangays, and everyday city life.</p>
+      </div>
       <Link className="primary-action story-exit__guide-link" href="/explore" onClick={handleExplore}>
         Continue to city guide <span aria-hidden="true">→</span>
       </Link>
