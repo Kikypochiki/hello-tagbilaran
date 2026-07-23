@@ -83,10 +83,16 @@ export function ChapterArtifact({ chapter }: { chapter: HistoryChapter }) {
         ))}
       </div>
       {chapter.annotations?.map((annotation) => (
-        <aside className="margin-note" key={annotation.label}>
-          <span>{annotation.label}</span>
-          <p>{annotation.text}</p>
-        </aside>
+        <details className="exhibit-label" key={annotation.label}>
+          <summary>
+            <span>Open object label</span>
+            <i aria-hidden="true">+</i>
+          </summary>
+          <div>
+            <span>{annotation.label}</span>
+            <p>{annotation.text}</p>
+          </div>
+        </details>
       ))}
     </div>
   );

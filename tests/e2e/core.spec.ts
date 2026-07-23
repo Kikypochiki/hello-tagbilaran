@@ -20,6 +20,18 @@ test("Story remains within the viewport and offers direct navigation", async ({
   await expect(page).toHaveURL("/explore", { timeout: 15_000 });
 });
 
+test("Immersive field index opens and navigates between rooms", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Index" }).click();
+
+  const index = page.getByRole("dialog", { name: /Field index/ });
+  await expect(index).toBeVisible();
+  await index.getByRole("link", { name: /The preparedness room/ }).click();
+
+  await expect(page).toHaveURL(/\/hazard-assessment$/);
+  await expect(page.getByRole("heading", { name: "Hazard assessment" })).toBeVisible();
+});
+
 test("Living archive keeps five distinct readable scenes and a neighborhood foldout", async ({ page }) => {
   await page.goto("/");
   const chapters = page.locator(".history-chapter[data-visual-mode]");
