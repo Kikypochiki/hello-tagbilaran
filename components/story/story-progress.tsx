@@ -15,34 +15,18 @@ export function StoryProgress({
       .filter((section): section is HTMLElement => Boolean(section));
     if (!sections.length) return;
 
-    let animationFrame = 0;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveId((visible.target as HTMLElement).id);
+      },
+      { rootMargin: "-30% 0px -45% 0px", threshold: [0.05, 0.25, 0.5] },
+    );
 
-    function updateActiveChapter() {
-      animationFrame = 0;
-      const readingLine = window.innerHeight * 0.48;
-      let activeSection = sections[0];
-
-      sections.forEach((section) => {
-        if (section.getBoundingClientRect().top <= readingLine) activeSection = section;
-      });
-
-      setActiveId(activeSection.id);
-    }
-
-    function scheduleUpdate() {
-      if (animationFrame) return;
-      animationFrame = window.requestAnimationFrame(updateActiveChapter);
-    }
-
-    updateActiveChapter();
-    window.addEventListener("scroll", scheduleUpdate, { passive: true });
-    window.addEventListener("resize", scheduleUpdate);
-
-    return () => {
-      if (animationFrame) window.cancelAnimationFrame(animationFrame);
-      window.removeEventListener("scroll", scheduleUpdate);
-      window.removeEventListener("resize", scheduleUpdate);
-    };
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
   }, [chapters]);
 
   const activeIndex = Math.max(
@@ -56,8 +40,8 @@ export function StoryProgress({
   return (
     <nav className="chapter-rail" aria-label="History chapters">
       <div className="chapter-rail__heading">
-        <p>Gallery route</p>
-        <a href="#story-overview">Plan</a>
+        <p>Living City Archive</p>
+        <a href="#main-content">Cover</a>
       </div>
       <div className="chapter-rail__mobile-controls">
         {previousChapter ? (
@@ -75,7 +59,7 @@ export function StoryProgress({
             Next →
           </a>
         ) : (
-          <a href="#story-exit-title">Continue →</a>
+          <a href="/explore">City atlas →</a>
         )}
       </div>
       <div className="chapter-rail__track" aria-hidden="true">

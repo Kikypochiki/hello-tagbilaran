@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 const navigation = [
-  { href: "/", label: "The living archive", meta: "Story", number: "01" },
-  { href: "/explore", label: "The city atlas", meta: "Explore", number: "02" },
-  { href: "/hazard-assessment", label: "The preparedness room", meta: "Hazards", number: "03" },
-  { href: "/about", label: "The colophon", meta: "About", number: "04" },
+  { href: "/", label: "Story" },
+  { href: "/explore", label: "City atlas" },
+  { href: "/hazard-assessment", label: "Hazard assessment" },
+  { href: "/about", label: "About & support" },
 ];
 
 function CompassMark() {
@@ -51,7 +51,7 @@ export function SiteHeader() {
           <CompassMark />
           <span className="brand__wordmark">
             <strong>Hello Tagbilaran</strong>
-            <small>Living city archive</small>
+            <small>Living City Archive</small>
           </span>
         </Link>
 
@@ -69,9 +69,9 @@ export function SiteHeader() {
       >
         <div className="experience-menu__paper">
           <header>
-            <p id="experience-menu-title">Field index · Tagbilaran City</p>
+            <p id="experience-menu-title">Index</p>
             <button type="button" onClick={() => menuRef.current?.close()}>
-              Close <span aria-hidden="true">×</span>
+              <span>Close</span> <i aria-hidden="true">×</i>
             </button>
           </header>
           <nav className="site-nav" aria-label="Primary navigation">
@@ -86,8 +86,6 @@ export function SiteHeader() {
                       href={item.href}
                       aria-current={isActive ? "page" : undefined}
                     >
-                      <span>{item.number}</span>
-                      <small>{item.meta}</small>
                       <strong>{item.label}</strong>
                       <i aria-hidden="true">↗</i>
                     </Link>
@@ -96,10 +94,6 @@ export function SiteHeader() {
               })}
             </ol>
           </nav>
-          <footer>
-            <p>Where every street leads to a story.</p>
-            <span>Tagbilaran City · Bohol · Philippines</span>
-          </footer>
         </div>
       </dialog>
     </header>

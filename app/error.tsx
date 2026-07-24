@@ -12,7 +12,6 @@ export default function GlobalError({
   useEffect(() => console.error(error), [error]);
   return (
     <main id="main-content" className="error-sheet">
-      <p className="kicker">A page caught on the binding</p>
       <h1>Something interrupted this journal.</h1>
       <p>Try opening the page again. Saved places stored on this device are unaffected.</p>
       <button className="primary-action" type="button" onClick={reset}>

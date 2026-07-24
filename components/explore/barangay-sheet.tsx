@@ -17,7 +17,6 @@ export function BarangaySheet({ barangay, places, previous, next, onChoose, onCl
   return (
     <aside className="barangay-sheet" aria-labelledby="selected-barangay-title">
       <button className="barangay-sheet__close" type="button" onClick={onClose} aria-label="Close barangay sheet">×</button>
-      <p className="section-kicker">Barangay field sheet · PSGC {barangay.code}</p>
       <h2 id="selected-barangay-title">{barangay.name}</h2>
       <p>{barangay.summary}</p>
       <div className="barangay-sheet__counts" aria-label="Place categories in this guide">

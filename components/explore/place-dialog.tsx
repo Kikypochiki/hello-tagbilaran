@@ -51,7 +51,6 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
         </header>
 
         <div className="place-dialog__title">
-          <p className="section-kicker">City guide</p>
           <PlaceVerificationNote place={place} compact />
           <h2 id="place-dialog-title">{place.name}</h2>
           <p className="place-dialog__summary">{place.summary}</p>

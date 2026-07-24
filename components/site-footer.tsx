@@ -5,7 +5,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="site-footer__signature">
-        <p>Independent city journal</p>
+        <p>Living City Archive</p>
         <strong>
           Hello,
           <br />
@@ -23,7 +23,7 @@ export function SiteFooter() {
         </a>
       </nav>
       <div className="site-footer__colophon">
-        <p>An independent field journal by {siteOwner.displayName}.</p>
+        <p>Created by {siteOwner.displayName}.</p>
         <small>
           Tagbilaran City · Bohol · This is not an official city government or UP NOAH application.
         </small>

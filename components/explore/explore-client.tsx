@@ -120,12 +120,12 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
   const replaceParams = useCallback(
     (updates: Record<string, string | null>) => {
-      const next = new URLSearchParams(searchParams.toString());
+      const current = window.location.search.slice(1);
+      const next = new URLSearchParams(current);
       Object.entries(updates).forEach(([key, value]) => {
         if (value) next.set(key, value);
         else next.delete(key);
       });
-      const current = searchParams.toString();
       const suffix = next.toString();
       if (suffix === current) return;
 
@@ -135,7 +135,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
         suffix ? `${pathname}?${suffix}` : pathname,
       );
     },
-    [pathname, searchParams],
+    [pathname],
   );
 
   useEffect(() => {
@@ -186,7 +186,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
       <details className="map-index" ref={indexRef} open>
         <summary>
           <span>
-            <span className="section-kicker">Journal index</span>
             <strong>Places &amp; barangays</strong>
           </span>
           <span className="map-index__count">
@@ -280,12 +279,19 @@ export function ExploreClient({ places }: { places: Place[] }) {
                         event.preventDefault();
                         openPlace(place);
                       }}
-                      onPointerEnter={() => {
-                        if (place.coordinates) setPreviewedId(place.id);
+                      onPointerEnter={(event) => {
+                        if (event.pointerType === "mouse" && place.coordinates) {
+                          setPreviewedId(place.id);
+                        }
                       }}
                       onPointerLeave={() => setPreviewedId(undefined)}
                       onFocus={() => {
-                        if (place.coordinates) setPreviewedId(place.id);
+                        if (
+                          window.matchMedia("(hover: hover)").matches &&
+                          place.coordinates
+                        ) {
+                          setPreviewedId(place.id);
+                        }
                       }}
                       onBlur={() => setPreviewedId(undefined)}
                     >
@@ -346,7 +352,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
           <section className="map-index__section" aria-labelledby="barangay-index-title">
             <header className="map-index__heading">
               <div>
-                <p className="section-kicker">City districts</p>
                 <h2 id="barangay-index-title">All 15 barangays</h2>
               </div>
             </header>
@@ -420,7 +425,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
               {categoryLabels[previewedPlace.category]}
             </span>
           </div>
-          <p className="section-kicker">Place note</p>
           <h2>{previewedPlace.name}</h2>
           <p>{previewedPlace.summary}</p>
           <button className="text-link" type="button" onClick={() => openPlace(previewedPlace)}>

@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { ChapterArtifact } from "@/components/story/chapter-artifact";
-import { BarangayFoldout } from "@/components/story/barangay-foldout";
+import { CoverAmbient } from "@/components/story/cover-ambient";
 import { historyChapters } from "@/content/history";
-import { StoryExit } from "@/components/story/story-exit";
+import { RevealText } from "@/components/story/reveal-text";
 import { StoryProgress } from "@/components/story/story-progress";
 import { StoryUnfolding } from "@/components/story/story-unfolding";
-import { GalleryThreshold } from "@/components/story/gallery-threshold";
-import { StoryPortal } from "@/components/story/story-portal";
 
 export const metadata: Metadata = {
   title: { absolute: "Hello Tagbilaran" },
@@ -23,12 +20,9 @@ export default function Home() {
       <StoryUnfolding />
 
       <section className="journal-cover" aria-labelledby="cover-title">
-        <GalleryThreshold />
+        <CoverAmbient />
         <div className="journal-cover__layout">
           <div className="journal-cover__content">
-            <div className="journal-cover__registration">
-              <span>Tagbilaran City · Bohol</span>
-            </div>
             <h1 id="cover-title">
               <span>Hello,</span>
               Tagbilaran.
@@ -38,7 +32,7 @@ export default function Home() {
               civic life, and the people who keep the city moving.
             </p>
             <div className="journal-cover__actions">
-              <a className="cover-scroll" href="#story-overview">
+              <a className="cover-scroll" href={`#${historyChapters[0].id}`}>
                 Begin the experience <span aria-hidden="true">↓</span>
               </a>
               <Link
@@ -50,41 +44,11 @@ export default function Home() {
               </Link>
             </div>
           </div>
-
-          <figure className="journal-cover__postcard">
-            <div className="journal-cover__halo" aria-hidden="true">
-              <span />
-            </div>
-            <div className="journal-cover__photo">
-              <Image
-                src="/images/places/plaza-rizal.jpg"
-                alt="Plaza Jose P. Rizal and St. Joseph the Worker Cathedral in central Tagbilaran"
-                width={2048}
-                height={1152}
-                sizes="(max-width: 780px) 96vw, 58vw"
-                priority
-                loading="eager"
-              />
-            </div>
-            <figcaption>
-              <span>City portrait · 01</span>
-              <strong>Plaza Jose P. Rizal</strong>
-              <span>Central Tagbilaran · City Government of Tagbilaran</span>
-            </figcaption>
-          </figure>
         </div>
 
       </section>
 
-      <StoryPortal
-        chapters={historyChapters.map(({ id, title, eyebrow }) => ({ id, title, eyebrow }))}
-      />
-
       <div className="story-layout">
-        <div className="story-survey-thread" aria-hidden="true">
-          <span />
-          <i />
-        </div>
         <StoryProgress
           chapters={historyChapters.map(({ id, title }) => ({ id, title }))}
         />
@@ -105,19 +69,15 @@ export default function Home() {
                     <span />
                   </div>
 
-                  <div className="history-chapter__number" aria-hidden="true">
-                    {String(chapter.order).padStart(2, "0")}
-                  </div>
-
                   <div className="history-chapter__spread">
                     <header className="history-chapter__header">
-                      <p className="chapter-eyebrow">{chapter.eyebrow}</p>
                       <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
-                      {chapter.dateLabel ? <p className="chapter-date">{chapter.dateLabel}</p> : null}
                     </header>
 
                     <div className="history-chapter__copy">
-                      <p className="chapter-intro">{chapter.introduction}</p>
+                      <RevealText className="chapter-intro">
+                        {chapter.introduction}
+                      </RevealText>
                       {chapter.body.map((paragraph) => (
                         <p key={paragraph}>{paragraph}</p>
                       ))}
@@ -146,10 +106,9 @@ export default function Home() {
                       className="history-chapter__room-controls"
                       aria-label={`${chapter.title} chapter navigation`}
                     >
-                      <a href="#story-overview">Archive index</a>
-                      <a href={nextChapter ? `#${nextChapter.id}` : "#barangays"}>
-                        {nextChapter ? "Continue" : "Meet the barangays"}
-                        <span aria-hidden="true">↓</span>
+                      <a href={nextChapter ? `#${nextChapter.id}` : "/explore"}>
+                        {nextChapter ? "Continue" : "Enter the city atlas"}
+                        <span aria-hidden="true">{nextChapter ? "↓" : "→"}</span>
                       </a>
                     </nav>
                   </footer>
@@ -159,9 +118,6 @@ export default function Home() {
           })}
         </article>
       </div>
-
-      <BarangayFoldout />
-      <StoryExit />
     </main>
   );
 }
