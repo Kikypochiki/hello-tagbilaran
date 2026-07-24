@@ -54,7 +54,6 @@ export function MapPlaceChoice({
       </header>
       <p className="map-place-choice__meta">
         <span>{scopeLabels[place.scope]}</span>
-        <span aria-hidden="true">·</span>
         <span>{categoryLabels[place.category]}</span>
       </p>
       <div className="map-place-choice__actions">

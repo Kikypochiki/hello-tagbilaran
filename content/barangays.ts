@@ -23,7 +23,7 @@ export const tagbilaranBarangays: TagbilaranBarangay[] = [
 });
 
 export const tagbilaranAdministrativeSource = {
-  title: "City of Tagbilaran — Philippine Standard Geographic Code",
+  title: "City of Tagbilaran - Philippine Standard Geographic Code",
   publisher: "Philippine Statistics Authority",
   url: "https://psa.gov.ph/classification/psgc/barangays/0701242000",
   accessedAt: "2026-07-19",

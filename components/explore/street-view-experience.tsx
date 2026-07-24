@@ -124,9 +124,9 @@ export function StreetViewExperience({
             {place.streetView ? (
               <small>
                 {place.streetView.label}
-                {" · "}
+                {", "}
                 {place.streetView.captureDate}
-                {" · "}
+                {", "}
                 {place.streetView.contributor}
               </small>
             ) : null}

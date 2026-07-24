@@ -20,7 +20,7 @@ export default function AboutPage() {
         <section className="developer-spread" aria-labelledby="developer-title">
           <figure>
             <Image src={siteOwner.portrait.src} alt={siteOwner.portrait.alt} width={siteOwner.portrait.width} height={siteOwner.portrait.height} priority />
-            {siteOwner.placeholder ? <figcaption>Development placeholder · portrait and profile pending</figcaption> : null}
+            {siteOwner.placeholder ? <figcaption>Development placeholder: portrait and profile pending</figcaption> : null}
           </figure>
           <div>
             <h2 id="developer-title">{siteOwner.displayName}</h2>
@@ -56,7 +56,7 @@ export default function AboutPage() {
           </div>
           <figure>
             <Image src={supportProfile.qr.src} alt={supportProfile.qr.alt} width={supportProfile.qr.width} height={supportProfile.qr.height} />
-            <figcaption>{supportProfile.placeholder ? "Development placeholder · not a payment code" : `Scan with ${supportProfile.provider}`}</figcaption>
+            <figcaption>{supportProfile.placeholder ? "Development placeholder: not a payment code" : `Scan with ${supportProfile.provider}`}</figcaption>
           </figure>
         </section>
       </article>

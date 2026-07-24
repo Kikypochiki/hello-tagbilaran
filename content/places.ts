@@ -17,7 +17,7 @@ const cityTourismSource: SourceRecord = {
 };
 
 const provincialTourismSource: SourceRecord = {
-  title: "Tagbilaran City — top things to do",
+  title: "Tagbilaran City - top things to do",
   url: "https://tourism.bohol.gov.ph/visitbohol-tagbilaran/",
   publisher: "Bohol Provincial Tourism Office",
   accessedAt,
@@ -712,7 +712,7 @@ const placeEntries: Place[] = [
   {
     id: "national-museum-bohol",
     slug: "national-museum-bohol",
-    name: "National Museum of the Philippines – Bohol",
+    name: "National Museum of the Philippines - Bohol",
     category: "history-culture",
     scope: "tagbilaran",
     summary:
@@ -729,7 +729,7 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "national-museum-bohol.jpg",
-        "Facade of the National Museum of the Philippines – Bohol",
+        "Facade of the National Museum of the Philippines - Bohol",
         1024,
         760,
         "City Government of Tagbilaran",
@@ -748,11 +748,11 @@ const placeEntries: Place[] = [
         notes: "Official museum page used to confirm the building and address.",
       },
       googleMapsSource(
-        "National Museum of the Philippines – Bohol",
+        "National Museum of the Philippines - Bohol",
         "National Museum of the Philippines Bohol, Tagbilaran City",
       ),
       osmSource(
-        "National Museum of the Philippines – Bohol map feature",
+        "National Museum of the Philippines - Bohol map feature",
         "way",
         242261499,
       ),
@@ -1185,7 +1185,7 @@ const placeEnhancements: Record<string, PlaceEnhancement> = {
     "Plaza Rizal and the cathedral sit beside the museum in the compact civic core.",
   ),
   "carlos-p-garcia-heritage-museum": guideDetails(
-    "This heritage house and museum keeps the memory of Carlos P. Garcia—Boholano statesman and the Philippines’ eighth president—within Tagbilaran’s central heritage district.",
+    "This heritage house and museum keeps the memory of Carlos P. Garcia, Boholano statesman and the Philippines’ eighth president, within Tagbilaran’s central heritage district.",
     ["Presidential heritage museum", "Central heritage district"],
     "Poblacion III",
     "Include it in a downtown heritage walk with the National Museum, Plaza Rizal, and the cathedral.",
@@ -1398,7 +1398,7 @@ const reviewedStreetViews = {
     captureDate: "2025-11",
     provider: "Google Maps",
     contributor: "EARL JOHN LASQUITE",
-    label: "National Museum of the Philippines – Bohol",
+    label: "National Museum of the Philippines - Bohol",
     verifiedAt: "2026-07-19",
     match: "exact-venue",
     reviewDueAt: "2027-01-19",
