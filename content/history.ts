@@ -29,7 +29,7 @@ const provincialTourismSource: SourceRecord = {
 };
 
 const nationalMuseumSource: SourceRecord = {
-  title: "National Museum of the Philippines – Bohol",
+  title: "National Museum of the Philippines - Bohol",
   url: "https://www.nationalmuseum.gov.ph/our-museums/regional-area-and-site-museums/bohol/",
   publisher: "National Museum of the Philippines",
   accessedAt,
@@ -127,7 +127,7 @@ export const historyChapters: HistoryChapter[] = [
     order: 3,
     eyebrow: "Chapter three · a town takes shape",
     title: "From port settlement to town",
-    dateLabel: "1741–1742",
+    dateLabel: "1741-1742",
     introduction:
       "In 1741, Jesuit rector César Felipe Doria petitioned for Baclayon to be divided and proposed Mansasa or Tagbilaran as the site of a new town.",
     body: [
@@ -156,11 +156,11 @@ export const historyChapters: HistoryChapter[] = [
     order: 4,
     eyebrow: "Chapter four · plans and rebuilding",
     title: "The long road to cityhood",
-    dateLabel: "1899–1966",
+    dateLabel: "1899-1966",
     introduction:
       "Tagbilaran’s official account follows the town from civil government after Spanish rule through planning, wartime loss, postwar rebuilding, and two campaigns for a city charter.",
     body: [
-      "The record credits the 1913–1916 administration of Celestino Gallares with a town plan whose street pattern continued to guide development. The former Provincial Capitol—begun in 1855, completed in 1860, and later restored as the National Museum Bohol—embodies another long layer of civic history.",
+      "The record credits the 1913-1916 administration of Celestino Gallares with a town plan whose street pattern continued to guide development. The former Provincial Capitol, begun in 1855, completed in 1860, and later restored as the National Museum Bohol, embodies another long layer of civic history.",
       "Republic Act No. 4660, approved on 18 June 1966, created the City of Tagbilaran. Under the charter, the city began its corporate existence on 1 July 1966.",
     ],
     media: [

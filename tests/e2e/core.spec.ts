@@ -35,11 +35,10 @@ test("Immersive field index opens and navigates between rooms", async ({ page })
   await expect(page.getByRole("heading", { name: "Hazard assessment" })).toBeVisible();
 });
 
-test("Living archive goes directly from the cover into five distinct scenes", async ({ page }) => {
+test("Living archive goes directly from the cover into five focused chapters", async ({ page }) => {
   await page.goto("/");
-  const chapters = page.locator(".history-chapter[data-visual-mode]");
+  const chapters = page.locator(".archive-chapter");
   await expect(chapters).toHaveCount(5);
-  expect(await chapters.evaluateAll((items) => new Set(items.map((item) => item.getAttribute("data-visual-mode"))).size)).toBe(5);
   await expect(page.getByText(/Read the city.*from shore to street/)).toHaveCount(0);
   await expect(page.locator(".story-portal")).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Begin the experience/ })).toHaveAttribute(
@@ -49,12 +48,18 @@ test("Living archive goes directly from the cover into five distinct scenes", as
   await expect(page.getByText("Open object label")).toHaveCount(0);
   await expect(page.getByText("The story continues in the streets.")).toHaveCount(0);
   await expect(page.locator(".barangay-foldout")).toHaveCount(0);
-  await expect(page.locator(".chapter-trace")).toHaveCount(5);
-  await expect(page.locator(".chapter-title__image")).toHaveCount(5);
-  await expect(page.locator(".archive-figure__echo")).toHaveCount(10);
+  await expect(page.locator(".chapter-trace")).toHaveCount(0);
+  await expect(page.locator(".chapter-title__image")).toHaveCount(0);
+  await expect(page.locator(".archive-figure__echo")).toHaveCount(0);
+  await expect(page.locator(".archive-chapter__figure img")).toHaveCount(5);
+  expect(
+    await chapters.evaluateAll((items) =>
+      items.every((item) => item.querySelectorAll(".archive-chapter__figure img").length === 1),
+    ),
+  ).toBe(true);
   const chapterPresentation = await chapters.evaluateAll((items) =>
     items.map((item) => {
-      const stage = item.querySelector<HTMLElement>(".history-chapter__stage");
+      const stage = item.querySelector<HTMLElement>(".archive-chapter__paper");
       const title = item.querySelector<HTMLElement>("h2");
       return {
         paper: stage ? getComputedStyle(stage).backgroundColor : "",
@@ -74,17 +79,15 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
   const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
 
   if (testInfo.project.name === "mobile") {
-    const [headerHeight, railTop, railBackground] = await page.evaluate(() => {
-      const header = document.querySelector<HTMLElement>(".site-header__inner");
-      const rail = document.querySelector<HTMLElement>(".chapter-rail");
+    const [navigatorHeight, navigatorTop] = await page.evaluate(() => {
+      const navigator = document.querySelector<HTMLElement>(".archive-story__navigator");
       return [
-        header?.getBoundingClientRect().height ?? 0,
-        Number.parseFloat(getComputedStyle(rail!).top),
-        getComputedStyle(rail!).backgroundColor,
+        navigator?.getBoundingClientRect().height ?? 0,
+        Number.parseFloat(getComputedStyle(navigator!).top),
       ] as const;
     });
-    expect(railTop).toBeGreaterThanOrEqual(headerHeight);
-    expect(railBackground).not.toContain("0.94");
+    expect(navigatorHeight).toBeGreaterThanOrEqual(44);
+    expect(navigatorTop).toBeGreaterThanOrEqual(60);
   } else {
     const contentBounds = await coverContent.boundingBox();
     expect(contentBounds).not.toBeNull();
@@ -95,7 +98,7 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
           viewportWidth / 2,
       ),
     ).toBeLessThanOrEqual(2);
-    await expect(page.locator(".history-chapter__stage").first()).toHaveCSS(
+    await expect(page.locator(".archive-chapter__scene").first()).toHaveCSS(
       "position",
       "sticky",
     );
@@ -110,13 +113,13 @@ test("Reduced motion keeps the story as a normal paper document", async ({ page 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  await expect(page.locator("html")).not.toHaveClass(/story-cinematic-ready/);
-  await expect(page.locator(".history-chapter__stage").first()).toHaveCSS(
+  await expect(page.locator(".archive-story")).not.toHaveAttribute("data-motion", "ready");
+  await expect(page.locator(".archive-chapter__scene").first()).toHaveCSS(
     "position",
     "relative",
   );
   const firstChapterHeight = await page
-    .locator(".history-chapter")
+    .locator(".archive-chapter")
     .first()
     .evaluate((chapter) => chapter.getBoundingClientRect().height);
   expect(firstChapterHeight).toBeLessThan(
