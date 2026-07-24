@@ -77,6 +77,26 @@ export function InteractiveArchiveFigure({ media }: { media: ImageAsset }) {
 
   return (
     <figure className="archive-figure" ref={figureRef}>
+      <span className="archive-figure__echo archive-figure__echo--near" aria-hidden="true">
+        <Image
+          src={media.src}
+          alt=""
+          width={media.width}
+          height={media.height}
+          sizes="18vw"
+          loading="lazy"
+        />
+      </span>
+      <span className="archive-figure__echo archive-figure__echo--far" aria-hidden="true">
+        <Image
+          src={media.src}
+          alt=""
+          width={media.width}
+          height={media.height}
+          sizes="12vw"
+          loading="lazy"
+        />
+      </span>
       <div className="archive-figure__image">
         <Image
           src={media.src}
