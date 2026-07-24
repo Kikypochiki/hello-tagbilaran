@@ -52,6 +52,9 @@ test("Living archive goes directly from the cover into five focused chapters", a
   await expect(page.locator(".chapter-title__image")).toHaveCount(0);
   await expect(page.locator(".archive-figure__echo")).toHaveCount(0);
   await expect(page.locator(".archive-chapter__figure img")).toHaveCount(5);
+  await expect(page.locator(".archive-chapter__polaroid")).toHaveCount(5);
+  await expect(page.locator(".story-rail")).toHaveCount(1);
+  await expect(page.locator(".story-compass")).toHaveCount(1);
   expect(
     await chapters.evaluateAll((items) =>
       items.every((item) => item.querySelectorAll(".archive-chapter__figure img").length === 1),
@@ -105,6 +108,12 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
       "position",
       "sticky",
     );
+
+    const rail = page.locator(".archive-story__navigator");
+    await page.locator(".archive-chapter").first().scrollIntoViewIfNeeded();
+    await expect(rail).toHaveAttribute("data-within-story", "");
+    await page.locator(".site-footer").scrollIntoViewIfNeeded();
+    await expect(rail).not.toHaveAttribute("data-within-story", "");
   }
 
   await page.goto("/about");

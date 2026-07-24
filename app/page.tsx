@@ -77,15 +77,19 @@ export default function Home() {
 
                     {image ? (
                       <figure className="archive-chapter__figure">
-                        <div className="archive-chapter__image">
-                          <Image
-                            src={image.src}
-                            alt={image.alt}
-                            width={image.width}
-                            height={image.height}
-                            sizes="(max-width: 767px) 100vw, (max-width: 1100px) 58vw, 52vw"
-                            loading={index === 0 ? "eager" : "lazy"}
-                          />
+                        <div className="archive-chapter__polaroid">
+                          <div className="archive-chapter__polaroid-surface">
+                            <div className="archive-chapter__image">
+                              <Image
+                                src={image.src}
+                                alt={image.alt}
+                                width={image.width}
+                                height={image.height}
+                                sizes="(max-width: 767px) calc(100vw - 3rem), (max-width: 1100px) 52vw, 46vw"
+                                loading={index === 0 ? "eager" : "lazy"}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </figure>
                     ) : null}

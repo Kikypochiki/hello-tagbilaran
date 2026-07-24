@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 type StoryChapterLink = {
@@ -10,6 +11,7 @@ type StoryChapterLink = {
 export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
   const [activeId, setActiveId] = useState(chapters[0]?.id ?? "");
   const [isWithinStory, setIsWithinStory] = useState(false);
+  const [isFooterVisible, setIsFooterVisible] = useState(false);
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const activeChapter =
     chapters.find((chapter) => chapter.id === activeId) ?? chapters[0];
@@ -19,6 +21,7 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
       .map(({ id }) => document.getElementById(id))
       .filter((section): section is HTMLElement => Boolean(section));
     const story = document.querySelector<HTMLElement>(".archive-story");
+    const footer = document.querySelector<HTMLElement>(".site-footer");
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -44,9 +47,19 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
 
     if (story) storyObserver?.observe(story);
 
+    const footerObserver = footer
+      ? new IntersectionObserver(
+          ([entry]) => setIsFooterVisible(entry.isIntersecting),
+          { threshold: 0.01 },
+        )
+      : null;
+
+    if (footer) footerObserver?.observe(footer);
+
     return () => {
       observer.disconnect();
       storyObserver?.disconnect();
+      footerObserver?.disconnect();
     };
   }, [chapters]);
 
@@ -66,10 +79,55 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
     <nav
       className="archive-story__navigator"
       aria-label="Story chapters"
-      data-within-story={isWithinStory || undefined}
+      data-within-story={isWithinStory && !isFooterVisible ? "" : undefined}
     >
-      <p>Living City Archive</p>
-      <details ref={detailsRef}>
+      <div className="story-rail">
+        <p className="sr-only">Living City Archive chapters</p>
+        <span className="story-rail__track" aria-hidden="true">
+          <i className="story-rail__fill" />
+        </span>
+        <ol>
+          {chapters.map((chapter, index) => {
+            const chapterAt =
+              chapters.length > 1
+                ? 8 + (index / (chapters.length - 1)) * 84
+                : 50;
+
+            return (
+              <li
+                key={chapter.id}
+                style={{ "--chapter-at": `${chapterAt}%` } as CSSProperties}
+              >
+                <a
+                  href={`#${chapter.id}`}
+                  aria-label={`Go to ${chapter.title}`}
+                  aria-current={chapter.id === activeId ? "step" : undefined}
+                >
+                  <i className="story-rail__tick" aria-hidden="true" />
+                  <span className="story-rail__label" aria-hidden="true">
+                    {chapter.title}
+                  </span>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="story-compass" aria-hidden="true">
+          <div className="story-compass__case">
+            <div className="story-compass__dial">
+              <i className="story-compass__north">N</i>
+              <span className="story-compass__needle-group">
+                <span className="story-compass__needle story-compass__needle--north" />
+                <span className="story-compass__needle story-compass__needle--south" />
+                <span className="story-compass__pin" />
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <details className="story-mobile-index" ref={detailsRef}>
         <summary>
           <span>{activeChapter?.title}</span>
           <strong>Chapters</strong>
@@ -81,12 +139,7 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
                 href={`#${chapter.id}`}
                 aria-current={chapter.id === activeId ? "step" : undefined}
                 onClick={() => {
-                  if (
-                    detailsRef.current &&
-                    window.matchMedia("(max-width: 767px)").matches
-                  ) {
-                    detailsRef.current.open = false;
-                  }
+                  if (detailsRef.current) detailsRef.current.open = false;
                 }}
               >
                 {chapter.title}
