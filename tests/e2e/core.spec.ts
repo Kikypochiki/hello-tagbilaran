@@ -53,8 +53,8 @@ test("Living archive goes directly from the cover into five focused chapters", a
   await expect(page.locator(".archive-figure__echo")).toHaveCount(0);
   await expect(page.locator(".archive-chapter__figure img")).toHaveCount(5);
   await expect(page.locator(".archive-chapter__polaroid")).toHaveCount(5);
-  await expect(page.locator(".story-rail")).toHaveCount(1);
-  await expect(page.locator(".story-compass")).toHaveCount(1);
+  await expect(page.locator(".story-folio")).toHaveCount(1);
+  await expect(page.locator(".story-compass")).toHaveCount(0);
   expect(
     await chapters.evaluateAll((items) =>
       items.every((item) => item.querySelectorAll(".archive-chapter__figure img").length === 1),
@@ -109,11 +109,21 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
       "sticky",
     );
 
-    const rail = page.locator(".archive-story__navigator");
+    const navigator = page.locator(".archive-story__navigator");
     await page.locator(".archive-chapter").first().scrollIntoViewIfNeeded();
-    await expect(rail).toHaveAttribute("data-within-story", "");
+    await expect(navigator).toHaveAttribute("data-within-story", "");
+
+    const folioTrigger = page.locator(".story-folio__trigger");
+    await folioTrigger.hover();
+    await expect(page.locator(".story-folio__sheet")).toBeVisible();
+    await expect(page.locator(".story-folio__sheet a")).toHaveCount(5);
+    await folioTrigger.click();
+    await expect(folioTrigger).toHaveAttribute("aria-expanded", "true");
+    await page.keyboard.press("Escape");
+    await expect(folioTrigger).toHaveAttribute("aria-expanded", "false");
+
     await page.locator(".site-footer").scrollIntoViewIfNeeded();
-    await expect(rail).not.toHaveAttribute("data-within-story", "");
+    await expect(navigator).not.toHaveAttribute("data-within-story", "");
   }
 
   await page.goto("/about");

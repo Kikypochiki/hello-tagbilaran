@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 type StoryChapterLink = {
@@ -12,9 +11,17 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
   const [activeId, setActiveId] = useState(chapters[0]?.id ?? "");
   const [isWithinStory, setIsWithinStory] = useState(false);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
-  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const [isFolioOpen, setIsFolioOpen] = useState(false);
+  const folioRef = useRef<HTMLDivElement>(null);
+  const mobileIndexRef = useRef<HTMLDetailsElement>(null);
   const activeChapter =
     chapters.find((chapter) => chapter.id === activeId) ?? chapters[0];
+  const activeIndex = Math.max(
+    0,
+    chapters.findIndex((chapter) => chapter.id === activeId),
+  );
+  const chapterNumber = String(activeIndex + 1).padStart(2, "0");
+  const chapterTotal = String(chapters.length).padStart(2, "0");
 
   useEffect(() => {
     const sections = chapters
@@ -64,16 +71,28 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
   }, [chapters]);
 
   useEffect(() => {
-    const details = detailsRef.current;
-    if (!details) return;
-    const desktop = window.matchMedia("(min-width: 768px)");
-    const syncOpenState = () => {
-      details.open = desktop.matches;
+    if (!isFolioOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsFolioOpen(false);
+      folioRef.current
+        ?.querySelector<HTMLButtonElement>(".story-folio__trigger")
+        ?.focus();
     };
-    syncOpenState();
-    desktop.addEventListener("change", syncOpenState);
-    return () => desktop.removeEventListener("change", syncOpenState);
-  }, []);
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!folioRef.current?.contains(event.target as Node)) {
+        setIsFolioOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [isFolioOpen]);
 
   return (
     <nav
@@ -81,67 +100,69 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
       aria-label="Story chapters"
       data-within-story={isWithinStory && !isFooterVisible ? "" : undefined}
     >
-      <div className="story-rail">
-        <p className="sr-only">Living City Archive chapters</p>
-        <span className="story-rail__track" aria-hidden="true">
-          <i className="story-rail__fill" />
-        </span>
-        <ol>
-          {chapters.map((chapter, index) => {
-            const chapterAt =
-              chapters.length > 1
-                ? 8 + (index / (chapters.length - 1)) * 84
-                : 50;
+      <div
+        className="story-folio"
+        data-open={isFolioOpen ? "" : undefined}
+        ref={folioRef}
+      >
+        <button
+          className="story-folio__trigger"
+          type="button"
+          aria-expanded={isFolioOpen}
+          aria-controls="story-folio-sheet"
+          aria-label={`Open chapter index. Current chapter: ${activeChapter?.title}`}
+          onClick={() => setIsFolioOpen((open) => !open)}
+        >
+          <span>{chapterNumber}</span>
+          <i aria-hidden="true" />
+          <small>{chapterTotal}</small>
+        </button>
 
-            return (
-              <li
-                key={chapter.id}
-                style={{ "--chapter-at": `${chapterAt}%` } as CSSProperties}
-              >
+        <div className="story-folio__sheet" id="story-folio-sheet">
+          <p>Living City Archive</p>
+          <ol>
+            {chapters.map((chapter, index) => (
+              <li key={chapter.id}>
                 <a
                   href={`#${chapter.id}`}
-                  aria-label={`Go to ${chapter.title}`}
                   aria-current={chapter.id === activeId ? "step" : undefined}
+                  onClick={() => {
+                    setIsFolioOpen(false);
+                  }}
                 >
-                  <i className="story-rail__tick" aria-hidden="true" />
-                  <span className="story-rail__label" aria-hidden="true">
-                    {chapter.title}
+                  <span aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
+                  <strong>{chapter.title}</strong>
                 </a>
               </li>
-            );
-          })}
-        </ol>
-
-        <div className="story-compass" aria-hidden="true">
-          <div className="story-compass__case">
-            <div className="story-compass__dial">
-              <i className="story-compass__north">N</i>
-              <span className="story-compass__needle-group">
-                <span className="story-compass__needle story-compass__needle--north" />
-                <span className="story-compass__needle story-compass__needle--south" />
-                <span className="story-compass__pin" />
-              </span>
-            </div>
-          </div>
+            ))}
+          </ol>
         </div>
       </div>
 
-      <details className="story-mobile-index" ref={detailsRef}>
+      <details className="story-mobile-index" ref={mobileIndexRef}>
         <summary>
           <span>{activeChapter?.title}</span>
-          <strong>Chapters</strong>
+          <strong>
+            {chapterNumber} / {chapterTotal}
+          </strong>
         </summary>
         <ol>
-          {chapters.map((chapter) => (
+          {chapters.map((chapter, index) => (
             <li key={chapter.id}>
               <a
                 href={`#${chapter.id}`}
                 aria-current={chapter.id === activeId ? "step" : undefined}
                 onClick={() => {
-                  if (detailsRef.current) detailsRef.current.open = false;
+                  if (mobileIndexRef.current) {
+                    mobileIndexRef.current.open = false;
+                  }
                 }}
               >
+                <span aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 {chapter.title}
               </a>
             </li>

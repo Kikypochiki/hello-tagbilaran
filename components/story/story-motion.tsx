@@ -19,55 +19,6 @@ export function StoryMotion() {
 
       const chapters = gsap.utils.toArray<HTMLElement>(".archive-chapter", story);
       const pointerCleanups: Array<() => void> = [];
-      const progressFill =
-        document.querySelector<HTMLElement>(".story-rail__fill");
-      const compassDial =
-        document.querySelector<HTMLElement>(".story-compass__dial");
-      const compassNeedle =
-        document.querySelector<HTMLElement>(".story-compass__needle-group");
-
-      if (progressFill) {
-        gsap.fromTo(
-          progressFill,
-          { scaleY: 0 },
-          {
-            scaleY: 1,
-            ease: "none",
-            scrollTrigger: {
-              trigger: story,
-              start: "top top",
-              end: "bottom bottom",
-              scrub: 0.25,
-            },
-          },
-        );
-      }
-
-      if (compassDial) {
-        gsap.to(compassDial, {
-          rotation: 90,
-          ease: "none",
-          scrollTrigger: {
-            trigger: story,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.8,
-          },
-        });
-      }
-
-      if (compassNeedle) {
-        gsap.to(compassNeedle, {
-          rotation: 700,
-          ease: "none",
-          scrollTrigger: {
-            trigger: story,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1.1,
-          },
-        });
-      }
 
       chapters.forEach((chapter, index) => {
         const paper = chapter.querySelector<HTMLElement>(".archive-chapter__paper");
@@ -99,21 +50,20 @@ export function StoryMotion() {
         const direction = index % 2 === 0 ? 1 : -1;
 
         gsap.set(paper, {
-          yPercent: 3,
-          rotationX: 1.4,
-          scale: 0.99,
+          yPercent: 2,
+          rotationX: 0.55,
         });
-        gsap.set(heading, { y: 46 });
+        gsap.set(heading, { y: 28 });
         gsap.set(polaroid, {
-          xPercent: direction * 7,
-          y: 58,
-          rotation: direction * 4.5,
-          rotationY: direction * 12,
-          rotationX: 3,
+          xPercent: direction * 3,
+          y: 36,
+          rotation: direction * 2.2,
+          rotationY: direction * 4,
+          rotationX: 1.2,
         });
-        gsap.set(image, { scale: 1.065 });
-        gsap.set(copy, { y: 38 });
-        gsap.set(footer, { y: 24 });
+        gsap.set(image, { scale: 1.035 });
+        gsap.set(copy, { y: 22 });
+        gsap.set(footer, { y: 14 });
 
         const timeline = gsap.timeline({
           defaults: { ease: "none" },
@@ -132,27 +82,26 @@ export function StoryMotion() {
             {
               yPercent: 0,
               rotationX: 0,
-              scale: 1,
-              duration: 0.26,
+              duration: 0.34,
             },
             0,
           )
-          .to(heading, { y: 0, duration: 0.28 }, 0)
+          .to(heading, { y: 0, duration: 0.34 }, 0)
           .to(
             polaroid,
             {
               xPercent: 0,
               y: 0,
-              rotation: direction * 1.1,
+              rotation: direction * 0.7,
               rotationY: 0,
               rotationX: 0,
-              duration: 0.5,
+              duration: 0.56,
             },
             0.04,
           )
-          .to(image, { scale: 1, duration: 0.52 }, 0.04)
-          .to(copy, { y: 0, duration: 0.32 }, 0.38)
-          .to(footer, { y: 0, duration: 0.22 }, 0.58);
+          .to(image, { scale: 1, duration: 0.56 }, 0.04)
+          .to(copy, { y: 0, duration: 0.3 }, 0.34)
+          .to(footer, { y: 0, duration: 0.22 }, 0.5);
 
         const tiltToX = gsap.quickTo(polaroidSurface, "rotationX", {
           duration: 0.55,
@@ -172,9 +121,9 @@ export function StoryMotion() {
           const bounds = polaroidSurface.getBoundingClientRect();
           const x = (event.clientX - bounds.left) / bounds.width - 0.5;
           const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-          tiltToX(y * -7);
-          tiltToY(x * 8);
-          liftToZ(12);
+          tiltToX(y * -2.5);
+          tiltToY(x * 3);
+          liftToZ(6);
         };
 
         const resetPointerTilt = () => {
