@@ -19,6 +19,25 @@ export function StoryMotion() {
 
       const chapters = gsap.utils.toArray<HTMLElement>(".archive-chapter", story);
       const pointerCleanups: Array<() => void> = [];
+      const progressFill =
+        document.querySelector<HTMLElement>(".story-thread__fill");
+
+      if (progressFill) {
+        gsap.fromTo(
+          progressFill,
+          { scaleY: 0 },
+          {
+            scaleY: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: story,
+              start: "top top",
+              end: "bottom bottom",
+              scrub: 0.35,
+            },
+          },
+        );
+      }
 
       chapters.forEach((chapter, index) => {
         const paper = chapter.querySelector<HTMLElement>(".archive-chapter__paper");
