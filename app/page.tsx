@@ -62,12 +62,16 @@ export default function Home() {
               <section
                 className="archive-chapter"
                 data-chapter-index={index}
+                data-chapter-number={String(index + 1).padStart(2, "0")}
                 id={chapter.id}
                 key={chapter.id}
                 aria-labelledby={`${chapter.id}-title`}
               >
                 <div className="archive-chapter__scene">
-                  <div className="archive-chapter__paper">
+                  <div
+                    className="archive-chapter__paper"
+                    data-folio={String(index + 1).padStart(2, "0")}
+                  >
                     <header className="archive-chapter__heading">
                       <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
                       {chapter.dateLabel ? (
