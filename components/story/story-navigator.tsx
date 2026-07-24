@@ -38,7 +38,7 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
     const storyObserver = story
       ? new IntersectionObserver(
           ([entry]) => setIsWithinStory(entry.isIntersecting),
-          { rootMargin: "-72px 0px 0px" },
+          { rootMargin: "-72px 0px -68% 0px", threshold: 0.01 },
         )
       : null;
 
@@ -49,6 +49,18 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
       storyObserver?.disconnect();
     };
   }, [chapters]);
+
+  useEffect(() => {
+    const details = detailsRef.current;
+    if (!details) return;
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const syncOpenState = () => {
+      details.open = desktop.matches;
+    };
+    syncOpenState();
+    desktop.addEventListener("change", syncOpenState);
+    return () => desktop.removeEventListener("change", syncOpenState);
+  }, []);
 
   return (
     <nav
@@ -69,7 +81,12 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
                 href={`#${chapter.id}`}
                 aria-current={chapter.id === activeId ? "step" : undefined}
                 onClick={() => {
-                  if (detailsRef.current) detailsRef.current.open = false;
+                  if (
+                    detailsRef.current &&
+                    window.matchMedia("(max-width: 767px)").matches
+                  ) {
+                    detailsRef.current.open = false;
+                  }
                 }}
               >
                 {chapter.title}

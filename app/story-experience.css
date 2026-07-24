@@ -18,40 +18,56 @@
 }
 
 .archive-story__navigator {
-  position: sticky;
+  position: fixed;
   top: var(--header-height);
+  bottom: 0;
+  left: 0;
   z-index: 6;
-  display: grid;
-  grid-template-columns: auto minmax(15rem, 30rem);
-  align-items: center;
-  justify-content: space-between;
-  min-height: 52px;
-  padding: 0.35rem clamp(1rem, 3vw, 3.5rem);
+  display: flex;
+  width: clamp(9.5rem, 12vw, 12rem);
+  flex-direction: column;
+  padding: 1.25rem 0.8rem;
   color: var(--story-ink);
   background: rgb(255 249 235 / 94%);
-  border-bottom: 1px solid var(--story-rule);
+  border-right: 1px solid var(--story-rule);
   backdrop-filter: blur(10px);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(-0.75rem);
+  transition:
+    opacity 220ms ease,
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 220ms;
+}
+
+.archive-story__navigator[data-within-story] {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transform: none;
 }
 
 .archive-story__navigator > p {
   margin: 0;
-  padding-right: clamp(1rem, 2.5vw, 2.5rem);
+  padding: 0 0.7rem 1rem;
+  border-bottom: 1px solid var(--story-rule);
   font-family: var(--font-serif);
   font-size: 0.9rem;
   font-weight: 700;
-  white-space: nowrap;
 }
 
 .archive-story__navigator details {
   position: relative;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .archive-story__navigator summary {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  align-content: start;
   min-height: 44px;
-  padding: 0 0.7rem;
+  padding: 0.8rem 0.7rem;
   color: var(--story-ink);
   font-family: var(--font-sans);
   font-size: 0.78rem;
@@ -59,7 +75,7 @@
   line-height: 1.25;
   list-style: none;
   cursor: pointer;
-  gap: 1.5rem;
+  gap: 0.4rem;
 }
 
 .archive-story__navigator summary::-webkit-details-marker {
@@ -67,9 +83,7 @@
 }
 
 .archive-story__navigator summary span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 .archive-story__navigator summary strong {
@@ -79,16 +93,17 @@
 }
 
 .archive-story__navigator ol {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  right: 0;
-  left: 0;
+  position: static;
   display: grid;
   margin: 0;
-  padding: 0.65rem;
+  padding: 0;
   list-style: none;
-  background: var(--story-paper-light);
-  border: 1px solid var(--story-rule);
+  background: transparent;
+  border: 0;
+}
+
+.archive-story__navigator details:not([open]) > ol {
+  display: grid;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -107,7 +122,7 @@
 .archive-story__navigator a {
   display: block;
   min-height: 44px;
-  padding: 0.75rem 0.7rem;
+  padding: 0.7rem;
   color: var(--story-muted);
   font-family: var(--font-sans);
   font-size: 0.8rem;
@@ -286,8 +301,15 @@
 }
 
 .archive-chapter__sources a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
   color: var(--story-ink);
   text-underline-offset: 0.18em;
+}
+
+.archive-story__chapters {
+  padding-left: clamp(9.5rem, 12vw, 12rem);
 }
 
 .archive-chapter__next,
@@ -361,19 +383,23 @@
 
 @media (max-width: 767px) {
   .archive-story {
-    padding-top: 63px;
+    padding-top: 0;
   }
 
   .archive-story__navigator {
     position: fixed;
+    top: var(--header-height);
     right: 0;
+    bottom: auto;
     left: 0;
+    display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     width: auto;
     gap: 1rem;
     min-height: 52px;
     padding: 0.5rem 1rem;
     pointer-events: none;
+    visibility: hidden;
     opacity: 0;
     transform: translateY(-0.75rem);
     transition:
@@ -381,8 +407,13 @@
       transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .archive-story__chapters {
+    padding-left: 0;
+  }
+
   .archive-story__navigator[data-within-story] {
     pointer-events: auto;
+    visibility: visible;
     opacity: 1;
     transform: none;
   }
@@ -394,12 +425,27 @@
     white-space: nowrap;
   }
 
+  .archive-story__navigator details {
+    overflow: visible;
+  }
+
   .archive-story__navigator summary {
     padding-right: 0;
     padding-left: 0;
   }
 
+  .archive-story__navigator summary span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .archive-story__navigator summary strong {
+    display: none;
+  }
+
+  .archive-story__navigator details:not([open]) > ol {
     display: none;
   }
 

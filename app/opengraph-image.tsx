@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Hello Tagbilaran — Living City Archive";
+export const alt = "Hello Tagbilaran, Living City Archive";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -9,10 +9,12 @@ export default function OpenGraphImage() {
     (
       <div
         style={{
+          position: "relative",
+          display: "flex",
           width: "100%",
           height: "100%",
-          display: "flex",
-          position: "relative",
+          alignItems: "center",
+          justifyContent: "center",
           padding: "76px 84px",
           color: "#26251f",
           background: "#fff9eb",
@@ -22,18 +24,22 @@ export default function OpenGraphImage() {
         <div
           style={{
             position: "absolute",
-            inset: "0 0 0 62%",
+            top: 0,
+            right: 0,
+            left: 0,
             display: "flex",
-            background: "#005c09",
-            clipPath: "polygon(18% 0, 100% 0, 100% 100%, 0 100%)",
+            height: 12,
+            background: "#f4c542",
           }}
         />
         <div
           style={{
-          width: "72%",
             display: "flex",
+            width: "100%",
             flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
+            textAlign: "center",
           }}
         >
           <div
@@ -43,11 +49,11 @@ export default function OpenGraphImage() {
               color: "#a84332",
               fontFamily: "monospace",
               fontSize: 22,
-              letterSpacing: 4,
+              letterSpacing: 3,
               textTransform: "uppercase",
             }}
           >
-            Tagbilaran City · Bohol
+            Living City Archive
           </div>
           <div style={{ display: "flex", fontSize: 92, lineHeight: 0.95 }}>
             Hello,
@@ -62,29 +68,16 @@ export default function OpenGraphImage() {
           >
             Tagbilaran.
           </div>
-          <div style={{ display: "flex", marginTop: 38, fontSize: 28 }}>
-            Living City Archive
+          <div
+            style={{
+              display: "flex",
+              marginTop: 38,
+              color: "#696253",
+              fontSize: 26,
+            }}
+          >
+            A city told through memory, place, and everyday life.
           </div>
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            right: 62,
-            bottom: 48,
-            display: "flex",
-            width: 140,
-            height: 140,
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff9eb",
-            border: "4px solid #f4c542",
-            borderRadius: "50%",
-            fontFamily: "monospace",
-            fontSize: 20,
-            transform: "rotate(-8deg)",
-          }}
-        >
-          FIELD 01
         </div>
       </div>
     ),

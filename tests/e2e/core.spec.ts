@@ -76,7 +76,10 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
   await expect(page.locator(".journal-cover__instruction")).toHaveCount(0);
 
   const coverContent = page.locator(".journal-cover__content");
-  const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
+  const layoutCenter = await page.evaluate(() => {
+    const bodyBounds = document.body.getBoundingClientRect();
+    return bodyBounds.left + bodyBounds.width / 2;
+  });
 
   if (testInfo.project.name === "mobile") {
     const [navigatorHeight, navigatorTop] = await page.evaluate(() => {
@@ -95,7 +98,7 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
       Math.abs(
         (contentBounds?.x ?? 0) +
           (contentBounds?.width ?? 0) / 2 -
-          viewportWidth / 2,
+          layoutCenter,
       ),
     ).toBeLessThanOrEqual(2);
     await expect(page.locator(".archive-chapter__scene").first()).toHaveCSS(
@@ -105,7 +108,7 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
   }
 
   await page.goto("/about");
-  await expect(page.locator(".site-header")).toHaveCSS("position", "absolute");
+  await expect(page.locator(".site-header")).toHaveCSS("position", "fixed");
 });
 
 test("Reduced motion keeps the story as a normal paper document", async ({ page }, testInfo) => {

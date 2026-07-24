@@ -6,8 +6,7 @@ import { GlobalMotion } from "@/components/global-motion";
 import { StaleServiceWorkerCleanup } from "@/components/stale-service-worker-cleanup";
 import { hasProductionSiteUrl, siteUrl } from "@/lib/site";
 import "./globals.css";
-import "./immersive-experience.css";
-import "./motion-structure.css";
+import "./site-experience.css";
 import "./story-experience.css";
 
 const sans = Geist({

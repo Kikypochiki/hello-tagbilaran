@@ -71,7 +71,6 @@ export function HazardAssessmentClient() {
       <div className="hazard-assessment__workspace">
         <form className="hazard-assessment__form" onSubmit={(event) => event.preventDefault()}>
           <div className="hazard-step">
-            <span className="hazard-step__number" aria-hidden="true">01</span>
             <fieldset>
               <legend>Choose a hazard</legend>
               <p>Each official layer represents a different scenario. They are never merged into one score.</p>
@@ -92,7 +91,6 @@ export function HazardAssessmentClient() {
           </div>
 
           <div className="hazard-step">
-            <span className="hazard-step__number" aria-hidden="true">02</span>
             <fieldset>
               <legend>Choose an area</legend>
               <p>Select a barangay here or directly on the city map. No device location is requested or stored.</p>
@@ -112,7 +110,6 @@ export function HazardAssessmentClient() {
           </div>
 
           <div className="hazard-step hazard-step--legend">
-            <span className="hazard-step__number" aria-hidden="true">03</span>
             <fieldset>
               <legend>Read the official classification</legend>
               <p>Pattern and color will appear together when an approved layer is connected.</p>
@@ -138,7 +135,7 @@ export function HazardAssessmentClient() {
                   onChange={(event) => setLegendOpacity(Number(event.target.value))}
                 />
               </label>
-              <small className="hazard-preview-note">Style preview only · not a heatmap or local classification</small>
+              <small className="hazard-preview-note">Style preview only. Not a heatmap or local classification.</small>
             </fieldset>
           </div>
         </form>

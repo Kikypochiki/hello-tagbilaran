@@ -25,7 +25,7 @@ export function SiteFooter() {
       <div className="site-footer__colophon">
         <p>Created by {siteOwner.displayName}.</p>
         <small>
-          Tagbilaran City · Bohol · This is not an official city government or UP NOAH application.
+          Based in Tagbilaran City, Bohol. This is not an official city government or UP NOAH application.
         </small>
       </div>
     </footer>

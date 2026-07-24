@@ -46,7 +46,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
             onClick={closeDialog}
             aria-label={`Close information about ${place.name}`}
           >
-            <span aria-hidden="true">×</span>
+            <span aria-hidden="true">Close</span>
           </button>
         </header>
 
@@ -68,7 +68,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
             />
             <figcaption>
               Photo: {leadImage.credit ?? "Credit not supplied"}
-              {leadImage.rights ? ` · ${leadImage.rights}` : null}
+              {leadImage.rights ? `, ${leadImage.rights}` : null}
             </figcaption>
           </figure>
         ) : null}
@@ -106,7 +106,7 @@ export function PlaceDialog({ place, onClose }: { place: Place; onClose: () => v
               </a>
             ) : null}
             <Link className="text-link" href={`/places/${place.slug}`}>
-              Full place page <span aria-hidden="true">→</span>
+              View full place page
             </Link>
           </div>
         </footer>

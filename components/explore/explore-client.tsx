@@ -189,7 +189,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
             <strong>Places &amp; barangays</strong>
           </span>
           <span className="map-index__count">
-            {places.length} places · {tagbilaranBarangays.length} barangays
+            {places.length} places, {tagbilaranBarangays.length} barangays
           </span>
         </summary>
 

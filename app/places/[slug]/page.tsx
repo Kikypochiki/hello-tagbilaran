@@ -116,7 +116,7 @@ export default async function PlacePage({
             />
             <figcaption>
               Photo: {leadImage.credit ?? "Credit not supplied"}
-              {leadImage.rights ? ` · ${leadImage.rights}` : null}
+              {leadImage.rights ? `, ${leadImage.rights}` : null}
             </figcaption>
           </figure>
         ) : null}
@@ -188,7 +188,7 @@ export default async function PlacePage({
                 ) : (
                   <span>{source.title}</span>
                 )}
-                {source.publisher ? ` · ${source.publisher}` : ""}
+                {source.publisher ? `, ${source.publisher}` : ""}
                 <small>Accessed {source.accessedAt}</small>
                 {source.notes ? <small>{source.notes}</small> : null}
               </li>
