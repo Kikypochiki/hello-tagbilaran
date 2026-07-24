@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useRef, useState } from "react";
 
 type StoryChapterLink = {
@@ -11,8 +12,6 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
   const [activeId, setActiveId] = useState(chapters[0]?.id ?? "");
   const [isWithinStory, setIsWithinStory] = useState(false);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
-  const [isFolioOpen, setIsFolioOpen] = useState(false);
-  const folioRef = useRef<HTMLDivElement>(null);
   const mobileIndexRef = useRef<HTMLDetailsElement>(null);
   const activeChapter =
     chapters.find((chapter) => chapter.id === activeId) ?? chapters[0];
@@ -70,75 +69,49 @@ export function StoryNavigator({ chapters }: { chapters: StoryChapterLink[] }) {
     };
   }, [chapters]);
 
-  useEffect(() => {
-    if (!isFolioOpen) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setIsFolioOpen(false);
-      folioRef.current
-        ?.querySelector<HTMLButtonElement>(".story-folio__trigger")
-        ?.focus();
-    };
-    const handlePointerDown = (event: PointerEvent) => {
-      if (!folioRef.current?.contains(event.target as Node)) {
-        setIsFolioOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("pointerdown", handlePointerDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [isFolioOpen]);
-
   return (
     <nav
       className="archive-story__navigator"
       aria-label="Story chapters"
       data-within-story={isWithinStory && !isFooterVisible ? "" : undefined}
     >
-      <div
-        className="story-folio"
-        data-open={isFolioOpen ? "" : undefined}
-        ref={folioRef}
-      >
-        <button
-          className="story-folio__trigger"
-          type="button"
-          aria-expanded={isFolioOpen}
-          aria-controls="story-folio-sheet"
-          aria-label={`Open chapter index. Current chapter: ${activeChapter?.title}`}
-          onClick={() => setIsFolioOpen((open) => !open)}
-        >
-          <span>{chapterNumber}</span>
-          <i aria-hidden="true" />
-          <small>{chapterTotal}</small>
-        </button>
+      <div className="story-thread">
+        <span className="story-thread__track" aria-hidden="true">
+          <i className="story-thread__fill" />
+        </span>
+        <ol>
+          {chapters.map((chapter, index) => {
+            const chapterAt =
+              chapters.length > 1
+                ? 5 + (index / (chapters.length - 1)) * 90
+                : 50;
 
-        <div className="story-folio__sheet" id="story-folio-sheet">
-          <p>Living City Archive</p>
-          <ol>
-            {chapters.map((chapter, index) => (
-              <li key={chapter.id}>
+            return (
+              <li
+                key={chapter.id}
+                style={{ "--chapter-at": `${chapterAt}%` } as CSSProperties}
+              >
                 <a
                   href={`#${chapter.id}`}
                   aria-current={chapter.id === activeId ? "step" : undefined}
-                  onClick={() => {
-                    setIsFolioOpen(false);
-                  }}
                 >
-                  <span aria-hidden="true">
-                    {String(index + 1).padStart(2, "0")}
+                  <i className="story-thread__mark" aria-hidden="true" />
+                  <span className="story-thread__label">
+                    <small aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </small>
+                    <strong>{chapter.title}</strong>
                   </span>
-                  <strong>{chapter.title}</strong>
                 </a>
               </li>
-            ))}
-          </ol>
-        </div>
+            );
+          })}
+        </ol>
+        <p className="story-thread__counter" aria-hidden="true">
+          <strong>{chapterNumber}</strong>
+          <span>/</span>
+          {chapterTotal}
+        </p>
       </div>
 
       <details className="story-mobile-index" ref={mobileIndexRef}>

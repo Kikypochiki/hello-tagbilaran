@@ -53,7 +53,7 @@ test("Living archive goes directly from the cover into five focused chapters", a
   await expect(page.locator(".archive-figure__echo")).toHaveCount(0);
   await expect(page.locator(".archive-chapter__figure img")).toHaveCount(5);
   await expect(page.locator(".archive-chapter__polaroid")).toHaveCount(5);
-  await expect(page.locator(".story-folio")).toHaveCount(1);
+  await expect(page.locator(".story-thread")).toHaveCount(1);
   await expect(page.locator(".story-compass")).toHaveCount(0);
   expect(
     await chapters.evaluateAll((items) =>
@@ -113,14 +113,19 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
     await page.locator(".archive-chapter").first().scrollIntoViewIfNeeded();
     await expect(navigator).toHaveAttribute("data-within-story", "");
 
-    const folioTrigger = page.locator(".story-folio__trigger");
-    await folioTrigger.hover();
-    await expect(page.locator(".story-folio__sheet")).toBeVisible();
-    await expect(page.locator(".story-folio__sheet a")).toHaveCount(5);
-    await folioTrigger.click();
-    await expect(folioTrigger).toHaveAttribute("aria-expanded", "true");
-    await page.keyboard.press("Escape");
-    await expect(folioTrigger).toHaveAttribute("aria-expanded", "false");
+    const storyThread = page.locator(".story-thread");
+    const chapterLabels = page.locator(".story-thread__label");
+    await expect(chapterLabels).toHaveCount(5);
+    await storyThread.hover();
+    await expect(chapterLabels.first()).toBeVisible();
+    await page.waitForTimeout(250);
+    const labelOpacities = await chapterLabels.evaluateAll((labels) =>
+      labels.map((label) => Number.parseFloat(getComputedStyle(label).opacity)),
+    );
+    expect(Math.max(...labelOpacities)).toBe(1);
+    expect(Math.min(...labelOpacities)).toBeLessThan(0.5);
+    await page.locator(".story-thread a").nth(1).focus();
+    await expect(chapterLabels.nth(1)).toBeVisible();
 
     await page.locator(".site-footer").scrollIntoViewIfNeeded();
     await expect(navigator).not.toHaveAttribute("data-within-story", "");
