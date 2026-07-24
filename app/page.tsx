@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { ChapterTrace } from "@/components/story/chapter-trace";
 import { ChapterArtifact } from "@/components/story/chapter-artifact";
 import { CoverAmbient } from "@/components/story/cover-ambient";
 import { historyChapters } from "@/content/history";
 import { RevealText } from "@/components/story/reveal-text";
 import { StoryProgress } from "@/components/story/story-progress";
 import { StoryUnfolding } from "@/components/story/story-unfolding";
+import type { HistoryChapter } from "@/types/content";
 
 export const metadata: Metadata = {
   title: { absolute: "Hello Tagbilaran" },
@@ -13,6 +16,34 @@ export const metadata: Metadata = {
     "Begin with Tagbilaran City's five-chapter field journal, then explore a practical city guide.",
   alternates: { canonical: "/" },
 };
+
+function ChapterTitle({ chapter }: { chapter: HistoryChapter }) {
+  const words = chapter.title.split(" ");
+  const splitAt = Math.max(1, Math.ceil(words.length / 2));
+  const firstHalf = words.slice(0, splitAt).join(" ");
+  const secondHalf = words.slice(splitAt).join(" ");
+  const image = chapter.media[0];
+
+  return (
+    <h2 aria-label={chapter.title} id={`${chapter.id}-title`}>
+      <span aria-hidden="true">
+        {firstHalf}
+        {image ? (
+          <span className="chapter-title__image">
+            <Image
+              src={image.src}
+              alt=""
+              width={image.width}
+              height={image.height}
+              sizes="(max-width: 780px) 84px, 144px"
+            />
+          </span>
+        ) : null}
+        {secondHalf ? ` ${secondHalf}` : null}
+      </span>
+    </h2>
+  );
+}
 
 export default function Home() {
   return (
@@ -65,13 +96,14 @@ export default function Home() {
                 aria-labelledby={`${chapter.id}-title`}
               >
                 <div className="history-chapter__stage">
+                  <ChapterTrace mirrored={index % 2 === 1} />
                   <div className="history-chapter__atmosphere" aria-hidden="true">
                     <span />
                   </div>
 
                   <div className="history-chapter__spread">
                     <header className="history-chapter__header">
-                      <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
+                      <ChapterTitle chapter={chapter} />
                     </header>
 
                     <div className="history-chapter__copy">

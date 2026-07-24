@@ -49,6 +49,9 @@ test("Living archive goes directly from the cover into five distinct scenes", as
   await expect(page.getByText("Open object label")).toHaveCount(0);
   await expect(page.getByText("The story continues in the streets.")).toHaveCount(0);
   await expect(page.locator(".barangay-foldout")).toHaveCount(0);
+  await expect(page.locator(".chapter-trace")).toHaveCount(5);
+  await expect(page.locator(".chapter-title__image")).toHaveCount(5);
+  await expect(page.locator(".archive-figure__echo")).toHaveCount(10);
   const chapterPresentation = await chapters.evaluateAll((items) =>
     items.map((item) => {
       const stage = item.querySelector<HTMLElement>(".history-chapter__stage");
@@ -94,12 +97,31 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
     ).toBeLessThanOrEqual(2);
     await expect(page.locator(".history-chapter__stage").first()).toHaveCSS(
       "position",
-      "relative",
+      "sticky",
     );
   }
 
   await page.goto("/about");
   await expect(page.locator(".site-header")).toHaveCSS("position", "absolute");
+});
+
+test("Reduced motion keeps the story as a normal paper document", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === "mobile", "Desktop progressive-enhancement check");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  await expect(page.locator("html")).not.toHaveClass(/story-cinematic-ready/);
+  await expect(page.locator(".history-chapter__stage").first()).toHaveCSS(
+    "position",
+    "relative",
+  );
+  const firstChapterHeight = await page
+    .locator(".history-chapter")
+    .first()
+    .evaluate((chapter) => chapter.getBoundingClientRect().height);
+  expect(firstChapterHeight).toBeLessThan(
+    (await page.evaluate(() => window.innerHeight)) * 1.9,
+  );
 });
 
 test("Explore keeps list access, URL filters, and stable navigation", async ({
