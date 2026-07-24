@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ChapterTrace } from "@/components/story/chapter-trace";
-import { ChapterArtifact } from "@/components/story/chapter-artifact";
 import { CoverAmbient } from "@/components/story/cover-ambient";
+import { StoryMotion } from "@/components/story/story-motion";
+import { StoryNavigator } from "@/components/story/story-navigator";
 import { historyChapters } from "@/content/history";
-import { RevealText } from "@/components/story/reveal-text";
-import { StoryProgress } from "@/components/story/story-progress";
-import { StoryUnfolding } from "@/components/story/story-unfolding";
-import type { HistoryChapter } from "@/types/content";
 
 export const metadata: Metadata = {
   title: { absolute: "Hello Tagbilaran" },
@@ -17,39 +13,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-function ChapterTitle({ chapter }: { chapter: HistoryChapter }) {
-  const words = chapter.title.split(" ");
-  const splitAt = Math.max(1, Math.ceil(words.length / 2));
-  const firstHalf = words.slice(0, splitAt).join(" ");
-  const secondHalf = words.slice(splitAt).join(" ");
-  const image = chapter.media[0];
-
-  return (
-    <h2 aria-label={chapter.title} id={`${chapter.id}-title`}>
-      <span aria-hidden="true">
-        {firstHalf}
-        {image ? (
-          <span className="chapter-title__image">
-            <Image
-              src={image.src}
-              alt=""
-              width={image.width}
-              height={image.height}
-              sizes="(max-width: 780px) 84px, 144px"
-            />
-          </span>
-        ) : null}
-        {secondHalf ? ` ${secondHalf}` : null}
-      </span>
-    </h2>
-  );
-}
-
 export default function Home() {
   return (
     <main id="main-content" className="story-journal">
-      <StoryUnfolding />
-
       <section className="journal-cover" aria-labelledby="cover-title">
         <CoverAmbient />
         <div className="journal-cover__layout">
@@ -59,8 +25,8 @@ export default function Home() {
               Tagbilaran.
             </h1>
             <p className="journal-cover__dek">
-              A living portrait of Bohol’s capital, assembled from coastline, memory,
-              civic life, and the people who keep the city moving.
+              A living portrait of Bohol&apos;s capital, assembled from coastline,
+              memory, civic life, and the people who keep the city moving.
             </p>
             <div className="journal-cover__actions">
               <a className="cover-scroll" href={`#${historyChapters[0].id}`}>
@@ -76,74 +42,108 @@ export default function Home() {
             </div>
           </div>
         </div>
-
       </section>
 
-      <div className="story-layout">
-        <StoryProgress
+      <div className="archive-story">
+        <StoryMotion />
+        <StoryNavigator
           chapters={historyChapters.map(({ id, title }) => ({ id, title }))}
         />
 
-        <article className="history-article" aria-label="A five-chapter history of Tagbilaran">
+        <article
+          className="archive-story__chapters"
+          aria-label="A five-chapter history of Tagbilaran"
+        >
           {historyChapters.map((chapter, index) => {
             const nextChapter = historyChapters[index + 1];
+            const image = chapter.media[0];
+
             return (
               <section
-                className="history-chapter"
-                data-visual-mode={chapter.visualMode}
+                className="archive-chapter"
+                data-chapter-index={index}
                 id={chapter.id}
                 key={chapter.id}
                 aria-labelledby={`${chapter.id}-title`}
               >
-                <div className="history-chapter__stage">
-                  <ChapterTrace mirrored={index % 2 === 1} />
-                  <div className="history-chapter__atmosphere" aria-hidden="true">
-                    <span />
-                  </div>
-
-                  <div className="history-chapter__spread">
-                    <header className="history-chapter__header">
-                      <ChapterTitle chapter={chapter} />
+                <div className="archive-chapter__scene">
+                  <div className="archive-chapter__paper">
+                    <header className="archive-chapter__heading">
+                      <h2 id={`${chapter.id}-title`}>{chapter.title}</h2>
+                      {chapter.dateLabel ? (
+                        <p className="archive-chapter__date">{chapter.dateLabel}</p>
+                      ) : null}
                     </header>
 
-                    <div className="history-chapter__copy">
-                      <RevealText className="chapter-intro">
+                    {image ? (
+                      <figure className="archive-chapter__figure">
+                        <div className="archive-chapter__image">
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            width={image.width}
+                            height={image.height}
+                            sizes="(max-width: 767px) 100vw, (max-width: 1100px) 58vw, 52vw"
+                            loading={index === 0 ? "eager" : "lazy"}
+                          />
+                        </div>
+                      </figure>
+                    ) : null}
+
+                    <div className="archive-chapter__copy">
+                      <p className="archive-chapter__intro">
                         {chapter.introduction}
-                      </RevealText>
+                      </p>
                       {chapter.body.map((paragraph) => (
                         <p key={paragraph}>{paragraph}</p>
                       ))}
                     </div>
 
-                    <ChapterArtifact chapter={chapter} />
+                    <footer className="archive-chapter__footer">
+                      {chapter.sources.length ? (
+                        <details className="archive-chapter__sources">
+                          <summary>
+                            {chapter.sources.length === 1
+                              ? "View chapter source"
+                              : "View chapter sources"}
+                          </summary>
+                          <ul>
+                            {chapter.sources.map((source) => (
+                              <li key={source.title}>
+                                {source.url ? (
+                                  <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    {source.title}
+                                  </a>
+                                ) : (
+                                  source.title
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      ) : null}
+
+                      {nextChapter ? (
+                        <a
+                          className="archive-chapter__next"
+                          href={`#${nextChapter.id}`}
+                          aria-label={`Continue to ${nextChapter.title}`}
+                        >
+                          Continue
+                          <span aria-hidden="true">↓</span>
+                        </a>
+                      ) : (
+                        <Link className="archive-chapter__atlas" href="/explore">
+                          Enter the city atlas
+                          <span aria-hidden="true">→</span>
+                        </Link>
+                      )}
+                    </footer>
                   </div>
-
-                  <footer className="history-chapter__footer">
-                    {chapter.sources.length ? (
-                      <div className="history-chapter__sources">
-                        <span>{chapter.sources.length === 1 ? "Source" : "Sources"}</span>
-                        {chapter.sources.map((source) =>
-                          source.url ? (
-                            <a key={source.title} href={source.url} target="_blank" rel="noreferrer">
-                              {source.title} · {source.publisher}
-                            </a>
-                          ) : (
-                            <span key={source.title}>{source.title}</span>
-                          ),
-                        )}
-                      </div>
-                    ) : null}
-
-                    <nav
-                      className="history-chapter__room-controls"
-                      aria-label={`${chapter.title} chapter navigation`}
-                    >
-                      <a href={nextChapter ? `#${nextChapter.id}` : "/explore"}>
-                        {nextChapter ? "Continue" : "Enter the city atlas"}
-                        <span aria-hidden="true">{nextChapter ? "↓" : "→"}</span>
-                      </a>
-                    </nav>
-                  </footer>
                 </div>
               </section>
             );
