@@ -9,11 +9,14 @@ test("Story remains within the viewport and offers direct navigation", async ({
   await expect(page.locator('link[rel="icon"][href*="/icon.svg"]').first()).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Hello, Tagbilaran." })).toBeVisible();
   await expect(page.getByRole("link", { name: /Explore places/ })).toBeVisible();
+  await expect(page.locator(".journal-cover__registration")).toHaveCount(0);
+  await expect(page.locator(".journal-cover__postcard")).toHaveCount(0);
+  await expect(page.locator(".cover-ambient")).toHaveCount(1);
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
-  const guideLink = page.getByRole("link", { name: "Continue to city guide" });
+  const guideLink = page.getByRole("link", { name: "Enter the city atlas" }).last();
   await guideLink.scrollIntoViewIfNeeded();
   await expect(guideLink).toBeVisible();
   await guideLink.click();
@@ -24,40 +27,48 @@ test("Immersive field index opens and navigates between rooms", async ({ page })
   await page.goto("/");
   await page.getByRole("button", { name: "Index" }).click();
 
-  const index = page.getByRole("dialog", { name: /Field index/ });
+  const index = page.getByRole("dialog", { name: "Index" });
   await expect(index).toBeVisible();
-  await index.getByRole("link", { name: /The preparedness room/ }).click();
+  await index.getByRole("link", { name: "Hazard assessment" }).click();
 
   await expect(page).toHaveURL(/\/hazard-assessment$/);
   await expect(page.getByRole("heading", { name: "Hazard assessment" })).toBeVisible();
 });
 
-test("Living archive keeps five distinct readable scenes and a neighborhood foldout", async ({ page }) => {
+test("Living archive goes directly from the cover into five distinct scenes", async ({ page }) => {
   await page.goto("/");
   const chapters = page.locator(".history-chapter[data-visual-mode]");
   await expect(chapters).toHaveCount(5);
   expect(await chapters.evaluateAll((items) => new Set(items.map((item) => item.getAttribute("data-visual-mode"))).size)).toBe(5);
-  await expect(page.getByRole("heading", { name: /Meet the city, neighborhood by neighborhood/ })).toBeVisible();
-  await expect(page.locator(".barangay-foldout li")).toHaveCount(15);
+  await expect(page.getByText(/Read the city.*from shore to street/)).toHaveCount(0);
+  await expect(page.locator(".story-portal")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Begin the experience/ })).toHaveAttribute(
+    "href",
+    `#${await chapters.first().getAttribute("id")}`,
+  );
+  await expect(page.getByText("Open object label")).toHaveCount(0);
+  await expect(page.getByText("The story continues in the streets.")).toHaveCount(0);
+  await expect(page.locator(".barangay-foldout")).toHaveCount(0);
+  const chapterPresentation = await chapters.evaluateAll((items) =>
+    items.map((item) => {
+      const stage = item.querySelector<HTMLElement>(".history-chapter__stage");
+      const title = item.querySelector<HTMLElement>("h2");
+      return {
+        paper: stage ? getComputedStyle(stage).backgroundColor : "",
+        ink: title ? getComputedStyle(title).color : "",
+      };
+    }),
+  );
+  expect(new Set(chapterPresentation.map(({ paper }) => paper)).size).toBe(1);
+  expect(new Set(chapterPresentation.map(({ ink }) => ink)).size).toBe(1);
 });
 
 test("Editorial layers do not collide at responsive breakpoints", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.locator(".journal-cover__instruction")).toHaveCount(0);
 
-  const foldoutTitle = page.getByRole("heading", {
-    name: /Meet the city, neighborhood by neighborhood/,
-  });
-  const foldoutIntro = page.locator(".barangay-foldout header > p").last();
-  const [titleBounds, introBounds] = await Promise.all([
-    foldoutTitle.boundingBox(),
-    foldoutIntro.boundingBox(),
-  ]);
-  expect(titleBounds).not.toBeNull();
-  expect(introBounds).not.toBeNull();
-  expect((titleBounds?.y ?? 0) + (titleBounds?.height ?? 0)).toBeLessThanOrEqual(
-    introBounds?.y ?? 0,
-  );
+  const coverContent = page.locator(".journal-cover__content");
+  const viewportWidth = await page.evaluate(() => document.documentElement.clientWidth);
 
   if (testInfo.project.name === "mobile") {
     const [headerHeight, railTop, railBackground] = await page.evaluate(() => {
@@ -72,6 +83,15 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
     expect(railTop).toBeGreaterThanOrEqual(headerHeight);
     expect(railBackground).not.toContain("0.94");
   } else {
+    const contentBounds = await coverContent.boundingBox();
+    expect(contentBounds).not.toBeNull();
+    expect(
+      Math.abs(
+        (contentBounds?.x ?? 0) +
+          (contentBounds?.width ?? 0) / 2 -
+          viewportWidth / 2,
+      ),
+    ).toBeLessThanOrEqual(2);
     await expect(page.locator(".history-chapter__stage").first()).toHaveCSS(
       "position",
       "relative",
@@ -148,7 +168,7 @@ test("A point click opens its choice without reloading the page", async ({
       y: Math.round((bounds?.height ?? 0) / 2),
     },
   });
-  await expect(page.getByText("Selected map stop")).toBeVisible();
+  await expect(page.locator(".map-place-choice")).toBeVisible();
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
 });
 

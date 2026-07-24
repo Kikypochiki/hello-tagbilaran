@@ -55,7 +55,6 @@ export function HazardAssessmentClient() {
     <div className="hazard-assessment">
       <header className="hazard-assessment__cover">
         <div>
-          <p className="section-kicker">Preparedness field desk · Tagbilaran City</p>
           <h1>Hazard assessment</h1>
           <p>
             Inspect an area, choose a hazard, and continue to the official source. This
@@ -147,7 +146,6 @@ export function HazardAssessmentClient() {
         <section className="hazard-map" aria-labelledby="hazard-map-title">
           <div className="hazard-map__heading">
             <div>
-              <p className="section-kicker">Boundary inspection</p>
               <h2 id="hazard-map-title">{selectedBarangay?.name ?? "Tagbilaran City"}</h2>
             </div>
             <span>Indicative boundary</span>
@@ -174,7 +172,6 @@ export function HazardAssessmentClient() {
         </section>
 
         <section className="hazard-result" aria-live="polite" aria-labelledby="hazard-result-title">
-          <p className="section-kicker">Assessment note</p>
           <h2 id="hazard-result-title">No local classification issued</h2>
           <dl>
             <div><dt>Area</dt><dd>{selectedBarangay?.name ?? "Whole Tagbilaran City"}</dd></div>

@@ -41,7 +41,6 @@ export function MapPlaceChoice({
     >
       <header className="map-place-choice__heading">
         <div>
-          <p className="map-place-choice__eyebrow">Selected map stop</p>
           <h2 id={headingId}>{place.name}</h2>
         </div>
         <button

@@ -13,7 +13,6 @@ export default function AboutPage() {
     <main id="main-content" className="about-page">
       <article className="about-journal">
         <header className="about-cover">
-          <p className="section-kicker">Colophon · Field journal no. 01</p>
           <h1>The hands behind the journal.</h1>
           <p>Hello Tagbilaran is an independent, research-led city guide made to celebrate Tagbilaran on its own terms.</p>
         </header>
@@ -24,7 +23,6 @@ export default function AboutPage() {
             {siteOwner.placeholder ? <figcaption>Development placeholder · portrait and profile pending</figcaption> : null}
           </figure>
           <div>
-            <p className="section-kicker">Developer</p>
             <h2 id="developer-title">{siteOwner.displayName}</h2>
             <p className="developer-spread__role">{siteOwner.role}</p>
             <p>{siteOwner.biography}</p>
@@ -36,9 +34,8 @@ export default function AboutPage() {
         </section>
 
         <section className="project-method" aria-labelledby="method-title">
-          <p className="section-kicker">How the guide is made</p>
           <h2 id="method-title">A public notebook, carefully sourced.</h2>
-          <div>
+          <div tabIndex={0} aria-label="Project principles carousel">
             <p><strong>Local focus.</strong> Tagbilaran is presented as a living city, not simply a gateway to wider Bohol.</p>
             <p><strong>Clear geography.</strong> Every place is labeled Tagbilaran City, Nearby, or Bohol Day Trip.</p>
             <p><strong>Verification.</strong> Time-sensitive facts are omitted or visibly qualified until reviewed.</p>
@@ -49,7 +46,6 @@ export default function AboutPage() {
 
         <section className="support-spread" id="support" aria-labelledby="support-title">
           <div>
-            <p className="section-kicker">Optional support</p>
             <h2 id="support-title">Help keep the field journal growing.</h2>
             <p>Support can help cover hosting, local research, photography permissions, and accessibility improvements. It is always optional.</p>
             <dl><div><dt>Provider</dt><dd>{supportProfile.provider}</dd></div><div><dt>Recipient</dt><dd>{supportProfile.recipient}</dd></div></dl>

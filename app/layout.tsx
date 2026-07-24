@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Libre_Baskerville } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { GlobalMotion } from "@/components/global-motion";
 import { StaleServiceWorkerCleanup } from "@/components/stale-service-worker-cleanup";
 import { hasProductionSiteUrl, siteUrl } from "@/lib/site";
 import "./globals.css";
 import "./immersive-experience.css";
+import "./motion-structure.css";
 
 const sans = Geist({
   variable: "--font-sans",
@@ -41,12 +43,12 @@ export const metadata: Metadata = {
     locale: "en_PH",
     siteName: "Hello Tagbilaran",
     title: "Hello Tagbilaran",
-    description: "Where every street leads to a story.",
+    description: "Living City Archive",
   },
   twitter: {
     card: "summary_large_image",
     title: "Hello Tagbilaran",
-    description: "Where every street leads to a story.",
+    description: "Living City Archive",
   },
   robots: hasProductionSiteUrl
     ? { index: true, follow: true }
@@ -86,6 +88,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to main content
         </a>
         <StaleServiceWorkerCleanup />
+        <GlobalMotion />
         <SiteHeader />
         {children}
         <SiteFooter />
