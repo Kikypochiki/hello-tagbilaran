@@ -258,7 +258,7 @@ export function MapCanvas({
             filter: ["==", ["get", "brgy_code"], ""],
             paint: {
               "fill-color": "#f4c542",
-              "fill-opacity": 0.42,
+              "fill-opacity": 0.5,
             },
           },
           {
@@ -279,7 +279,7 @@ export function MapCanvas({
             filter: ["==", ["get", "brgy_code"], ""],
             paint: {
               "line-color": "#4a3d14",
-              "line-width": 2.5,
+              "line-width": 3,
               "line-opacity": 0.95,
             },
           },
@@ -517,9 +517,7 @@ export function MapCanvas({
       }
     };
 
-    const handleBarangayClick = (
-      event: maplibregl.MapLayerMouseEvent & { features?: GeoJSON.Feature[] },
-    ) => {
+    const handleBarangayClick = (event: maplibregl.MapMouseEvent) => {
       if (
         map.queryRenderedFeatures(event.point, {
           layers: ["place-clusters", "place-points", "place-point-hitarea"],
@@ -527,7 +525,11 @@ export function MapCanvas({
       ) {
         return;
       }
-      const code = event.features?.[0]?.properties?.brgy_code;
+
+      const boundaryFeature = map.queryRenderedFeatures(event.point, {
+        layers: ["barangay-selected-fill", "barangay-fill"],
+      })[0];
+      const code = boundaryFeature?.properties?.brgy_code;
       if (code !== undefined && code !== null) {
         const nextCode = String(code);
         onSelectBarangayRef.current(
@@ -541,9 +543,11 @@ export function MapCanvas({
     const clearPointer = () => {
       map.getCanvas().style.cursor = "";
     };
-    map.on("click", "barangay-fill", handleBarangayClick);
+    map.on("click", handleBarangayClick);
     map.on("mouseenter", "barangay-fill", showPointer);
     map.on("mouseleave", "barangay-fill", clearPointer);
+    map.on("mouseenter", "barangay-selected-fill", showPointer);
+    map.on("mouseleave", "barangay-selected-fill", clearPointer);
     map.on("click", "place-clusters", handleClusterClick);
     map.on("click", "place-point-hitarea", handlePlaceClick);
     map.on("mouseenter", "place-clusters", showPointer);
@@ -566,6 +570,7 @@ export function MapCanvas({
       choicePopupRef.current?.remove();
       choicePopupRef.current = null;
       choicePopupPlaceIdRef.current = undefined;
+      map.off("click", handleBarangayClick);
       map.remove();
       mapRef.current = null;
     };

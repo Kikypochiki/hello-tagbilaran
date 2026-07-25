@@ -24,7 +24,7 @@ function CompassMark() {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const menuRef = useRef<HTMLDialogElement>(null);
+  const menuRef = useRef<HTMLDetailsElement>(null);
   const active = navigation.find((item) =>
     item.href === "/"
       ? pathname === "/"
@@ -33,19 +33,41 @@ export function SiteHeader() {
   ) ?? navigation[0];
 
   useEffect(() => {
-    menuRef.current?.close();
+    if (menuRef.current) menuRef.current.open = false;
   }, [pathname]);
 
-  function openMenu() {
-    menuRef.current?.showModal();
-  }
+  useEffect(() => {
+    function closeMenu(event: PointerEvent) {
+      if (
+        menuRef.current?.open &&
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
+        menuRef.current.open = false;
+      }
+    }
 
-  function closeOnBackdrop(event: React.MouseEvent<HTMLDialogElement>) {
-    if (event.target === menuRef.current) menuRef.current.close();
-  }
+    function closeMenuWithKeyboard(event: KeyboardEvent) {
+      if (event.key === "Escape" && menuRef.current?.open) {
+        menuRef.current.open = false;
+        menuRef.current.querySelector("summary")?.focus();
+      }
+    }
+
+    window.addEventListener("pointerdown", closeMenu);
+    window.addEventListener("keydown", closeMenuWithKeyboard);
+    return () => {
+      window.removeEventListener("pointerdown", closeMenu);
+      window.removeEventListener("keydown", closeMenuWithKeyboard);
+    };
+  }, []);
 
   return (
-    <header className="site-header experience-header" data-overlay={pathname === "/" || undefined}>
+    <header
+      className="site-header experience-header"
+      data-overlay={pathname === "/" || undefined}
+      data-tone={pathname.startsWith("/hazard-assessment") ? "dark" : "light"}
+    >
       <div className="site-header__inner">
         <Link className="brand" href="/" aria-label="Hello Tagbilaran home">
           <CompassMark />
@@ -55,47 +77,35 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <button className="experience-header__menu-trigger" type="button" onClick={openMenu}>
-          <span>Index</span>
-          <i aria-hidden="true" />
-        </button>
+        <details className="experience-menu" ref={menuRef}>
+          <summary className="experience-header__menu-trigger">
+            <span>Index</span>
+            <i aria-hidden="true" />
+          </summary>
+          <div className="experience-menu__paper">
+            <nav className="site-nav" aria-label="Primary navigation">
+              <ol>
+                {navigation.map((item) => {
+                  const isActive = item === active;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        className="site-nav__link"
+                        data-active={isActive || undefined}
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        <strong>{item.label}</strong>
+                        <i aria-hidden="true">↗</i>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            </nav>
+          </div>
+        </details>
       </div>
-
-      <dialog
-        className="experience-menu"
-        ref={menuRef}
-        onClick={closeOnBackdrop}
-        aria-labelledby="experience-menu-title"
-      >
-        <div className="experience-menu__paper">
-          <header>
-            <p id="experience-menu-title">Index</p>
-            <button type="button" onClick={() => menuRef.current?.close()}>
-              <span>Close</span> <i aria-hidden="true">×</i>
-            </button>
-          </header>
-          <nav className="site-nav" aria-label="Primary navigation">
-            <ol>
-              {navigation.map((item) => {
-                const isActive = item === active;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      className="site-nav__link"
-                      data-active={isActive || undefined}
-                      href={item.href}
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      <strong>{item.label}</strong>
-                      <i aria-hidden="true">↗</i>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ol>
-          </nav>
-        </div>
-      </dialog>
     </header>
   );
 }

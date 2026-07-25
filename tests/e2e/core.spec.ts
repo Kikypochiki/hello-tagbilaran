@@ -31,10 +31,11 @@ test("Story remains within the viewport and offers direct navigation", async ({
 
 test("Immersive field index opens and navigates between rooms", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "Index" }).click();
 
-  const index = page.getByRole("dialog", { name: "Index" });
-  await expect(index).toBeVisible();
+  const index = page.locator("details.experience-menu");
+  await expect(index).not.toHaveAttribute("open", "");
+  await index.locator("summary").click();
+  await expect(index).toHaveAttribute("open", "");
   await index.getByRole("link", { name: "Hazard assessment" }).click();
 
   await expect(page).toHaveURL(/\/hazard-assessment$/);
@@ -167,18 +168,28 @@ test("Explore keeps list access, URL filters, and stable navigation", async ({
   page,
 }, testInfo) => {
   await page.goto("/explore");
+  const index = page.locator("details.map-index");
   if (testInfo.project.name === "mobile") {
     await expect(page.getByRole("combobox", { name: "Explore display" })).toHaveCount(0);
-    const index = page.locator("details.map-index");
     await expect(index).not.toHaveAttribute("open", "");
-    await index.locator("summary").click();
+  } else {
     await expect(index).toHaveAttribute("open", "");
-    const indexBody = index.locator(".map-index__body");
-    const listDimensions = await indexBody.evaluate((element) => ({
-      clientHeight: element.clientHeight,
-      scrollHeight: element.scrollHeight,
-    }));
-    expect(listDimensions.scrollHeight).toBeGreaterThan(listDimensions.clientHeight);
+    await index.locator("summary").click();
+    await expect(index).not.toHaveAttribute("open", "");
+  }
+  const collapsedHeight = await index.evaluate(
+    (element) => element.getBoundingClientRect().height,
+  );
+  expect(collapsedHeight).toBeLessThan(100);
+  await index.locator("summary").click();
+  await expect(index).toHaveAttribute("open", "");
+  const indexBody = index.locator(".map-index__body");
+  const listDimensions = await indexBody.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(listDimensions.scrollHeight).toBeGreaterThan(listDimensions.clientHeight);
+  if (testInfo.project.name === "mobile") {
     await indexBody.evaluate((element) => element.scrollTo({ top: 600 }));
     await expect
       .poll(() => indexBody.evaluate((element) => element.scrollTop))
