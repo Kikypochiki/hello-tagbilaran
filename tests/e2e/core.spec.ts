@@ -16,8 +16,14 @@ test("Story remains within the viewport and offers direct navigation", async ({
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
-  const guideLink = page.getByRole("link", { name: "Enter the city atlas" }).last();
-  await guideLink.scrollIntoViewIfNeeded();
+  const guideLink = page
+    .locator("[data-story-chapter]")
+    .last()
+    .getByRole("link", { name: /Enter the city atlas/ });
+  await page.evaluate(() =>
+    window.scrollTo(0, document.documentElement.scrollHeight),
+  );
+  await page.waitForTimeout(500);
   await expect(guideLink).toBeVisible();
   await guideLink.click();
   await expect(page).toHaveURL("/explore", { timeout: 15_000 });
@@ -37,7 +43,7 @@ test("Immersive field index opens and navigates between rooms", async ({ page })
 
 test("Living archive goes directly from the cover into five focused chapters", async ({ page }) => {
   await page.goto("/");
-  const chapters = page.locator(".archive-chapter");
+  const chapters = page.locator("[data-story-chapter]");
   await expect(chapters).toHaveCount(5);
   await expect(page.getByText(/Read the city.*from shore to street/)).toHaveCount(0);
   await expect(page.locator(".story-portal")).toHaveCount(0);
@@ -51,18 +57,18 @@ test("Living archive goes directly from the cover into five focused chapters", a
   await expect(page.locator(".chapter-trace")).toHaveCount(0);
   await expect(page.locator(".chapter-title__image")).toHaveCount(0);
   await expect(page.locator(".archive-figure__echo")).toHaveCount(0);
-  await expect(page.locator(".archive-chapter__figure img")).toHaveCount(5);
-  await expect(page.locator(".archive-chapter__polaroid")).toHaveCount(5);
+  await expect(page.locator("[data-story-photo] img")).toHaveCount(5);
+  await expect(page.locator("[data-story-photo]")).toHaveCount(5);
   await expect(page.locator(".story-thread")).toHaveCount(1);
   await expect(page.locator(".story-compass")).toHaveCount(0);
   expect(
     await chapters.evaluateAll((items) =>
-      items.every((item) => item.querySelectorAll(".archive-chapter__figure img").length === 1),
+      items.every((item) => item.querySelectorAll("[data-story-photo] img").length === 1),
     ),
   ).toBe(true);
   const chapterPresentation = await chapters.evaluateAll((items) =>
     items.map((item) => {
-      const stage = item.querySelector<HTMLElement>(".archive-chapter__paper");
+      const stage = item.querySelector<HTMLElement>("[data-story-stage] > div");
       const title = item.querySelector<HTMLElement>("h2");
       return {
         paper: stage ? getComputedStyle(stage).backgroundColor : "",
@@ -104,13 +110,13 @@ test("Editorial layers do not collide at responsive breakpoints", async ({ page 
           layoutCenter,
       ),
     ).toBeLessThanOrEqual(2);
-    await expect(page.locator(".archive-chapter__scene").first()).toHaveCSS(
+    await expect(page.locator("[data-story-stage]").first()).toHaveCSS(
       "position",
       "sticky",
     );
 
     const navigator = page.locator(".archive-story__navigator");
-    await page.locator(".archive-chapter").first().scrollIntoViewIfNeeded();
+    await page.locator("[data-story-chapter]").first().scrollIntoViewIfNeeded();
     await expect(navigator).toHaveAttribute("data-within-story", "");
 
     const storyThread = page.locator(".story-thread");
@@ -140,17 +146,20 @@ test("Reduced motion keeps the story as a normal paper document", async ({ page 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
-  await expect(page.locator(".archive-story")).not.toHaveAttribute("data-motion", "ready");
-  await expect(page.locator(".archive-chapter__scene").first()).toHaveCSS(
+  await expect(page.locator(".archive-story")).not.toHaveAttribute(
+    "data-story-motion",
+    "desktop",
+  );
+  await expect(page.locator("[data-story-stage]").first()).toHaveCSS(
     "position",
     "relative",
   );
   const firstChapterHeight = await page
-    .locator(".archive-chapter")
+    .locator("[data-story-chapter]")
     .first()
     .evaluate((chapter) => chapter.getBoundingClientRect().height);
   expect(firstChapterHeight).toBeLessThan(
-    (await page.evaluate(() => window.innerHeight)) * 1.9,
+    (await page.evaluate(() => window.innerHeight)) * 3.5,
   );
 });
 

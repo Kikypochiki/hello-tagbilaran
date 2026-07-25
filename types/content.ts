@@ -76,6 +76,8 @@ export interface ImageAsset {
   credit?: string;
   rights?: string;
   date?: string;
+  sourceUrl?: string;
+  licenseUrl?: string;
 }
 
 export interface SourceRecord {

@@ -45,20 +45,10 @@ const cityCharterSource: SourceRecord = {
   notes: "Full text of the law creating the City of Tagbilaran, approved 18 June 1966.",
 };
 
-function storyImage(
-  filename: string,
-  alt: string,
-  width: number,
-  height: number,
-): ImageAsset {
+function storyImage(image: ImageAsset): ImageAsset {
   return {
-    src: `/images/places/${filename}`,
-    alt,
-    width,
-    height,
-    credit: "City Government of Tagbilaran",
-    rights:
-      "Government-published city photograph; confirm the individual image notice before publication.",
+    ...image,
+    src: `/images/story/${image.src}`,
   };
 }
 
@@ -77,12 +67,18 @@ export const historyChapters: HistoryChapter[] = [
       "The city’s name does not have one settled origin story. The official history records both Tinabilan, associated with being screened or sheltered, and Tagubilaan, a name preserved through local tradition. This journal leaves that uncertainty visible.",
     ],
     media: [
-      storyImage(
-        "cpg-park.jpg",
-        "Tagbilaran waterfront seen from President Carlos P. Garcia Park",
-        960,
-        720,
-      ),
+      storyImage({
+        src: "tagbilaran-port-2009.webp",
+        alt: "Passengers boarding a ferry at the Port of Tagbilaran",
+        width: 1920,
+        height: 1440,
+        credit: "Mats Sjödin",
+        rights: "CC BY 3.0",
+        date: "2009",
+        sourceUrl:
+          "https://commons.wikimedia.org/wiki/File:The_pier_at_Tagbilaran_port_-_panoramio.jpg",
+        licenseUrl: "https://creativecommons.org/licenses/by/3.0/",
+      }),
     ],
     annotations: [
       {
@@ -106,12 +102,18 @@ export const historyChapters: HistoryChapter[] = [
       "The familiar language of friendship is one layer of a colonial encounter. Reading the event carefully means recognizing both its role in Bohol’s public memory and the unequal history that followed Spanish arrival.",
     ],
     media: [
-      storyImage(
-        "blood-compact-shrine.jpg",
-        "The bronze Blood Compact Monument overlooking the water at Bool",
-        1170,
-        757,
-      ),
+      storyImage({
+        src: "sandugo-reenactment-2009.webp",
+        alt: "A 2009 reenactment of the Sandugo ceremony in Tagbilaran",
+        width: 540,
+        height: 720,
+        credit: "ControlFreakMe",
+        rights: "CC BY-SA 3.0",
+        date: "2009",
+        sourceUrl:
+          "https://commons.wikimedia.org/wiki/File:Sandugo_Reenactment.jpg",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      }),
     ],
     annotations: [
       {
@@ -135,12 +137,18 @@ export const historyChapters: HistoryChapter[] = [
       "Officials for San José de Tagbilaran were elected in Baclayon on 4 July 1742 and installed at Tagbilaran on 11 July. The same account records the confirmation of the new town’s boundary and a tax census organized into six family groupings.",
     ],
     media: [
-      storyImage(
-        "st-joseph-cathedral.jpg",
-        "Stone facade and bell tower of St. Joseph the Worker Cathedral",
-        2048,
-        1536,
-      ),
+      storyImage({
+        src: "tagbilaran-cathedral-2019.webp",
+        alt: "St. Joseph the Worker Cathedral in Tagbilaran City",
+        width: 1920,
+        height: 1440,
+        credit: "Bengoeswhere",
+        rights: "CC BY-SA 4.0",
+        date: "2019",
+        sourceUrl:
+          "https://commons.wikimedia.org/wiki/File:Tagbilaran_cathedral_Bohol.jpg",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      }),
     ],
     annotations: [
       {
@@ -164,12 +172,18 @@ export const historyChapters: HistoryChapter[] = [
       "Republic Act No. 4660, approved on 18 June 1966, created the City of Tagbilaran. Under the charter, the city began its corporate existence on 1 July 1966.",
     ],
     media: [
-      storyImage(
-        "national-museum-bohol.jpg",
-        "The restored former Provincial Capitol, now the National Museum Bohol",
-        2048,
-        1152,
-      ),
+      storyImage({
+        src: "tagbilaran-street-1970.webp",
+        alt: "Motorized tricycles on a Tagbilaran street in 1970",
+        width: 1920,
+        height: 1261,
+        credit: "Urbain J. Kinet / UC Berkeley Department of Geography",
+        rights: "No known copyright restrictions",
+        date: "1970",
+        sourceUrl:
+          "https://commons.wikimedia.org/wiki/File:Tagbilaran_City_typical_street_scene_70s.jpg",
+        licenseUrl: "https://www.flickr.com/commons/usage/",
+      }),
     ],
     annotations: [
       {
@@ -193,12 +207,18 @@ export const historyChapters: HistoryChapter[] = [
       "That everyday city is the point of this guide: Tagbilaran is not simply a transfer point for somewhere else. Its history continues in the routines, businesses, faith communities, and public spaces that residents make and remake each day.",
     ],
     media: [
-      storyImage(
-        "plaza-rizal.jpg",
-        "Landscaped paths and the Rizal monument in Tagbilaran’s central plaza",
-        2048,
-        1152,
-      ),
+      storyImage({
+        src: "saulog-festival-2019.webp",
+        alt: "Performers during the 2019 Saulog Festival in Tagbilaran City",
+        width: 1920,
+        height: 1280,
+        credit: "Herbertkikoy",
+        rights: "CC BY-SA 4.0",
+        date: "2019",
+        sourceUrl:
+          "https://commons.wikimedia.org/wiki/File:Humans_of_Saulog.jpg",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      }),
     ],
     annotations: [
       {
