@@ -40,6 +40,7 @@ function localImage(
   height: number,
   credit: string,
   rights: string,
+  metadata: Pick<ImageAsset, "date" | "sourceUrl" | "licenseUrl"> = {},
 ): ImageAsset {
   return {
     src: `/images/places/${filename}`,
@@ -48,6 +49,7 @@ function localImage(
     height,
     credit,
     rights,
+    ...metadata,
   };
 }
 
@@ -127,6 +129,9 @@ interface SuppliedPlaceInput {
     height: number;
     credit?: string;
     rights?: string;
+    date?: string;
+    sourceUrl?: string;
+    licenseUrl?: string;
   };
   additionalSources?: SourceRecord[];
 }
@@ -195,6 +200,11 @@ function suppliedPlace(input: SuppliedPlaceInput): Place {
         input.image.height,
         input.image.credit ?? "Google Maps community contributor",
         input.image.rights ?? googlePhotoRights,
+        {
+          date: input.image.date,
+          sourceUrl: input.image.sourceUrl,
+          licenseUrl: input.image.licenseUrl,
+        },
       ),
     ],
     sources: [
@@ -214,6 +224,11 @@ function suppliedPlace(input: SuppliedPlaceInput): Place {
           input.image.height,
           input.image.credit ?? "Google Maps community contributor",
           input.image.rights ?? googlePhotoRights,
+          {
+            date: input.image.date,
+            sourceUrl: input.image.sourceUrl,
+            licenseUrl: input.image.licenseUrl,
+          },
         ),
       ],
       true,
@@ -233,8 +248,14 @@ const suppliedPlaceEntries: Place[] = [
     image: {
       filename: "carlos-p-garcia-heritage-museum.jpg",
       alt: "Grounds and heritage house at the Carlos P. Garcia Heritage Museum",
-      width: 1200,
-      height: 705,
+      width: 2200,
+      height: 1650,
+      credit: "Patrickroque01 / Wikimedia Commons",
+      rights: "Creative Commons Attribution-ShareAlike 4.0 International.",
+      date: "2023-01-12",
+      sourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Carlos_P._Garcia_House_(F._Rocha,_Tagbilaran,_Bohol;_01-12-2023).jpg",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
     },
   }),
   suppliedPlace({
@@ -247,9 +268,15 @@ const suppliedPlaceEntries: Place[] = [
     longitude: 123.852681,
     image: {
       filename: "our-lady-of-lourdes-parish.jpg",
-      alt: "Altar inside Our Lady of Lourdes Parish Church",
-      width: 720,
-      height: 540,
+      alt: "Street-facing exterior of Our Lady of Lourdes Parish Church",
+      width: 2200,
+      height: 1650,
+      credit: "Deepak-nsk / Wikimedia Commons",
+      rights: "Dedicated to the public domain under Creative Commons CC0 1.0.",
+      date: "2024-09-19",
+      sourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Our_Lady_of_Lourdes_Parish_Church,_Tagbilaran.jpg",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
     },
   }),
   suppliedPlace({
@@ -729,11 +756,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "national-museum-bohol.jpg",
-        "Facade of the National Museum of the Philippines - Bohol",
-        1024,
-        760,
-        "City Government of Tagbilaran",
-        "Public-domain government content unless otherwise stated; verify the individual image notice before publication.",
+        "Pagpauli exhibition and Carlos P. Garcia sculpture inside the National Museum of the Philippines - Bohol",
+        1600,
+        2133,
+        "Nirmaljoshi / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2025-04-26",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:National_Museum_Bohol.jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -759,7 +792,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("history-culture", [], true),
+    verification: sourceReviewedVerification(
+      "history-culture",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "st-joseph-cathedral",
@@ -780,11 +818,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "st-joseph-cathedral.jpg",
-        "Stone facade and bell tower of St. Joseph the Worker Cathedral",
-        2048,
-        1536,
-        "City Government of Tagbilaran",
-        "Public-domain government content unless otherwise stated; verify the individual image notice before publication.",
+        "Street-facing facade and historic bell tower of St. Joseph the Worker Cathedral",
+        2200,
+        1650,
+        "Patrickroque01 / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2023-01-09",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Saint_Joseph_Cathedral_Tagbilaran_(JA_Clarin,_Tagbilaran,_Bohol;_01-09-2023).jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -805,7 +849,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("faith-architecture", [], true),
+    verification: sourceReviewedVerification(
+      "faith-architecture",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "plaza-rizal",
@@ -824,11 +873,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "plaza-rizal.jpg",
-        "Plaza Jose P. Rizal with landscaped paths and the Rizal monument",
-        2048,
-        1152,
-        "City Government of Tagbilaran",
-        "Public-domain government content unless otherwise stated; verify the individual image notice before publication.",
+        "Plaza Jose P. Rizal and its monument facing St. Joseph Cathedral",
+        2200,
+        1650,
+        "Patrickroque01 / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2023-01-09",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Tagbilaran_Plaza_Rizal,_Cathedral_(CPG_Avenue,_Tagbilaran,_Bohol;_01-09-2023).jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -842,7 +897,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("history-culture", [], true),
+    verification: sourceReviewedVerification(
+      "history-culture",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "cpg-park",
@@ -1039,11 +1099,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "island-city-mall.jpg",
-        "Colorful exterior of Island City Mall in Tagbilaran",
-        300,
-        183,
-        "Bohol Provincial Tourism Office",
-        "Image reuse terms are not stated; confirm with the publisher before launch.",
+        "Upper-level view through the contemporary interior of Island City Mall",
+        2200,
+        1650,
+        "OxyLight / Wikimedia Commons",
+        "Dedicated to the public domain under Creative Commons CC0 1.0.",
+        {
+          date: "2026-06-25",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Island_city_mall_tagbilaran.jpg",
+          licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+        },
       ),
     ],
     sources: [
@@ -1070,7 +1136,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("shopping-market", [], true),
+    verification: sourceReviewedVerification(
+      "shopping-market",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "bq-mall",
@@ -1092,11 +1163,16 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "bq-mall.jpg",
-        "Street entrance of Bohol Quality Mall in downtown Tagbilaran",
-        330,
-        228,
-        "Bohol Provincial Tourism Office",
-        "Image reuse terms are not stated; confirm with the publisher before launch.",
+        "Bohol Quality Mall and downtown traffic along Carlos P. Garcia Avenue",
+        2200,
+        2019,
+        "2hydh / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2023-06-15",
+          sourceUrl: "https://commons.wikimedia.org/wiki/File:BQ_MALL.jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -1116,45 +1192,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("shopping-market", [], true),
-  },
-  {
-    id: "baclayon-church",
-    slug: "baclayon-church",
-    name: "Baclayon Church",
-    category: "faith-architecture",
-    scope: "nearby",
-    summary:
-      "A prominent historic church in the neighboring municipality of Baclayon, included as a clearly labeled nearby stop rather than a Tagbilaran City site.",
-    coordinates: { longitude: 123.9124751, latitude: 9.6229536 },
-    address: "Poblacion, Baclayon, Bohol",
-    directionsUrl: googleMapsUrl(
-      "Baclayon Church, Poblacion, Baclayon, Bohol",
+    verification: sourceReviewedVerification(
+      "shopping-market",
+      [],
+      true,
+      "cleared",
     ),
-    features: ["Popular nearby heritage stop", "Outside Tagbilaran City"],
-    accessibility: practicalDetailsNote,
-    images: [
-      localImage(
-        "baclayon-church.webp",
-        "Stone facade and bell tower of Baclayon Church",
-        1920,
-        1440,
-        "Bohol Provincial Tourism Office",
-        "Image reuse terms are not stated; confirm with the publisher before launch.",
-      ),
-    ],
-    sources: [
-      provincialTourismSource,
-      popularPlacesSource,
-      googleMapsSource(
-        "Baclayon Church",
-        "Baclayon Church, Poblacion, Baclayon, Bohol",
-      ),
-      osmSource("Baclayon Church map feature", "relation", 18624659),
-    ],
-    verifiedAt: accessedAt,
-    featured: true,
-    verification: sourceReviewedVerification("faith-architecture", [], true),
   },
   ...suppliedPlaceEntries,
 ];
@@ -1372,11 +1415,6 @@ const placeEnhancements: Record<string, PlaceEnhancement> = {
     ["Working fish port", "Northern coastal outlook"],
     "Manga",
     "Treat the port as a workplace: keep routes clear and ask before photographing people at work.",
-  ),
-  "baclayon-church": guideDetails(
-    "Baclayon Church is a major historic church in the neighboring municipality of Baclayon. It remains in the guide as a clearly labeled nearby heritage stop, not as a Tagbilaran City listing.",
-    ["Historic church complex", "Nearby stop outside Tagbilaran City"],
-    undefined,
   ),
 };
 
