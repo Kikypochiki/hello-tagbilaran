@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -263,22 +262,10 @@ export function ExploreClient({ places }: { places: Place[] }) {
               <ol className="map-index__places">
                 {filteredPlaces.map((place) => (
                   <li className="map-index__place-entry" key={place.id}>
-                    <Link
+                    <button
                       className="map-index__place-link"
-                      href={`/places/${place.slug}`}
-                      onClick={(event) => {
-                        if (
-                          event.button !== 0 ||
-                          event.metaKey ||
-                          event.ctrlKey ||
-                          event.shiftKey ||
-                          event.altKey
-                        ) {
-                          return;
-                        }
-                        event.preventDefault();
-                        openPlace(place);
-                      }}
+                      type="button"
+                      onClick={() => openPlace(place)}
                       onPointerEnter={(event) => {
                         if (event.pointerType === "mouse" && place.coordinates) {
                           setPreviewedId(place.id);
@@ -312,19 +299,7 @@ export function ExploreClient({ places }: { places: Place[] }) {
                         </span>
                         <PlaceVerificationNote place={place} compact />
                       </span>
-                    </Link>
-                    {hasReviewedLocation(place) && place.directionsUrl ? (
-                    <a
-                      className="map-index__directions"
-                      href={place.directionsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Maps
-                      <span aria-hidden="true">↗</span>
-                      <span className="sr-only">Open Google Maps for {place.name}</span>
-                    </a>
-                    ) : null}
+                    </button>
                   </li>
                 ))}
               </ol>
@@ -410,6 +385,14 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
       {previewedPlace && !selectedPlace && !promptedPlace && !streetViewPlace ? (
         <aside className="map-place-preview map-place-preview--map-only" aria-live="polite">
+          <button
+            className="map-place-preview__close"
+            type="button"
+            aria-label={`Close preview of ${previewedPlace.name}`}
+            onClick={() => setPreviewedId(undefined)}
+          >
+            <span aria-hidden="true">×</span>
+          </button>
           <Image
             className="map-place-preview__photo"
             src={previewedPlace.images[0].src}
@@ -426,10 +409,6 @@ export function ExploreClient({ places }: { places: Place[] }) {
             </span>
           </div>
           <h2>{previewedPlace.name}</h2>
-          <p>{previewedPlace.summary}</p>
-          <button className="text-link" type="button" onClick={() => openPlace(previewedPlace)}>
-            Open complete information <span aria-hidden="true">→</span>
-          </button>
         </aside>
       ) : null}
 

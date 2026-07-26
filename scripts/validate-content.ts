@@ -109,6 +109,27 @@ if (tagbilaranBarangays.length !== 15) {
 if (new Set(tagbilaranBarangays.map((barangay) => barangay.code)).size !== 15) {
   error("Tagbilaran barangay codes must be unique.");
 }
+for (const barangay of tagbilaranBarangays) {
+  const label = `${barangay.name} (${barangay.code})`;
+  if (!/^\d{9}$/.test(barangay.code)) {
+    error(`${label}: PSGC code must contain nine digits.`);
+  }
+  if (!Number.isInteger(barangay.population2024) || barangay.population2024 <= 0) {
+    error(`${label}: 2024 population must be a positive integer.`);
+  }
+  if (!barangay.punongBarangay.trim()) {
+    error(`${label}: official directory leader is required.`);
+  }
+  if (!barangay.contact.length || barangay.contact.some((item) => !item.trim())) {
+    error(`${label}: official directory contact is required.`);
+  }
+  if (barangay.officialDirectoryUrl !== "https://tagbilaran.gov.ph/barangays/") {
+    error(`${label}: official city directory URL is missing or incorrect.`);
+  }
+  if (!validDate(barangay.directoryReviewedAt)) {
+    error(`${label}: official directory review date is invalid.`);
+  }
+}
 
 if (!hazardLayers.every(validateHazardLayer)) {
   error("Hazard metadata is incomplete or includes unapproved placeholder geometry.");

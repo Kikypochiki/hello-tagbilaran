@@ -19,12 +19,12 @@ export function MapPlaceChoice({
   onDetails: () => void;
   onStreetView: () => void;
 }) {
-  const detailsButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const headingId = `map-place-choice-${place.id}`;
   const streetViewAvailable = isStreetViewCurrent(place.streetView);
 
   useEffect(() => {
-    detailsButtonRef.current?.focus();
+    closeButtonRef.current?.focus();
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
@@ -44,6 +44,7 @@ export function MapPlaceChoice({
           <h2 id={headingId}>{place.name}</h2>
         </div>
         <button
+          ref={closeButtonRef}
           className="map-place-choice__close"
           type="button"
           aria-label={`Close options for ${place.name}`}
@@ -57,13 +58,8 @@ export function MapPlaceChoice({
         <span>{categoryLabels[place.category]}</span>
       </p>
       <div className="map-place-choice__actions">
-        <button
-          ref={detailsButtonRef}
-          className="secondary-action"
-          type="button"
-          onClick={onDetails}
-        >
-          View details
+        <button className="secondary-action" type="button" onClick={onDetails}>
+          About this place
         </button>
         {streetViewAvailable ? (
           <button className="primary-action" type="button" onClick={onStreetView}>

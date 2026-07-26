@@ -4,6 +4,10 @@ import type {
   SourceRecord,
   StreetViewReference,
 } from "@/types/content";
+import {
+  editorialCopyByPlace,
+  researchedPlaceSources,
+} from "@/content/place-editorial-copy";
 
 const accessedAt = "2026-07-17";
 
@@ -1784,11 +1788,23 @@ const streetViewByPlace: Partial<Record<string, StreetViewReference>> = {
 };
 
 export const places = placeEntries
-  .map((place) => ({
-    ...place,
-    ...placeEnhancements[place.slug],
-    streetView: streetViewByPlace[place.slug],
-  }))
+  .map((place) => {
+    const editorialCopy =
+      editorialCopyByPlace[
+        place.slug as keyof typeof editorialCopyByPlace
+      ];
+
+    return {
+      ...place,
+      ...placeEnhancements[place.slug],
+      ...editorialCopy,
+      sources: [
+        ...place.sources,
+        ...(researchedPlaceSources[place.slug] ?? []),
+      ],
+      streetView: streetViewByPlace[place.slug],
+    };
+  })
   .sort((a, b) => categoryRank[a.category] - categoryRank[b.category]);
 
 export function getPlace(slug: string) {

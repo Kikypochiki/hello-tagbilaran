@@ -198,28 +198,36 @@ test("Explore keeps list access, URL filters, and stable navigation", async ({
   await page.getByPlaceholder("Name, barangay, or category").fill("museum");
   await expect(page).toHaveURL(/q=museum/);
   const museumLink = page
-    .locator("a.map-index__place-link")
+    .locator("button.map-index__place-link")
     .filter({ hasText: "National Museum of the Philippines" });
   await expect(museumLink).toBeVisible();
+  if (testInfo.project.name === "desktop") {
+    await museumLink.hover();
+    const preview = page.locator(".map-place-preview");
+    await expect(preview).toBeVisible();
+    await expect(preview.locator("p")).toHaveCount(0);
+    await expect(preview.getByText(/complete information/i)).toHaveCount(0);
+  }
   await museumLink.click();
   await expect(page.getByRole("dialog")).toBeVisible();
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
 });
 
-test("Place sheets keep Street View inside the map-choice flow", async ({
+test("Place descriptions stay in the map modal", async ({
   page,
 }, testInfo) => {
-  await page.goto("/places/plaza-rizal");
-  await expect(page.getByText(/Sources reviewed/).first()).toBeVisible();
   await page.goto("/explore?q=BQ+Mall");
   if (testInfo.project.name === "mobile") {
     await page.locator("details.map-index > summary").click();
   }
   await page
-    .locator("a.map-index__place-link")
+    .locator("button.map-index__place-link")
     .filter({ hasText: "Bohol Quality Mall" })
     .click();
   await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "About" })).toBeVisible();
+  await expect(page.getByText(/View full place page/i)).toHaveCount(0);
+  await expect(page.getByText(/Google Maps/i)).toHaveCount(0);
   await expect(page.getByRole("button", { name: /Street View/ })).toHaveCount(0);
 });
 
@@ -307,7 +315,7 @@ test("Representative routes have no serious automated accessibility violations",
   page,
 }) => {
   test.setTimeout(180_000);
-  for (const route of ["/", "/explore", "/hazard-assessment", "/about", "/places/plaza-rizal"]) {
+  for (const route of ["/", "/explore", "/hazard-assessment", "/about"]) {
     await page.goto(route);
     const results = await new AxeBuilder({ page }).analyze();
     expect(
