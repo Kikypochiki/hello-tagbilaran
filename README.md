@@ -54,11 +54,13 @@ on place pages while the project is reviewed.
 
 ## Street View
 
-Street View is available only for manually reviewed panoramas that depict the
-listed venue itself. Nearby imagery is never substituted. Each eligible record
-stores its capture position, contributor, capture date, exact-match state, review
-date, and six-month review deadline. Expired records automatically lose the
-Street View action.
+Street View is available only for manually reviewed panoramas captured from
+2023 through 2026. An exact venue panorama is preferred. When none qualifies, a
+high-quality panorama on a road within 250 metres may be used and is labelled as
+a nearby-road view in the interface. Each eligible record stores its capture
+position, contributor, capture date, match state, measured distance when
+applicable, review date, and six-month review deadline. Expired records
+automatically lose the Street View action.
 
 The viewer uses a keyless Google Maps embed opened only after visitor action.
 Google's attribution and controls must remain visible.

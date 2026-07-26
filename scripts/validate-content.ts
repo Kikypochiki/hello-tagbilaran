@@ -79,8 +79,17 @@ for (const place of places) {
   }
 
   if (place.streetView) {
-    if (place.streetView.match !== "exact-venue") {
-      error(`${label}: Street View must be an exact-venue match.`);
+    const captureYear = Number(place.streetView.captureDate.slice(0, 4));
+    if (captureYear < 2023 || captureYear > 2026) {
+      error(`${label}: Street View must be dated from 2023 through 2026.`);
+    }
+    if (
+      place.streetView.match === "nearby-road" &&
+      (!place.streetView.distanceMeters ||
+        place.streetView.distanceMeters <= 0 ||
+        place.streetView.distanceMeters > 250)
+    ) {
+      error(`${label}: nearby Street View requires a distance from 1 to 250 m.`);
     }
     if (!validDate(place.streetView.verifiedAt)) {
       error(`${label}: Street View has an invalid review date.`);

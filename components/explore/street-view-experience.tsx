@@ -25,7 +25,7 @@ export function StreetViewExperience({
     const parameters = new URLSearchParams({
       layer: "c",
       cbll: `${place.streetView.coordinates.latitude},${place.streetView.coordinates.longitude}`,
-      cbp: "12,0,,0,0",
+      cbp: `12,${place.streetView.heading ?? 0},,0,0`,
       source: "embed",
       output: "svembed",
       hl: "en",
@@ -92,7 +92,9 @@ export function StreetViewExperience({
         <iframe
           className="street-view-experience__panorama"
           src={streetViewUrl}
-          title={`Google Street View at ${place.name}`}
+          title={`Google Street View ${
+            place.streetView?.match === "exact-venue" ? "at" : "near"
+          } ${place.name}`}
           loading="eager"
           referrerPolicy="strict-origin-when-cross-origin"
           onLoad={handleFrameLoad}
@@ -119,13 +121,19 @@ export function StreetViewExperience({
         </button>
         <div className="street-view-hud__place">
           <div className="street-view-hud__title">
-            <span>Street View at</span>
+            <span>
+              Street View {place.streetView?.match === "exact-venue" ? "at" : "near"}
+            </span>
             <h2 id="street-view-title">{place.name}</h2>
             {place.streetView ? (
               <small>
                 {place.streetView.label}
                 {", "}
                 {place.streetView.captureDate}
+                {place.streetView.match === "nearby-road" &&
+                place.streetView.distanceMeters
+                  ? `, ${place.streetView.distanceMeters} m from the listing`
+                  : ""}
                 {", "}
                 {place.streetView.contributor}
               </small>
@@ -165,8 +173,9 @@ export function StreetViewExperience({
           <p className="section-kicker">Street View unavailable</p>
           <h3>No eligible recent panorama was found.</h3>
           <p>
-            This guide only opens professionally reviewed Google Maps panoramas
-            dated from 2022 through 2026 that depict the listed place itself.
+            This guide only opens reviewed Google Maps panoramas dated from 2023
+            through 2026. When an exact view is unavailable, a nearby road may be
+            used and is clearly labelled.
           </p>
           <button className="primary-action" type="button" onClick={onClose}>
             Go back to map

@@ -206,7 +206,9 @@ test("Explore keeps list access, URL filters, and stable navigation", async ({
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
 });
 
-test("Only reviewed Street View actions are exposed", async ({ page }, testInfo) => {
+test("Place sheets keep Street View inside the map-choice flow", async ({
+  page,
+}, testInfo) => {
   await page.goto("/places/plaza-rizal");
   await expect(page.getByText(/Sources reviewed/).first()).toBeVisible();
   await page.goto("/explore?q=BQ+Mall");
@@ -241,6 +243,7 @@ test("A point click opens its choice without reloading the page", async ({
     },
   });
   await expect(page.locator(".map-place-choice")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Street View/ })).toBeVisible();
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
 });
 

@@ -71,7 +71,7 @@ export function MapPlaceChoice({
           </button>
         ) : (
           <p className="map-place-choice__street-view-note">
-            No current panorama has been verified at this exact place.
+            No qualifying recent panorama is available at or near this place.
           </p>
         )}
       </div>

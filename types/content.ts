@@ -16,23 +16,27 @@ export interface Coordinates {
 }
 
 export interface StreetViewReference {
-  /** Exact capture position of a panorama that depicts this listing itself. */
+  /** Exact capture position of the reviewed panorama. */
   coordinates: Coordinates;
   /**
    * Audit reference only. Google panorama IDs are not passed to the keyless
    * embed because they are not guaranteed to remain reusable across sessions.
    */
   panoId: string;
-  /** Capture month, constrained to the approved 2022–2026 window. */
-  captureDate: `${2022 | 2023 | 2024 | 2025 | 2026}-${string}`;
+  /** Capture month, constrained to the approved 2023-2026 window. */
+  captureDate: `${2023 | 2024 | 2025 | 2026}-${string}`;
   provider: "Google Maps";
   contributor: string;
-  /** The venue or site visibly depicted by the panorama. */
+  /** The venue itself or the nearby road represented by the panorama. */
   label: string;
+  /** Initial compass heading used by the keyless embed. */
+  heading?: number;
   /** Date the panorama, venue match, and capture date were last reviewed. */
   verifiedAt: string;
-  /** Exact-venue review is required; nearby imagery is never eligible. */
-  match: "exact-venue";
+  /** Whether the panorama depicts the venue or a reviewed nearby road. */
+  match: "exact-venue" | "nearby-road";
+  /** Required for nearby-road fallbacks and measured from the listing coordinates. */
+  distanceMeters?: number;
   /** Review again after this date and hide the action when overdue. */
   reviewDueAt: string;
 }
@@ -99,9 +103,10 @@ export interface Place {
   /** Omitted in the prototype until a source-backed coordinate is available. */
   coordinates?: Coordinates;
   /**
-   * Omitted unless a 2022–2026 Google Maps panorama has passed a manual
-   * resolution, stitching, framing, recency, and exact-venue review.
-   * Nearby substitutes are not permitted.
+   * Omitted unless a 2023-2026 Google Maps panorama has passed a manual
+   * resolution, stitching, framing, recency, and proximity review.
+   * Exact venue imagery is preferred; a clearly labelled nearby-road
+   * panorama is allowed when no qualifying exact view exists.
    */
   streetView?: StreetViewReference;
   /** Source-provided directions link. Omit when the source does not publish one. */

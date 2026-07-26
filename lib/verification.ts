@@ -4,7 +4,7 @@ export function isStreetViewCurrent(
   streetView: StreetViewReference | undefined,
   today = new Date(),
 ) {
-  if (!streetView || streetView.match !== "exact-venue") return false;
+  if (!streetView) return false;
   const reviewDueAt = new Date(`${streetView.reviewDueAt}T23:59:59+08:00`);
   return Number.isFinite(reviewDueAt.getTime()) && reviewDueAt >= today;
 }
