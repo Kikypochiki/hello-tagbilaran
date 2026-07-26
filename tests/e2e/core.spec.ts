@@ -164,7 +164,7 @@ test("Reduced motion keeps the story as a normal paper document", async ({ page 
   );
 });
 
-test("Explore keeps list access, URL filters, and stable navigation", async ({
+test("Explore keeps a compact category index and stable URL filters", async ({
   page,
 }, testInfo) => {
   await page.goto("/explore");
@@ -183,47 +183,35 @@ test("Explore keeps list access, URL filters, and stable navigation", async ({
   expect(collapsedHeight).toBeLessThan(100);
   await index.locator("summary").click();
   await expect(index).toHaveAttribute("open", "");
-  const indexBody = index.locator(".map-index__body");
-  const listDimensions = await indexBody.evaluate((element) => ({
-    clientHeight: element.clientHeight,
-    scrollHeight: element.scrollHeight,
-  }));
-  expect(listDimensions.scrollHeight).toBeGreaterThan(listDimensions.clientHeight);
-  if (testInfo.project.name === "mobile") {
-    await indexBody.evaluate((element) => element.scrollTo({ top: 600 }));
-    await expect
-      .poll(() => indexBody.evaluate((element) => element.scrollTop))
-      .toBeGreaterThan(0);
-  }
-  await page.getByPlaceholder("Name, barangay, or category").fill("museum");
-  await expect(page).toHaveURL(/q=museum/);
-  const museumLink = page
-    .locator("button.map-index__place-link")
-    .filter({ hasText: "National Museum of the Philippines" });
-  await expect(museumLink).toBeVisible();
+  await expect(index.locator(".map-index__places")).toHaveCount(0);
+  const historyCategory = page.getByRole("button", {
+    name: /History & Culture.*Museums, monuments/,
+  });
+  await expect(historyCategory).toBeVisible();
   if (testInfo.project.name === "desktop") {
-    await museumLink.hover();
-    const preview = page.locator(".map-place-preview");
-    await expect(preview).toBeVisible();
-    await expect(preview.locator("p")).toHaveCount(0);
-    await expect(preview.getByText(/complete information/i)).toHaveCount(0);
+    await historyCategory.hover();
+    await expect(historyCategory.locator("small")).toHaveCSS(
+      "color",
+      "rgba(255, 249, 235, 0.76)",
+    );
   }
-  await museumLink.click();
-  await expect(page.getByRole("dialog")).toBeVisible();
+  await historyCategory.click();
+  await expect(page).toHaveURL(/category=history-culture/);
+  await page.getByRole("searchbox", { name: "Search by place or barangay" }).fill("museum");
+  await expect(page).toHaveURL(/q=museum/);
+  await expect(index.getByText(/places? highlighted/)).toBeVisible();
+  await page.getByRole("button", { name: /Browse barangays/ }).click();
+  const barangayDirectory = page.getByRole("dialog", {
+    name: "Choose a barangay",
+  });
+  await expect(barangayDirectory).toBeVisible();
+  await barangayDirectory.getByRole("button", { name: /Bool/ }).click();
+  await expect(page).toHaveURL(/barangay=071242001/);
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
 });
 
-test("Place descriptions stay in the map modal", async ({
-  page,
-}, testInfo) => {
-  await page.goto("/explore?q=BQ+Mall");
-  if (testInfo.project.name === "mobile") {
-    await page.locator("details.map-index > summary").click();
-  }
-  await page
-    .locator("button.map-index__place-link")
-    .filter({ hasText: "Bohol Quality Mall" })
-    .click();
+test("Place descriptions stay in the map modal", async ({ page }) => {
+  await page.goto("/explore?place=bq-mall");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("heading", { name: "About" })).toBeVisible();
   await expect(page.getByText(/View full place page/i)).toHaveCount(0);
