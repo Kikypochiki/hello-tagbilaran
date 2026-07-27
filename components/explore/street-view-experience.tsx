@@ -49,12 +49,28 @@ export function StreetViewExperience({
   useEffect(() => {
     backButtonRef.current?.focus();
 
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyOverscrollBehavior =
+      document.body.style.overscrollBehavior;
+    const previousDocumentOverscrollBehavior =
+      document.documentElement.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+    document.documentElement.style.overscrollBehavior = "none";
+
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
     }
 
     window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscrollBehavior;
+      document.documentElement.style.overscrollBehavior =
+        previousDocumentOverscrollBehavior;
+    };
   }, [onClose]);
 
   useEffect(() => {
@@ -113,6 +129,7 @@ export function StreetViewExperience({
           referrerPolicy="strict-origin-when-cross-origin"
           onLoad={handleFrameLoad}
           tabIndex={stage === "ready" ? 0 : -1}
+          allowFullScreen
         />
       ) : (
         <div className="street-view-experience__panorama" />

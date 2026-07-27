@@ -56,6 +56,9 @@ describe("Street View experience", () => {
     const iframe = container.querySelector("iframe");
     expect(experience?.dataset.stage).toBe("zooming");
     expect(experience?.getAttribute("role")).toBe("dialog");
+    expect(document.body.style.overflow).toBe("hidden");
+    expect(document.body.style.overscrollBehavior).toBe("none");
+    expect(document.documentElement.style.overscrollBehavior).toBe("none");
     expect(container.textContent).toContain(
       "Moving from the city atlas to the street.",
     );
@@ -78,6 +81,35 @@ describe("Street View experience", () => {
         ?.click();
     });
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("restores the page gesture styles after Street View closes", async () => {
+    const place = getPlace("national-museum-bohol");
+    expect(place).toBeDefined();
+
+    document.body.style.overflow = "clip";
+    document.body.style.overscrollBehavior = "contain";
+    document.documentElement.style.overscrollBehavior = "auto";
+
+    await act(async () => {
+      root.render(
+        createElement(StreetViewExperience, {
+          place: place!,
+          onClose: vi.fn(),
+        }),
+      );
+    });
+
+    await act(async () => root.unmount());
+
+    expect(document.body.style.overflow).toBe("clip");
+    expect(document.body.style.overscrollBehavior).toBe("contain");
+    expect(document.documentElement.style.overscrollBehavior).toBe("auto");
+
+    document.body.style.overflow = "";
+    document.body.style.overscrollBehavior = "";
+    document.documentElement.style.overscrollBehavior = "";
+    root = createRoot(container);
   });
 
   it("removes the spatial delay when reduced motion is requested", async () => {
