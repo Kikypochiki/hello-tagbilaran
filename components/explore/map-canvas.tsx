@@ -805,7 +805,7 @@ export function MapCanvas({
       zoom: 18.4,
       pitch: reducedMotion ? 0 : 52,
       bearing: reducedMotion ? 0 : 18,
-      duration: reducedMotion ? 0 : 620,
+      duration: reducedMotion ? 0 : 900,
       easing: (time) => 1 - Math.pow(1 - time, 4),
     });
   }, [streetViewTarget]);
