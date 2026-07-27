@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl, {
   GeoJSONSource,
   LngLatBounds,
@@ -38,6 +38,7 @@ const cityBoundary = cityBoundaryJson as unknown as GeoJSON.FeatureCollection<
 const mapTileUrl =
   process.env.NEXT_PUBLIC_MAP_TILE_URL ??
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const mapTileUrlPrefix = mapTileUrl.split("{")[0] ?? mapTileUrl;
 
 function mapPerspective() {
   if (prefersReducedMotion()) {
@@ -195,6 +196,7 @@ export function MapCanvas({
   onSelectBarangay: (code?: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [baseTilesUnavailable, setBaseTilesUnavailable] = useState(false);
   const mapRef = useRef<MapLibreMap | null>(null);
   const choicePopupRef = useRef<Popup | null>(null);
   const choicePopupPlaceIdRef = useRef<string | undefined>(undefined);
@@ -246,6 +248,7 @@ export function MapCanvas({
             type: "raster",
             tiles: [mapTileUrl],
             tileSize: 256,
+            maxzoom: 19,
             attribution:
               '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
           },
@@ -512,6 +515,19 @@ export function MapCanvas({
         ],
       },
     });
+    const handleMapError = (event: { error: Error }) => {
+      const error = event.error as Error & { url?: string };
+      if (error.url?.startsWith(mapTileUrlPrefix)) {
+        setBaseTilesUnavailable(true);
+        containerRef.current?.setAttribute(
+          "data-map-background",
+          "unavailable",
+        );
+        return;
+      }
+      console.error(error);
+    };
+    map.on("error", handleMapError);
     const pinImages = {
       [placePinImageId]: createPlacePinImage({
         fill: "#f4c542",
@@ -704,6 +720,7 @@ export function MapCanvas({
       map.off("idle", syncPerspectiveState);
       map.off("moveend", syncPerspectiveState);
       map.off("sourcedata", syncBuildingSourceState);
+      map.off("error", handleMapError);
       map.remove();
       mapRef.current = null;
     };
@@ -891,12 +908,19 @@ export function MapCanvas({
   }, [selectedBarangayCode]);
 
   return (
-    <div
-      className="map-canvas map-canvas--city"
-      ref={containerRef}
-      data-selected-barangay={selectedBarangayCode}
-      role="region"
-      aria-label="Interactive map of Tagbilaran place pins, all 15 indicative barangay areas, and the indicative city boundary. The map index provides keyboard controls for every selection."
-    />
+    <>
+      <div
+        className="map-canvas map-canvas--city"
+        ref={containerRef}
+        data-selected-barangay={selectedBarangayCode}
+        role="region"
+        aria-label="Interactive map of Tagbilaran place pins, all 15 indicative barangay areas, and the indicative city boundary. The map index provides keyboard controls for every selection."
+      />
+      {baseTilesUnavailable ? (
+        <p className="map-canvas__network-status" role="status">
+          Map background unavailable. Place markers and boundaries remain usable.
+        </p>
+      ) : null}
+    </>
   );
 }

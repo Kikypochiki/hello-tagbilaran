@@ -1,7 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { siteOwner } from "@/content/site-owner";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname.startsWith("/explore")) return null;
+
   return (
     <footer className="site-footer">
       <div className="site-footer__inner">

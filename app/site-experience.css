@@ -857,6 +857,23 @@
   font-size: 0.7rem;
 }
 
+.map-canvas__network-status {
+  position: absolute;
+  z-index: 4;
+  right: 4.25rem;
+  bottom: 4.25rem;
+  width: min(18rem, calc(100% - 5rem));
+  padding: 0.7rem 0.85rem;
+  margin: 0;
+  color: var(--heritage-green-dark);
+  background: rgb(255 249 235 / 96%);
+  border: 1px solid var(--green-rule);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.56rem;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
 .map-loading--full,
 .workspace-loading--map,
 .hazard-map__loading,
@@ -1833,7 +1850,7 @@
 
   .map-index:not([open]) {
     right: auto;
-    width: min(18rem, calc(100vw - 1.5rem));
+    width: min(18rem, calc(100vw - 5.5rem));
   }
 
   .map-index > summary {
@@ -1847,6 +1864,17 @@
   .map-index__body {
     height: auto;
     max-height: calc(100dvh - var(--header-height) - 6rem);
+  }
+
+  .map-only-workspace .maplibregl-ctrl-top-right {
+    top: calc(var(--header-height) + 0.5rem);
+    right: 0.25rem;
+  }
+
+  .map-canvas__network-status {
+    right: 0.75rem;
+    bottom: 4.75rem;
+    width: min(18rem, calc(100% - 1.5rem));
   }
 
   .barangay-directory {

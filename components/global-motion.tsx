@@ -18,7 +18,7 @@ export function GlobalMotion() {
     const context = gsap.context(() => {
       media.add("(prefers-reduced-motion: no-preference)", () => {
         const revealTargets = gsap.utils.toArray<HTMLElement>(
-          ".developer-spread, .support-spread, .hazard-step, .hazard-map, .hazard-result",
+          ".developer-spread, .support-spread",
         );
 
         revealTargets.forEach((target) => {

@@ -33,9 +33,17 @@ test("Immersive field index opens and navigates between rooms", async ({ page })
   await page.goto("/");
 
   const index = page.locator("details.experience-menu");
+  const trigger = index.locator("summary");
   await expect(index).not.toHaveAttribute("open", "");
-  await index.locator("summary").click();
+  await trigger.click();
   await expect(index).toHaveAttribute("open", "");
+  await page.keyboard.press("Escape");
+  await expect(index).not.toHaveAttribute("open", "");
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await page.locator("main").click({ position: { x: 8, y: 8 } });
+  await expect(index).not.toHaveAttribute("open", "");
+  await trigger.click();
   await index.getByRole("link", { name: "Hazard assessment" }).click();
 
   await expect(page).toHaveURL(/\/hazard-assessment$/);
@@ -170,6 +178,12 @@ test("Explore keeps a compact category index and stable URL filters", async ({
   await page.goto("/explore");
   const index = page.locator("details.map-index");
   const cityMap = page.locator(".map-canvas--city");
+  await expect(page.locator(".site-footer")).toHaveCount(0);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollHeight - window.innerHeight,
+    ),
+  ).toBeLessThanOrEqual(1);
   await expect(cityMap).toHaveAttribute(
     "data-map-pitch",
     testInfo.project.name === "mobile" ? "28" : "38",
@@ -181,6 +195,27 @@ test("Explore keeps a compact category index and stable URL filters", async ({
   if (testInfo.project.name === "mobile") {
     await expect(page.getByRole("combobox", { name: "Explore display" })).toHaveCount(0);
     await expect(index).not.toHaveAttribute("open", "");
+    const expectSeparatedMobileControls = async () => {
+      const siteIndexBox = await page
+        .locator(".experience-header__menu-trigger")
+        .boundingBox();
+      const mapNavigationBox = await page
+        .locator(".maplibregl-ctrl-top-right .maplibregl-ctrl-group")
+        .boundingBox();
+      const mapIndexBox = await index.boundingBox();
+      if (!siteIndexBox || !mapNavigationBox || !mapIndexBox) {
+        throw new Error("Mobile map controls were not available for collision checks.");
+      }
+      expect(siteIndexBox.y + siteIndexBox.height).toBeLessThanOrEqual(
+        mapNavigationBox.y,
+      );
+      expect(mapIndexBox.x + mapIndexBox.width).toBeLessThanOrEqual(
+        mapNavigationBox.x,
+      );
+    };
+    await expectSeparatedMobileControls();
+    await page.setViewportSize({ width: 320, height: 740 });
+    await expectSeparatedMobileControls();
   } else {
     await expect(index).toHaveAttribute("open", "");
     await index.locator("summary").click();
@@ -229,6 +264,40 @@ test("Explore keeps the city model flat when reduced motion is requested", async
     "0",
     { timeout: 15_000 },
   );
+});
+
+test("Explore keeps its useful overlays when the raster background is unavailable", async ({
+  page,
+}) => {
+  const rasterErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && message.text().includes("tile.openstreetmap.org")) {
+      rasterErrors.push(message.text());
+    }
+  });
+  await page.route("https://tile.openstreetmap.org/**", (route) =>
+    route.abort("internetdisconnected"),
+  );
+  await page.goto("/explore");
+  const cityMap = page.locator(".map-canvas--city");
+  await expect(cityMap).toHaveAttribute("data-map-background", "unavailable", {
+    timeout: 15_000,
+  });
+  await expect(
+    page
+      .getByRole("status")
+      .filter({
+        hasText:
+          "Map background unavailable. Place markers and boundaries remain usable.",
+      }),
+  ).toBeVisible();
+  const statusBox = await page.locator(".map-canvas__network-status").boundingBox();
+  const legendBox = await page.locator(".map-legend").boundingBox();
+  if (!statusBox || !legendBox) {
+    throw new Error("The map fallback or legend was unavailable for overlap checks.");
+  }
+  expect(statusBox.y + statusBox.height).toBeLessThanOrEqual(legendBox.y);
+  expect(rasterErrors).toEqual([]);
 });
 
 test("Place descriptions stay in the map modal", async ({ page }) => {
@@ -292,7 +361,14 @@ test("Barangay sheets remain shareable from the places map", async ({ page }) =>
 });
 
 test("Hazard assessment has a dedicated, shareable, source-conscious workspace", async ({ page }) => {
+  const hydrationErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" && message.text().includes("hydrated")) {
+      hydrationErrors.push(message.text());
+    }
+  });
   await page.goto("/hazard-assessment");
+  await expect(page.locator(".site-footer")).toHaveCount(1);
   await expect(page.getByRole("heading", { name: "Hazard assessment" })).toBeVisible();
   await expect(page.getByText(/No substitute polygons/)).toBeVisible();
   await page.getByRole("button", { name: "Storm-surge" }).click();
@@ -310,6 +386,7 @@ test("Hazard assessment has a dedicated, shareable, source-conscious workspace",
   expect((titleBounds?.x ?? 0) + (titleBounds?.width ?? 0)).toBeLessThanOrEqual(
     await page.evaluate(() => document.documentElement.clientWidth),
   );
+  expect(hydrationErrors).toEqual([]);
 });
 
 test("About and support placeholders cannot be mistaken for payment details", async ({ page }) => {
@@ -318,6 +395,7 @@ test("About and support placeholders cannot be mistaken for payment details", as
   await expect(page.getByRole("heading", { name: "Developer profile pending" })).toBeVisible();
   await expect(page.getByText(/This development QR cannot be scanned/)).toBeVisible();
   await expect(page.getByRole("link", { name: /secure donation/i })).toHaveCount(0);
+  await expect(page.getByLabel("Project principles carousel")).toHaveCount(0);
 });
 
 test("Representative routes have no serious automated accessibility violations", async ({
@@ -326,6 +404,10 @@ test("Representative routes have no serious automated accessibility violations",
   test.setTimeout(180_000);
   for (const route of ["/", "/explore", "/hazard-assessment", "/about"]) {
     await page.goto(route);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
     const results = await new AxeBuilder({ page }).analyze();
     expect(
       results.violations.filter(

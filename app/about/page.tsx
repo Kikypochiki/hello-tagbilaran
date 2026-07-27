@@ -35,7 +35,7 @@ export default function AboutPage() {
 
         <section className="project-method" aria-labelledby="method-title">
           <h2 id="method-title">A public notebook, carefully sourced.</h2>
-          <div tabIndex={0} aria-label="Project principles carousel">
+          <div>
             <p><strong>Local focus.</strong> Tagbilaran is presented as a living city, not simply a gateway to wider Bohol.</p>
             <p><strong>Clear geography.</strong> Every place is labeled Tagbilaran City, Nearby, or Bohol Day Trip.</p>
             <p><strong>Verification.</strong> Time-sensitive facts are omitted or visibly qualified until reviewed.</p>
