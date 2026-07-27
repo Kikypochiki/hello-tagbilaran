@@ -1674,7 +1674,6 @@
   isolation: isolate;
   overflow: hidden;
   overscroll-behavior: none;
-  touch-action: none;
   color: var(--heritage-green-dark);
   background: transparent;
 }
@@ -1689,7 +1688,7 @@
   opacity: 0;
   pointer-events: none;
   overscroll-behavior: none;
-  touch-action: none;
+  touch-action: auto;
   transform: scale(1.035);
   transition:
     opacity 520ms ease,
