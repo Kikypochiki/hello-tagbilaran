@@ -39,6 +39,32 @@ const mapTileUrl =
   process.env.NEXT_PUBLIC_MAP_TILE_URL ??
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
+function mapPerspective() {
+  if (prefersReducedMotion()) {
+    return { bearing: 0, pitch: 0 };
+  }
+
+  return window.innerWidth <= 780
+    ? { bearing: -5, pitch: 28 }
+    : { bearing: -8, pitch: 38 };
+}
+
+function medianPlaceCenter(places: Place[]): [number, number] | undefined {
+  const coordinates = places.flatMap((place) =>
+    place.coordinates ? [place.coordinates] : [],
+  );
+  if (coordinates.length === 0) return undefined;
+
+  const middle = Math.floor(coordinates.length / 2);
+  const longitudes = coordinates
+    .map((coordinate) => coordinate.longitude)
+    .sort((left, right) => left - right);
+  const latitudes = coordinates
+    .map((coordinate) => coordinate.latitude)
+    .sort((left, right) => left - right);
+  return [longitudes[middle]!, latitudes[middle]!];
+}
+
 function placePoints(places: Place[]): GeoJSON.FeatureCollection<
   GeoJSON.Point,
   PlacePointProperties
@@ -195,13 +221,21 @@ export function MapCanvas({
     const cityFeature = cityBoundary.features[0];
     if (!cityFeature) return;
     const initialBounds = boundsForGeometry(cityFeature.geometry);
+    const perspective = mapPerspective();
+    const initialCenter = medianPlaceCenter(places) ?? initialBounds.getCenter();
+    const buildingTileUrl = `${window.location.origin}/data/buildings/{z}/{x}/{y}.pbf`;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
       bounds: initialBounds,
+      bearing: perspective.bearing,
+      pitch: perspective.pitch,
+      maxPitch: 58,
       fitBoundsOptions: {
         padding: mapPadding(),
         maxZoom: 14.2,
+        bearing: perspective.bearing,
+        pitch: perspective.pitch,
       },
       cooperativeGestures: false,
       attributionControl: false,
@@ -214,6 +248,20 @@ export function MapCanvas({
             tileSize: 256,
             attribution:
               '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+          },
+          buildings: {
+            type: "vector",
+            tiles: [buildingTileUrl],
+            minzoom: 13,
+            maxzoom: 16,
+            bounds: [
+              initialBounds.getWest(),
+              initialBounds.getSouth(),
+              initialBounds.getEast(),
+              initialBounds.getNorth(),
+            ],
+            attribution:
+              'Building footprints &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
           },
           places: {
             type: "geojson",
@@ -240,6 +288,56 @@ export function MapCanvas({
               "raster-saturation": -0.56,
               "raster-contrast": 0.08,
               "raster-opacity": 0.88,
+            },
+          },
+          {
+            id: "building-footprints",
+            type: "fill",
+            source: "buildings",
+            "source-layer": "building",
+            minzoom: 13,
+            maxzoom: 13.75,
+            paint: {
+              "fill-color": "#ddcba8",
+              "fill-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                13,
+                0.25,
+                13.75,
+                0.7,
+              ],
+              "fill-outline-color": "rgba(0, 92, 9, 0.18)",
+            },
+          },
+          {
+            id: "buildings-3d",
+            type: "fill-extrusion",
+            source: "buildings",
+            "source-layer": "building",
+            minzoom: 13,
+            paint: {
+              "fill-extrusion-base": 0,
+              "fill-extrusion-color": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                13,
+                "#ddcba8",
+                16,
+                "#f4e8ce",
+              ],
+              "fill-extrusion-height": [
+                "case",
+                ["has", "height"],
+                ["get", "height"],
+                ["has", "levels"],
+                ["*", ["get", "levels"], 3],
+                4,
+              ],
+              "fill-extrusion-opacity": 0.84,
+              "fill-extrusion-vertical-gradient": true,
             },
           },
           {
@@ -440,6 +538,37 @@ export function MapCanvas({
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
     mapRef.current = map;
 
+    const establishPerspective = () => {
+      map.jumpTo({
+        center: initialCenter,
+        zoom: Math.max(map.getZoom(), window.innerWidth <= 780 ? 13.8 : 14.1),
+        bearing: perspective.bearing,
+        pitch: perspective.pitch,
+      });
+    };
+    const syncPerspectiveState = () => {
+      if (!containerRef.current || !map.getLayer("buildings-3d")) return;
+      const renderedBuildings = map.queryRenderedFeatures({
+        layers: ["buildings-3d"],
+      }).length;
+      containerRef.current.dataset.mapPitch = String(Math.round(map.getPitch()));
+      containerRef.current.dataset.buildingsRendered = String(renderedBuildings);
+    };
+    const syncBuildingSourceState = (event: maplibregl.MapSourceDataEvent) => {
+      if (
+        containerRef.current &&
+        event.sourceId === "buildings" &&
+        map.isSourceLoaded("buildings")
+      ) {
+        containerRef.current.dataset.buildingsReady = "true";
+        syncPerspectiveState();
+      }
+    };
+    map.once("load", establishPerspective);
+    map.on("idle", syncPerspectiveState);
+    map.on("moveend", syncPerspectiveState);
+    map.on("sourcedata", syncBuildingSourceState);
+
     const openPlaceChoice = (placeId: string) => {
       const place = places.find((item) => item.id === placeId);
       if (!place?.coordinates) return;
@@ -571,6 +700,10 @@ export function MapCanvas({
       choicePopupRef.current = null;
       choicePopupPlaceIdRef.current = undefined;
       map.off("click", handleBarangayClick);
+      map.off("load", establishPerspective);
+      map.off("idle", syncPerspectiveState);
+      map.off("moveend", syncPerspectiveState);
+      map.off("sourcedata", syncBuildingSourceState);
       map.remove();
       mapRef.current = null;
     };
@@ -636,10 +769,11 @@ export function MapCanvas({
     if (!streetViewTarget?.streetView) {
       if (!previousStreetViewTargetRef.current) return;
       previousStreetViewTargetRef.current = undefined;
+      const perspective = mapPerspective();
       map.easeTo({
         zoom: Math.min(map.getZoom(), 15.8),
-        pitch: 0,
-        bearing: 0,
+        pitch: perspective.pitch,
+        bearing: perspective.bearing,
         duration: reducedMotion ? 0 : 420,
       });
       return;
@@ -696,6 +830,8 @@ export function MapCanvas({
       map.fitBounds(bounds, {
         padding: mapPadding(),
         maxZoom: 15.2,
+        bearing: mapPerspective().bearing,
+        pitch: mapPerspective().pitch,
         duration: reducedMotion ? 0 : 650,
       });
     };
@@ -736,9 +872,12 @@ export function MapCanvas({
       if (!target) return;
 
       const reducedMotion = prefersReducedMotion();
+      const perspective = mapPerspective();
       map.fitBounds(boundsForGeometry(target.geometry), {
         padding: mapPadding(),
         maxZoom: feature ? 15.6 : 14.2,
+        bearing: perspective.bearing,
+        pitch: perspective.pitch,
         duration: reducedMotion ? 0 : 650,
       });
     };

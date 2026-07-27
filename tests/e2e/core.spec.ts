@@ -169,6 +169,15 @@ test("Explore keeps a compact category index and stable URL filters", async ({
 }, testInfo) => {
   await page.goto("/explore");
   const index = page.locator("details.map-index");
+  const cityMap = page.locator(".map-canvas--city");
+  await expect(cityMap).toHaveAttribute(
+    "data-map-pitch",
+    testInfo.project.name === "mobile" ? "28" : "38",
+    { timeout: 15_000 },
+  );
+  await expect(cityMap).toHaveAttribute("data-buildings-ready", "true", {
+    timeout: 15_000,
+  });
   if (testInfo.project.name === "mobile") {
     await expect(page.getByRole("combobox", { name: "Explore display" })).toHaveCount(0);
     await expect(index).not.toHaveAttribute("open", "");
@@ -208,6 +217,18 @@ test("Explore keeps a compact category index and stable URL filters", async ({
   await barangayDirectory.getByRole("button", { name: /Bool/ }).click();
   await expect(page).toHaveURL(/barangay=071242001/);
   expect(await page.evaluate(() => performance.getEntriesByType("navigation").length)).toBe(1);
+});
+
+test("Explore keeps the city model flat when reduced motion is requested", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/explore");
+  await expect(page.locator(".map-canvas--city")).toHaveAttribute(
+    "data-map-pitch",
+    "0",
+    { timeout: 15_000 },
+  );
 });
 
 test("Place descriptions stay in the map modal", async ({ page }) => {
