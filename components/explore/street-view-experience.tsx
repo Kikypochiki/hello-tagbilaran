@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
+import { buildEmbeddedStreetViewUrl } from "@/lib/street-view-url";
 import { isStreetViewCurrent } from "@/lib/verification";
 import type { Place } from "@/types/content";
 
@@ -27,15 +28,7 @@ export function StreetViewExperience({
 
   const streetViewUrl = useMemo(() => {
     if (!isStreetViewCurrent(place.streetView) || !place.streetView) return undefined;
-    const parameters = new URLSearchParams({
-      layer: "c",
-      cbll: `${place.streetView.coordinates.latitude},${place.streetView.coordinates.longitude}`,
-      cbp: `12,${place.streetView.heading ?? 0},,0,0`,
-      source: "embed",
-      output: "svembed",
-      hl: "en",
-    });
-    return `https://maps.google.com/maps?${parameters.toString()}`;
+    return buildEmbeddedStreetViewUrl(place.streetView);
   }, [place.streetView]);
 
   const queuePanoramaReveal = useCallback(() => {

@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { categoryLabels, scopeLabels } from "@/lib/place-labels";
-import { buildInteractiveStreetViewUrl } from "@/lib/street-view-url";
 import { isStreetViewCurrent } from "@/lib/verification";
 import type { Place } from "@/types/content";
 
@@ -23,10 +22,6 @@ export function MapPlaceChoice({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const headingId = `map-place-choice-${place.id}`;
   const streetViewAvailable = isStreetViewCurrent(place.streetView);
-  const mobileStreetViewUrl =
-    streetViewAvailable && place.streetView
-      ? buildInteractiveStreetViewUrl(place.streetView)
-      : undefined;
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -66,27 +61,10 @@ export function MapPlaceChoice({
         <button className="secondary-action" type="button" onClick={onDetails}>
           About this place
         </button>
-        {streetViewAvailable && mobileStreetViewUrl ? (
-          <>
-            <button
-              className="primary-action map-place-choice__street-view-desktop"
-              type="button"
-              onClick={onStreetView}
-            >
-              Street View <span aria-hidden="true">→</span>
-            </button>
-            <a
-              className="primary-action map-place-choice__street-view-mobile"
-              href={mobileStreetViewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open interactive Street View ${
-                place.streetView?.match === "exact-venue" ? "at" : "near"
-              } ${place.name}`}
-            >
-              Open Street View <span aria-hidden="true">↗</span>
-            </a>
-          </>
+        {streetViewAvailable ? (
+          <button className="primary-action" type="button" onClick={onStreetView}>
+            Street View <span aria-hidden="true">→</span>
+          </button>
         ) : (
           <p className="map-place-choice__street-view-note">
             No qualifying recent panorama is available at or near this place.
