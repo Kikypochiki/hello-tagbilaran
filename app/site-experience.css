@@ -994,6 +994,20 @@
   font-size: 0.68rem;
 }
 
+.map-place-choice__street-view-mobile {
+  display: none;
+}
+
+@media (max-width: 780px), (hover: none) and (pointer: coarse) {
+  .map-place-choice__street-view-desktop {
+    display: none;
+  }
+
+  .map-place-choice__street-view-mobile {
+    display: inline-flex;
+  }
+}
+
 .place-dialog {
   width: min(48rem, calc(100vw - 2rem));
   max-width: none;

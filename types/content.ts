@@ -29,7 +29,7 @@ export interface StreetViewReference {
   contributor: string;
   /** The venue itself or the nearby road represented by the panorama. */
   label: string;
-  /** Initial compass heading used by the keyless embed. */
+  /** Initial compass heading used by the Street View presentation. */
   heading?: number;
   /** Date the panorama, venue match, and capture date were last reviewed. */
   verifiedAt: string;

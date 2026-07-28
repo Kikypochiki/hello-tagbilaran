@@ -584,11 +584,15 @@ export function MapCanvas({
     map.on("idle", syncPerspectiveState);
     map.on("moveend", syncPerspectiveState);
     map.on("sourcedata", syncBuildingSourceState);
+    const supportsPointerPreview = window.matchMedia(
+      "(hover: hover) and (pointer: fine) and (min-width: 781px)",
+    ).matches;
 
     const openPlaceChoice = (placeId: string) => {
       const place = places.find((item) => item.id === placeId);
       if (!place?.coordinates) return;
 
+      onPreviewRef.current(undefined);
       choicePopupRef.current?.remove();
       const mountNode = document.createElement("div");
       mountNode.className = "journal-map-popup__mount";
@@ -648,6 +652,7 @@ export function MapCanvas({
       event: maplibregl.MapLayerMouseEvent & { features?: GeoJSON.Feature[] },
     ) => {
       map.getCanvas().style.cursor = "pointer";
+      if (!supportsPointerPreview) return;
       const placeId = event.features?.[0]?.properties?.placeId;
       if (typeof placeId === "string") {
         if (hoveredPlaceId && hoveredPlaceId !== placeId) {
