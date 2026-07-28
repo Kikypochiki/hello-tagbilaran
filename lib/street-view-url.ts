@@ -1,21 +1,25 @@
 import type { StreetViewReference } from "@/types/content";
 
 /**
- * Opens Google's full interactive panorama surface. Maps URLs are intentionally
- * used for touch devices because the provider can route them to either the Maps
- * app or its mobile web viewer without trapping gestures inside an iframe.
+ * Builds the interactive panorama URL produced by Google Maps' embed surface.
+ * Unlike the legacy `output=svembed` endpoint, this viewer accepts native touch
+ * gestures when it is hosted in an iframe.
  */
-export function buildInteractiveStreetViewUrl(
+export function buildEmbeddedStreetViewUrl(
   streetView: StreetViewReference,
 ): string {
-  const parameters = new URLSearchParams({
-    api: "1",
-    map_action: "pano",
-    viewpoint: `${streetView.coordinates.latitude},${streetView.coordinates.longitude}`,
-    heading: `${streetView.heading ?? 0}`,
-    pitch: "0",
-    fov: "80",
-  });
+  const panoramaParameters = [
+    "!4v1",
+    "!6m8",
+    "!1m7",
+    `!1s${encodeURIComponent(streetView.panoId)}`,
+    "!2m2",
+    `!1d${streetView.coordinates.latitude}`,
+    `!2d${streetView.coordinates.longitude}`,
+    `!3f${streetView.heading ?? 0}`,
+    "!4f0",
+    "!5f0.7820865974627469",
+  ].join("");
 
-  return `https://www.google.com/maps/@?${parameters.toString()}`;
+  return `https://www.google.com/maps/embed?pb=${panoramaParameters}`;
 }

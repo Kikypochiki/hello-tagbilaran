@@ -29,8 +29,9 @@ describe("map place choice", () => {
     mountNode.remove();
   });
 
-  it("offers a touch-safe panorama handoff alongside the desktop viewer", async () => {
+  it("opens the same in-site panorama viewer on mobile and desktop", async () => {
     const place = getPlace("national-museum-bohol");
+    const onStreetView = vi.fn();
     expect(place).toBeDefined();
 
     await act(async () => {
@@ -40,24 +41,18 @@ describe("map place choice", () => {
           mountNode,
           onClose: vi.fn(),
           onDetails: vi.fn(),
-          onStreetView: vi.fn(),
+          onStreetView,
         }),
       );
     });
 
-    const mobileLink = mountNode.querySelector<HTMLAnchorElement>(
-      ".map-place-choice__street-view-mobile",
-    );
-    const desktopButton = mountNode.querySelector<HTMLButtonElement>(
-      ".map-place-choice__street-view-desktop",
-    );
+    const streetViewButton = Array.from(
+      mountNode.querySelectorAll<HTMLButtonElement>("button"),
+    ).find((button) => button.textContent?.includes("Street View"));
 
-    expect(mobileLink).not.toBeNull();
-    expect(mobileLink?.target).toBe("_blank");
-    expect(mobileLink?.rel).toContain("noopener");
-    expect(new URL(mobileLink!.href).searchParams.get("map_action")).toBe(
-      "pano",
-    );
-    expect(desktopButton?.textContent).toContain("Street View");
+    expect(streetViewButton).toBeDefined();
+    await act(async () => streetViewButton?.click());
+    expect(onStreetView).toHaveBeenCalledOnce();
+    expect(mountNode.querySelector('a[href*="google.com/maps"]')).toBeNull();
   });
 });
