@@ -1,25 +1,20 @@
 import type { StreetViewReference } from "@/types/content";
 
 /**
- * Builds the interactive panorama URL produced by Google Maps' embed surface.
- * Unlike the legacy `output=svembed` endpoint, this viewer accepts native touch
- * gestures when it is hosted in an iframe.
+ * Builds the legacy Google Maps Street View embed used on `main`.
+ * This endpoint preserves the mobile touch behavior verified in the project.
  */
 export function buildEmbeddedStreetViewUrl(
   streetView: StreetViewReference,
 ): string {
-  const panoramaParameters = [
-    "!4v1",
-    "!6m8",
-    "!1m7",
-    `!1s${encodeURIComponent(streetView.panoId)}`,
-    "!2m2",
-    `!1d${streetView.coordinates.latitude}`,
-    `!2d${streetView.coordinates.longitude}`,
-    `!3f${streetView.heading ?? 0}`,
-    "!4f0",
-    "!5f0.7820865974627469",
-  ].join("");
+  const parameters = new URLSearchParams({
+    layer: "c",
+    cbll: `${streetView.coordinates.latitude},${streetView.coordinates.longitude}`,
+    cbp: "12,0,,0,0",
+    source: "embed",
+    output: "svembed",
+    hl: "en",
+  });
 
-  return `https://www.google.com/maps/embed?pb=${panoramaParameters}`;
+  return `https://maps.google.com/maps?${parameters.toString()}`;
 }
