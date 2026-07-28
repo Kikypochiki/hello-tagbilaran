@@ -360,7 +360,9 @@ test("Barangay sheets remain shareable from the places map", async ({ page }) =>
   await expect(page.getByRole("link", { name: /official city directory/ })).toBeVisible();
 });
 
-test("Hazard assessment has a dedicated, shareable, source-conscious workspace", async ({ page }) => {
+test("Hazard assessment is a shareable, source-conscious map workspace", async ({
+  page,
+}, testInfo) => {
   const hydrationErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error" && message.text().includes("hydrated")) {
@@ -368,24 +370,29 @@ test("Hazard assessment has a dedicated, shareable, source-conscious workspace",
     }
   });
   await page.goto("/hazard-assessment");
-  await expect(page.locator(".site-footer")).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "Hazard assessment" })).toBeVisible();
-  await expect(page.getByText(/No substitute polygons/)).toBeVisible();
-  await page.getByRole("button", { name: "Storm-surge" }).click();
+  await expect(page.locator(".site-footer")).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Tagbilaran hazard assessment map" }),
+  ).toBeVisible();
+  if (testInfo.project.name === "mobile") {
+    await page.locator(".hazard-map-index > summary").click();
+  }
+  await expect(page.getByRole("button", { name: /Flood.*100-year rainfall/ })).toBeVisible();
+  await page.getByRole("button", { name: /Storm-surge/ }).click();
   await expect(page).toHaveURL(/hazard=storm-surge/);
-  await page.getByLabel("Assessment area").selectOption("071242001");
+  await page.getByLabel("Area").selectOption("071242001");
   await expect(page).toHaveURL(/barangay=071242001/);
-  await expect(page.getByRole("heading", { name: "No local classification issued" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Continue to UP NOAH/ })).toBeVisible();
+  await expect(page.locator(".hazard-map-status")).toHaveAttribute(
+    "data-state",
+    "ready",
+    { timeout: 15_000 },
+  );
+  await page.getByText("Source and limitations").click();
+  await expect(page.getByRole("link", { name: /Verify with UP NOAH/ })).toBeVisible();
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(1);
-  const titleBounds = await page.getByRole("heading", { name: "Hazard assessment" }).boundingBox();
-  expect(titleBounds).not.toBeNull();
-  expect((titleBounds?.x ?? 0) + (titleBounds?.width ?? 0)).toBeLessThanOrEqual(
-    await page.evaluate(() => document.documentElement.clientWidth),
-  );
   expect(hydrationErrors).toEqual([]);
 });
 

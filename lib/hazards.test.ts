@@ -8,14 +8,14 @@ describe("hazard layer safeguards", () => {
     expect(isHazardKind("earthquake")).toBe(false);
   });
 
-  it("never treats placeholder geometry as official data", () => {
+  it("publishes only complete, traceable local hazard layers", () => {
     expect(hazardLayers.every(validateHazardLayer)).toBe(true);
     expect(
       hazardLayers.every(
         (layer) =>
-          layer.status === "unavailable" &&
-          !layer.dataUrl &&
-          !layer.geometry &&
+          layer.status === "available" &&
+          layer.dataUrl.startsWith("/data/hazards/") &&
+          layer.license === "ODC-ODbL-1.0" &&
           layer.classifications.length === 3,
       ),
     ).toBe(true);

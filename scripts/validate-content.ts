@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { tagbilaranBarangays } from "../content/barangays";
 import { places } from "../content/places";
 import { isStreetViewCurrent } from "../lib/verification";
@@ -133,6 +135,12 @@ for (const barangay of tagbilaranBarangays) {
 
 if (!hazardLayers.every(validateHazardLayer)) {
   error("Hazard metadata is incomplete or includes unapproved placeholder geometry.");
+}
+for (const layer of hazardLayers) {
+  const localPath = join(process.cwd(), "public", layer.dataUrl);
+  if (!existsSync(localPath)) {
+    error(`${layer.label}: local hazard dataset is missing at ${layer.dataUrl}.`);
+  }
 }
 
 const ownerErrors = validateSiteOwner(siteOwner, supportProfile);
