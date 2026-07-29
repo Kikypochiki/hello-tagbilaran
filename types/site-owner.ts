@@ -1,8 +1,10 @@
 export interface SiteOwnerProfile {
   displayName: string;
   role: string;
+  education: string;
   biography: string;
   motivation: string;
+  contributions: string[];
   portrait: { src: string; alt: string; width: number; height: number };
   links: { label: string; href: string }[];
   placeholder: boolean;

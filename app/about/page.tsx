@@ -13,35 +13,33 @@ export default function AboutPage() {
     <main id="main-content" className="about-page">
       <article className="about-journal">
         <header className="about-cover">
+          <p className="about-cover__eyebrow">About the archive</p>
           <h1>The hands behind the journal.</h1>
           <p>Hello Tagbilaran is an independent, research-led city guide made to celebrate Tagbilaran on its own terms.</p>
         </header>
 
         <section className="developer-spread" aria-labelledby="developer-title">
-          <figure>
+          <figure className="developer-spread__portrait">
             <Image src={siteOwner.portrait.src} alt={siteOwner.portrait.alt} width={siteOwner.portrait.width} height={siteOwner.portrait.height} priority />
-            {siteOwner.placeholder ? <figcaption>Development placeholder: portrait and profile pending</figcaption> : null}
+            <figcaption>Dohn Michael Varquez <span aria-hidden="true">·</span> Project author</figcaption>
           </figure>
-          <div>
+          <div className="developer-spread__copy">
+            <p className="developer-spread__index" aria-hidden="true">Author’s note / 01</p>
             <h2 id="developer-title">{siteOwner.displayName}</h2>
             <p className="developer-spread__role">{siteOwner.role}</p>
+            <p className="developer-spread__education">{siteOwner.education}</p>
             <p>{siteOwner.biography}</p>
             <p>{siteOwner.motivation}</p>
+            <div className="developer-spread__contributions">
+              <h3>Work on this archive</h3>
+              <ul>
+                {siteOwner.contributions.map((contribution) => <li key={contribution}>{contribution}</li>)}
+              </ul>
+            </div>
             {siteOwner.links.length ? (
-              <ul>{siteOwner.links.map((link) => <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer">{link.label} <span aria-hidden="true">↗</span></a></li>)}</ul>
+              <ul className="developer-spread__links">{siteOwner.links.map((link) => <li key={link.href}><a href={link.href} target="_blank" rel="noreferrer">Visit {link.label} profile <span aria-hidden="true">↗</span></a></li>)}</ul>
             ) : null}
           </div>
-        </section>
-
-        <section className="project-method" aria-labelledby="method-title">
-          <h2 id="method-title">A public notebook, carefully sourced.</h2>
-          <div>
-            <p><strong>Local focus.</strong> Tagbilaran is presented as a living city, not simply a gateway to wider Bohol.</p>
-            <p><strong>Clear geography.</strong> Every place is labeled Tagbilaran City, Nearby, or Bohol Day Trip.</p>
-            <p><strong>Verification.</strong> Time-sensitive facts are omitted or visibly qualified until reviewed.</p>
-            <p><strong>Accessible by design.</strong> Core stories and place information remain readable without gestures, WebGL, or animation.</p>
-          </div>
-          <aside>This project is not affiliated with or endorsed by the City Government of Tagbilaran, UP NOAH, or businesses included in the guide.</aside>
         </section>
 
         <section className="support-spread" id="support" aria-labelledby="support-title">

@@ -396,10 +396,15 @@ test("Hazard assessment is a shareable, source-conscious map workspace", async (
   expect(hydrationErrors).toEqual([]);
 });
 
-test("About and support placeholders cannot be mistaken for payment details", async ({ page }) => {
+test("About identifies the developer while support placeholders cannot be mistaken for payment details", async ({ page }) => {
   await page.goto("/about");
   await expect(page.getByRole("heading", { name: "The hands behind the journal." })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Developer profile pending" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dohn Michael Varquez" })).toBeVisible();
+  await expect(page.getByText("Fourth-year Computer Science student at Visayas State University")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Visit GitHub profile" })).toHaveAttribute(
+    "href",
+    "https://github.com/Kikypochiki",
+  );
   await expect(page.getByText(/This development QR cannot be scanned/)).toBeVisible();
   await expect(page.getByRole("link", { name: /secure donation/i })).toHaveCount(0);
   await expect(page.getByLabel("Project principles carousel")).toHaveCount(0);
