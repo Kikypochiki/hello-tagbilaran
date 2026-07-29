@@ -29,13 +29,13 @@ export const siteOwner: SiteOwnerProfile = {
 };
 
 export const supportProfile: SupportProfile = {
-  provider: "Donation provider pending",
-  recipient: "Recipient pending",
+  provider: "GCash",
+  recipient: "Dohn Michael Varquez",
   qr: {
-    src: "/images/support-qr-placeholder.svg",
-    alt: "Development placeholder; this is not a scannable payment QR code",
-    width: 720,
-    height: 720,
+    src: "/images/support/gcash-dohn-michael-varquez-qr.png",
+    alt: "GCash payment QR code for Dohn Michael Varquez",
+    width: 296,
+    height: 296,
   },
-  placeholder: true,
+  placeholder: false,
 };

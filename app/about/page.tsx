@@ -39,20 +39,25 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className={`support-spread${supportProfile.placeholder ? " support-spread--pending" : ""}`} id="support" aria-labelledby="support-title">
-          <div>
-            <h2 id="support-title">Support the archive.</h2>
-            <p>Optional support helps cover hosting, local research, and accessibility improvements.</p>
-            {!supportProfile.placeholder ? <dl><div><dt>Provider</dt><dd>{supportProfile.provider}</dd></div><div><dt>Recipient</dt><dd>{supportProfile.recipient}</dd></div></dl> : null}
+        <section className="support-spread" id="support" aria-labelledby="support-title">
+          <div className="support-spread__copy">
+            <h2 id="support-title">Support Hello Tagbilaran.</h2>
+            <p>If you find the archive useful, you may support its continued development through GCash. Contributions are optional and help cover hosting, research, and accessibility improvements.</p>
+            <dl>
+              <div><dt>Send through</dt><dd>{supportProfile.provider}</dd></div>
+              <div><dt>Recipient</dt><dd>{supportProfile.recipient}</dd></div>
+            </dl>
             {supportProfile.donationUrl && !supportProfile.placeholder ? (
               <a className="primary-action" href={supportProfile.donationUrl} target="_blank" rel="noreferrer">Open secure donation link <span aria-hidden="true">↗</span></a>
-            ) : <p className="support-spread__pending" role="status">Donation details will appear after a verified destination is ready.</p>}
-            {!supportProfile.placeholder ? <small>Before confirming any payment, verify that the provider and recipient match the labels shown here. Donations are not represented as tax-deductible.</small> : null}
+            ) : (
+              <a className="primary-action" href={supportProfile.qr.src} download>Save the GCash QR <span aria-hidden="true">↓</span></a>
+            )}
+            <small>Before sending, confirm that GCash shows Dohn Michael Varquez as the recipient. Tips are optional and are not represented as tax-deductible.</small>
           </div>
-          {!supportProfile.placeholder ? <figure>
+          <figure className="support-spread__qr">
             <Image src={supportProfile.qr.src} alt={supportProfile.qr.alt} width={supportProfile.qr.width} height={supportProfile.qr.height} />
             <figcaption>Scan with {supportProfile.provider}</figcaption>
-          </figure> : null}
+          </figure>
         </section>
       </article>
     </main>

@@ -9,7 +9,12 @@ export function validateSiteOwner(owner: SiteOwnerProfile, support: SupportProfi
     errors.push("Developer links must use HTTPS.");
   }
   if (support.placeholder) errors.push("Support destination is still a placeholder.");
-  if (!support.donationUrl?.startsWith("https://")) errors.push("Support destination must use HTTPS.");
+  if (support.donationUrl && !support.donationUrl.startsWith("https://")) {
+    errors.push("Support destination must use HTTPS.");
+  }
+  if (!support.donationUrl && !support.qr.src.startsWith("/")) {
+    errors.push("Support requires an HTTPS destination or a local reviewed QR asset.");
+  }
   if (!support.provider.trim() || !support.recipient.trim()) errors.push("Support provider and recipient are required.");
   return errors;
 }

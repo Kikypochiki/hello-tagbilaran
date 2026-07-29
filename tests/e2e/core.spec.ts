@@ -396,7 +396,7 @@ test("Hazard assessment is a shareable, source-conscious map workspace", async (
   expect(hydrationErrors).toEqual([]);
 });
 
-test("About identifies the developer while support placeholders cannot be mistaken for payment details", async ({ page }) => {
+test("About identifies the developer and provides the reviewed GCash support option", async ({ page }) => {
   await page.goto("/about");
   await expect(page.getByRole("heading", { name: "The hands behind the journal." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Dohn Michael Varquez" })).toBeVisible();
@@ -405,8 +405,13 @@ test("About identifies the developer while support placeholders cannot be mistak
     "href",
     "https://github.com/Kikypochiki",
   );
-  await expect(page.getByText(/Donation details will appear after a verified destination is ready/)).toBeVisible();
-  await expect(page.getByAltText(/not a scannable payment QR code/)).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Support Hello Tagbilaran." })).toBeVisible();
+  await expect(page.getByText("Dohn Michael Varquez", { exact: true })).toHaveCount(2);
+  await expect(page.getByAltText("GCash payment QR code for Dohn Michael Varquez")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Save the GCash QR" })).toHaveAttribute(
+    "href",
+    "/images/support/gcash-dohn-michael-varquez-qr.png",
+  );
   await expect(page.getByRole("link", { name: /secure donation/i })).toHaveCount(0);
   await expect(page.getByLabel("Project principles carousel")).toHaveCount(0);
 });
