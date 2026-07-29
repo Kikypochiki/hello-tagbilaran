@@ -5,14 +5,13 @@ export const siteOwner: SiteOwnerProfile = {
   role: "Developer of Hello Tagbilaran",
   education: "Fourth-year Computer Science student at Visayas State University",
   biography:
-    "Dohn Michael Varquez is the student developer behind Hello Tagbilaran. He brings together research, interface design, and front-end development to shape the archive into a clear, useful way to encounter the city.",
+    "Dohn Michael Varquez is the student developer behind Hello Tagbilaran, working across research, interface design, and front-end development.",
   motivation:
-    "He created the project to give Tagbilaran room to be understood on its own terms—through its history, barangays, public places, and everyday city life, rather than only as a point of arrival for the rest of Bohol.",
+    "He created the archive to present Tagbilaran through its own history, barangays, public places, and everyday city life.",
   contributions: [
-    "Project direction and research",
-    "Interface and interaction design",
-    "Front-end development",
-    "Content and map experience",
+    "Research and editorial direction",
+    "Interface design",
+    "Development",
   ],
   portrait: {
     src: "/images/about/dohn-michael-varquez.webp",
