@@ -13,7 +13,6 @@ export default function AboutPage() {
     <main id="main-content" className="about-page">
       <article className="about-journal">
         <header className="about-cover">
-          <p className="about-cover__eyebrow">About the archive</p>
           <h1>The hands behind the journal.</h1>
           <p>Hello Tagbilaran is an independent, research-led city guide made to celebrate Tagbilaran on its own terms.</p>
         </header>
@@ -21,10 +20,8 @@ export default function AboutPage() {
         <section className="developer-spread" aria-labelledby="developer-title">
           <figure className="developer-spread__portrait">
             <Image src={siteOwner.portrait.src} alt={siteOwner.portrait.alt} width={siteOwner.portrait.width} height={siteOwner.portrait.height} priority />
-            <figcaption>Dohn Michael Varquez <span aria-hidden="true">·</span> Project author</figcaption>
           </figure>
           <div className="developer-spread__copy">
-            <p className="developer-spread__index" aria-hidden="true">Author’s note / 01</p>
             <h2 id="developer-title">{siteOwner.displayName}</h2>
             <p className="developer-spread__role">{siteOwner.role}</p>
             <p className="developer-spread__education">{siteOwner.education}</p>
@@ -42,20 +39,20 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="support-spread" id="support" aria-labelledby="support-title">
+        <section className={`support-spread${supportProfile.placeholder ? " support-spread--pending" : ""}`} id="support" aria-labelledby="support-title">
           <div>
-            <h2 id="support-title">Help keep the field journal growing.</h2>
-            <p>Support can help cover hosting, local research, photography permissions, and accessibility improvements. It is always optional.</p>
-            <dl><div><dt>Provider</dt><dd>{supportProfile.provider}</dd></div><div><dt>Recipient</dt><dd>{supportProfile.recipient}</dd></div></dl>
+            <h2 id="support-title">Support the archive.</h2>
+            <p>Optional support helps cover hosting, local research, and accessibility improvements.</p>
+            {!supportProfile.placeholder ? <dl><div><dt>Provider</dt><dd>{supportProfile.provider}</dd></div><div><dt>Recipient</dt><dd>{supportProfile.recipient}</dd></div></dl> : null}
             {supportProfile.donationUrl && !supportProfile.placeholder ? (
               <a className="primary-action" href={supportProfile.donationUrl} target="_blank" rel="noreferrer">Open secure donation link <span aria-hidden="true">↗</span></a>
-            ) : <p className="support-spread__pending" role="status">Donation destination pending. This development QR cannot be scanned.</p>}
-            <small>Before confirming any payment, verify that the provider and recipient match the labels shown here. Donations are not represented as tax-deductible.</small>
+            ) : <p className="support-spread__pending" role="status">Donation details will appear after a verified destination is ready.</p>}
+            {!supportProfile.placeholder ? <small>Before confirming any payment, verify that the provider and recipient match the labels shown here. Donations are not represented as tax-deductible.</small> : null}
           </div>
-          <figure>
+          {!supportProfile.placeholder ? <figure>
             <Image src={supportProfile.qr.src} alt={supportProfile.qr.alt} width={supportProfile.qr.width} height={supportProfile.qr.height} />
-            <figcaption>{supportProfile.placeholder ? "Development placeholder: not a payment code" : `Scan with ${supportProfile.provider}`}</figcaption>
-          </figure>
+            <figcaption>Scan with {supportProfile.provider}</figcaption>
+          </figure> : null}
         </section>
       </article>
     </main>

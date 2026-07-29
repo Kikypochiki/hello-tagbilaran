@@ -405,7 +405,8 @@ test("About identifies the developer while support placeholders cannot be mistak
     "href",
     "https://github.com/Kikypochiki",
   );
-  await expect(page.getByText(/This development QR cannot be scanned/)).toBeVisible();
+  await expect(page.getByText(/Donation details will appear after a verified destination is ready/)).toBeVisible();
+  await expect(page.getByAltText(/not a scannable payment QR code/)).toHaveCount(0);
   await expect(page.getByRole("link", { name: /secure donation/i })).toHaveCount(0);
   await expect(page.getByLabel("Project principles carousel")).toHaveCount(0);
 });
