@@ -832,8 +832,14 @@ export function MapCanvas({
     );
     if (points.length === 0) return;
 
+    containerRef.current?.removeAttribute("data-highlight-focus");
+    let markFocusReady: (() => void) | undefined;
     const focusHighlightedPlaces = () => {
       const reducedMotion = prefersReducedMotion();
+      markFocusReady = () => {
+        containerRef.current?.setAttribute("data-highlight-focus", "ready");
+      };
+      map.once("moveend", markFocusReady);
       if (points.length === 1 && points[0]?.coordinates) {
         map.easeTo({
           center: [points[0].coordinates.longitude, points[0].coordinates.latitude],
@@ -871,6 +877,7 @@ export function MapCanvas({
     return () => {
       window.clearTimeout(focusTimer);
       map.off("style.load", scheduleFocus);
+      if (markFocusReady) map.off("moveend", markFocusReady);
     };
   }, [highlightedIds, places, selectedBarangayCode]);
 

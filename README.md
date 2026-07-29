@@ -1,22 +1,81 @@
 # Hello Tagbilaran
 
-An editorial tourism guide for Tagbilaran City, Bohol. The product keeps a focused
-three-route structure:
+**Release 2.0.0**
 
-- `/` — five-chapter paper-journal Story
-- `/explore` — synchronized place index and MapLibre map
-- `/places/[slug]` — independently indexable place details
+Hello Tagbilaran is an independent, editorial city guide for Tagbilaran City,
+Bohol. It combines a scroll-driven paper-journal history, a three-dimensional
+city atlas, barangay and place discovery, reviewed Street View, scenario-based
+hazard maps, and a signed project colophon.
+
+The project presents Tagbilaran as a destination with its own history,
+neighborhoods, public places, food, and everyday city life—not merely as a
+gateway to the rest of Bohol.
+
+## Release 2 features
+
+- Five-chapter, scroll-driven living archive with accessible reduced-motion
+  behavior.
+- MapLibre city atlas with locally stored building geometry and subtle 3D
+  extrusion.
+- Searchable guide containing 38 reviewed place records.
+- Directory for all 15 Tagbilaran barangays with PSGC codes, population data,
+  city-directory information, and indicative boundaries.
+- Place modals with editorial descriptions, verification notes, imagery, and
+  reviewed Street View where available.
+- Dedicated hazard-assessment map for 100-year flood, landslide susceptibility,
+  and Storm Surge Advisory 4 scenarios.
+- About page for developer Dohn Michael Varquez with an optional GCash support
+  flow.
+- Responsive layouts, keyboard navigation, visible focus, reduced-motion
+  support, and non-map fallbacks for essential content.
+
+## Routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Five-chapter living archive and story experience |
+| `/explore` | 3D city atlas, place guide, barangay directory, and Street View |
+| `/hazard-assessment` | Scenario-based hazard map and source information |
+| `/about` | Developer profile, project context, and optional support |
+
+## Technology
+
+- Next.js App Router 16
+- React 19 and TypeScript
+- MapLibre GL JS
+- GSAP for progressive story motion
+- Local typed content, GeoJSON hazard layers, and vector building tiles
+- Vitest, Playwright, and Axe accessibility checks
+
+Core editorial content remains server-rendered. Maps, motion, and Street View are
+progressive enhancements rather than requirements for reading the guide.
 
 ## Local development
 
+Requirements:
+
+- Node.js 20.9 or newer
+- npm 11 or a compatible npm release
+
 ```bash
 npm install
+copy .env.example .env.local
 npm run dev
 ```
 
-Copy `.env.example` to `.env.local` and replace `NEXT_PUBLIC_SITE_URL` before a
-public deployment. Until it is configured, generated robots metadata prevents
-indexing so localhost canonicals cannot be published accidentally.
+Open `http://localhost:3000`.
+
+## Environment variables
+
+| Variable | Requirement | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Required for public indexing | Production origin used by canonical URLs, robots, and the sitemap |
+| `NEXT_PUBLIC_MAP_TILE_URL` | Optional | Replaceable raster tile template; defaults to OpenStreetMap |
+| `NEXT_PUBLIC_ENABLE_LEGACY_SW_CLEANUP` | Migration only | Removes service workers left by an older prototype |
+
+Until `NEXT_PUBLIC_SITE_URL` is configured with a production HTTPS origin,
+generated robots metadata disallows indexing. This prevents localhost canonicals
+from being published accidentally.
 
 ## Validation
 
@@ -29,49 +88,76 @@ npm run build
 npm run test:e2e
 ```
 
-`npm run validate` runs the complete sequence. Browser tests use installed Chrome
-locally and Playwright Chromium in CI.
+`npm run validate` runs the complete release sequence. Browser tests use
+installed Chrome locally and Playwright Chromium in CI.
 
 Run `npm run images:optimize` after adding large JPEG photography. It recompresses
-only files above 350 KB and does not enlarge images.
+files above 350 KB without enlarging them.
 
-## Content and publication rules
+## Deploying to Vercel
+
+1. Import the repository and use `main` as the production branch.
+2. Keep the detected framework preset as **Next.js**.
+3. Use Node.js 20.9 or newer.
+4. Add `NEXT_PUBLIC_SITE_URL` with the final HTTPS Vercel or custom-domain URL.
+5. Optionally configure `NEXT_PUBLIC_MAP_TILE_URL`.
+6. Set `NEXT_PUBLIC_ENABLE_LEGACY_SW_CLEANUP=true` for the first migration
+   deployment. After confirming old registrations are gone, set it to `false`.
+7. Use the standard `npm run build` command.
+
+No custom `vercel.json` is required. The Next.js adapter handles the static
+routes, image optimization, security headers, sitemap, and robots metadata.
+
+## Content and publication policy
 
 - Place identity, location, operating status, media rights, and review dates are
   tracked separately.
 - Unknown hours, contacts, prices, schedules, and accessibility conditions are
-  omitted.
+  omitted rather than invented.
 - The Philippine Statistics Authority PSGC record is canonical for Tagbilaran's
   15 barangays and codes. Boundary geometry remains indicative.
 - `npm run content:validate` reports stale reviews, missing evidence, invalid
-  coordinates, media-rights issues, and expired Street View.
-- Set `CONTENT_STRICT=1` in a publication pipeline to convert unresolved warnings
-  into release failures.
+  coordinates, media-rights issues, expired Street View, and incomplete owner or
+  support configuration.
+- `CONTENT_STRICT=1 npm run content:validate` converts warnings into release
+  failures.
 
-Current photography remains blocked for a strict public launch until its listed
-permissions and reuse terms are resolved. Credits and rights notes remain visible
-on place pages while the project is reviewed.
+The normal production build currently succeeds, but several place photographs
+still carry media-permission warnings. Resolve those permissions and reuse terms
+before treating the guide as fully rights-cleared.
 
-## Street View
+## Street View policy
 
-Street View is available only for manually reviewed panoramas captured from
-2023 through 2026. An exact venue panorama is preferred. When none qualifies, a
-high-quality panorama on a road within 250 metres may be used and is labelled as
-a nearby-road view in the interface. Each eligible record stores its capture
-position, contributor, capture date, match state, measured distance when
-applicable, review date, and six-month review deadline. Expired records
-automatically lose the Street View action.
+Street View is limited to manually reviewed panoramas captured from 2023 through
+2026. Exact venue imagery is preferred. If none qualifies, a panorama on a road
+within 250 metres may be used and is labeled as a nearby-road view.
 
-The viewer uses a keyless Google Maps embed opened only after visitor action.
-Google's attribution and controls must remain visible.
+Each record stores its capture date, contributor, match type, review date, and
+review deadline. Expired records automatically lose the Street View action. The
+viewer uses a keyless Google Maps embed opened only after visitor action;
+Google's attribution and controls remain visible.
 
-## Maps and offline behavior
+## Hazard-data policy
 
-The map source is configurable with `NEXT_PUBLIC_MAP_TILE_URL`; OpenStreetMap
-attribution remains visible. The complete searchable list is the accessible and
-network-failure fallback.
+The local hazard GeoJSON files are display-optimized derivatives of Project NOAH
+Bohol datasets:
 
-An older prototype registered a service worker. Keep
-`NEXT_PUBLIC_ENABLE_LEGACY_SW_CLEANUP=true` for the first migration deployment,
-confirm stale registrations are gone, then set it to `false` and remove the
-cleanup component and `public/sw.js` in the following release.
+- 100-year rainfall return-period flood hazards
+- Landslide susceptibility
+- Storm Surge Advisory 4
+
+The layers are clipped and simplified without combining or rescoring hazard
+classifications. They are scenario maps—not live warnings, emergency
+instructions, safety guarantees, or property-level assessments.
+
+Source details, transformation notes, and Open Data Commons Open Database License
+1.0 terms are documented in
+[`public/data/hazards/README.md`](public/data/hazards/README.md).
+
+## Project status
+
+Hello Tagbilaran is independently developed by
+[Dohn Michael Varquez](https://github.com/Kikypochiki), a fourth-year Computer
+Science student at Visayas State University. The project is not affiliated with
+or endorsed by the City Government of Tagbilaran, UP NOAH, Google, GCash, or
+businesses included in the guide.
