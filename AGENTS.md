@@ -9,7 +9,7 @@ Build a polished tourism guide for Tagbilaran City, Bohol. The experience should
 Before changing product code, read:
 
 1. `PROJECT_BRIEF.md`
-2. `DESIGN_SYSTEM.md`
+2. `DESIGN.md`
 3. `TECHNICAL_SPEC.md`
 4. `CONTENT_MODEL.md`
 
@@ -45,4 +45,3 @@ For every implementation milestone:
 - Check desktop and mobile layouts.
 - Verify keyboard navigation and reduced-motion behavior.
 - Report assumptions and any content that still requires local verification.
-

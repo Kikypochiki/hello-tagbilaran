@@ -4,6 +4,10 @@ import type {
   SourceRecord,
   StreetViewReference,
 } from "@/types/content";
+import {
+  editorialCopyByPlace,
+  researchedPlaceSources,
+} from "@/content/place-editorial-copy";
 
 const accessedAt = "2026-07-17";
 
@@ -17,7 +21,7 @@ const cityTourismSource: SourceRecord = {
 };
 
 const provincialTourismSource: SourceRecord = {
-  title: "Tagbilaran City — top things to do",
+  title: "Tagbilaran City - top things to do",
   url: "https://tourism.bohol.gov.ph/visitbohol-tagbilaran/",
   publisher: "Bohol Provincial Tourism Office",
   accessedAt,
@@ -40,6 +44,7 @@ function localImage(
   height: number,
   credit: string,
   rights: string,
+  metadata: Pick<ImageAsset, "date" | "sourceUrl" | "licenseUrl"> = {},
 ): ImageAsset {
   return {
     src: `/images/places/${filename}`,
@@ -48,6 +53,7 @@ function localImage(
     height,
     credit,
     rights,
+    ...metadata,
   };
 }
 
@@ -127,6 +133,9 @@ interface SuppliedPlaceInput {
     height: number;
     credit?: string;
     rights?: string;
+    date?: string;
+    sourceUrl?: string;
+    licenseUrl?: string;
   };
   additionalSources?: SourceRecord[];
 }
@@ -195,6 +204,11 @@ function suppliedPlace(input: SuppliedPlaceInput): Place {
         input.image.height,
         input.image.credit ?? "Google Maps community contributor",
         input.image.rights ?? googlePhotoRights,
+        {
+          date: input.image.date,
+          sourceUrl: input.image.sourceUrl,
+          licenseUrl: input.image.licenseUrl,
+        },
       ),
     ],
     sources: [
@@ -214,6 +228,11 @@ function suppliedPlace(input: SuppliedPlaceInput): Place {
           input.image.height,
           input.image.credit ?? "Google Maps community contributor",
           input.image.rights ?? googlePhotoRights,
+          {
+            date: input.image.date,
+            sourceUrl: input.image.sourceUrl,
+            licenseUrl: input.image.licenseUrl,
+          },
         ),
       ],
       true,
@@ -233,8 +252,14 @@ const suppliedPlaceEntries: Place[] = [
     image: {
       filename: "carlos-p-garcia-heritage-museum.jpg",
       alt: "Grounds and heritage house at the Carlos P. Garcia Heritage Museum",
-      width: 1200,
-      height: 705,
+      width: 2200,
+      height: 1650,
+      credit: "Patrickroque01 / Wikimedia Commons",
+      rights: "Creative Commons Attribution-ShareAlike 4.0 International.",
+      date: "2023-01-12",
+      sourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Carlos_P._Garcia_House_(F._Rocha,_Tagbilaran,_Bohol;_01-12-2023).jpg",
+      licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
     },
   }),
   suppliedPlace({
@@ -247,9 +272,15 @@ const suppliedPlaceEntries: Place[] = [
     longitude: 123.852681,
     image: {
       filename: "our-lady-of-lourdes-parish.jpg",
-      alt: "Altar inside Our Lady of Lourdes Parish Church",
-      width: 720,
-      height: 540,
+      alt: "Street-facing exterior of Our Lady of Lourdes Parish Church",
+      width: 2200,
+      height: 1650,
+      credit: "Deepak-nsk / Wikimedia Commons",
+      rights: "Dedicated to the public domain under Creative Commons CC0 1.0.",
+      date: "2024-09-19",
+      sourceUrl:
+        "https://commons.wikimedia.org/wiki/File:Our_Lady_of_Lourdes_Parish_Church,_Tagbilaran.jpg",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
     },
   }),
   suppliedPlace({
@@ -712,7 +743,7 @@ const placeEntries: Place[] = [
   {
     id: "national-museum-bohol",
     slug: "national-museum-bohol",
-    name: "National Museum of the Philippines – Bohol",
+    name: "National Museum of the Philippines - Bohol",
     category: "history-culture",
     scope: "tagbilaran",
     summary:
@@ -729,11 +760,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "national-museum-bohol.jpg",
-        "Facade of the National Museum of the Philippines – Bohol",
-        1024,
-        760,
-        "City Government of Tagbilaran",
-        "Public-domain government content unless otherwise stated; verify the individual image notice before publication.",
+        "Pagpauli exhibition and Carlos P. Garcia sculpture inside the National Museum of the Philippines - Bohol",
+        1600,
+        2133,
+        "Nirmaljoshi / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2025-04-26",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:National_Museum_Bohol.jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -748,18 +785,23 @@ const placeEntries: Place[] = [
         notes: "Official museum page used to confirm the building and address.",
       },
       googleMapsSource(
-        "National Museum of the Philippines – Bohol",
+        "National Museum of the Philippines - Bohol",
         "National Museum of the Philippines Bohol, Tagbilaran City",
       ),
       osmSource(
-        "National Museum of the Philippines – Bohol map feature",
+        "National Museum of the Philippines - Bohol map feature",
         "way",
         242261499,
       ),
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("history-culture", [], true),
+    verification: sourceReviewedVerification(
+      "history-culture",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "st-joseph-cathedral",
@@ -780,11 +822,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "st-joseph-cathedral.jpg",
-        "Stone facade and bell tower of St. Joseph the Worker Cathedral",
-        2048,
-        1536,
-        "City Government of Tagbilaran",
-        "Public-domain government content unless otherwise stated; verify the individual image notice before publication.",
+        "Street-facing facade and historic bell tower of St. Joseph the Worker Cathedral",
+        2200,
+        1650,
+        "Patrickroque01 / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2023-01-09",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Saint_Joseph_Cathedral_Tagbilaran_(JA_Clarin,_Tagbilaran,_Bohol;_01-09-2023).jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -805,7 +853,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("faith-architecture", [], true),
+    verification: sourceReviewedVerification(
+      "faith-architecture",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "plaza-rizal",
@@ -824,11 +877,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "plaza-rizal.jpg",
-        "Plaza Jose P. Rizal with landscaped paths and the Rizal monument",
-        2048,
-        1152,
-        "City Government of Tagbilaran",
-        "Public-domain government content unless otherwise stated; verify the individual image notice before publication.",
+        "Plaza Jose P. Rizal and its monument facing St. Joseph Cathedral",
+        2200,
+        1650,
+        "Patrickroque01 / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2023-01-09",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Tagbilaran_Plaza_Rizal,_Cathedral_(CPG_Avenue,_Tagbilaran,_Bohol;_01-09-2023).jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -842,7 +901,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("history-culture", [], true),
+    verification: sourceReviewedVerification(
+      "history-culture",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "cpg-park",
@@ -1039,11 +1103,17 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "island-city-mall.jpg",
-        "Colorful exterior of Island City Mall in Tagbilaran",
-        300,
-        183,
-        "Bohol Provincial Tourism Office",
-        "Image reuse terms are not stated; confirm with the publisher before launch.",
+        "Upper-level view through the contemporary interior of Island City Mall",
+        2200,
+        1650,
+        "OxyLight / Wikimedia Commons",
+        "Dedicated to the public domain under Creative Commons CC0 1.0.",
+        {
+          date: "2026-06-25",
+          sourceUrl:
+            "https://commons.wikimedia.org/wiki/File:Island_city_mall_tagbilaran.jpg",
+          licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+        },
       ),
     ],
     sources: [
@@ -1070,7 +1140,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("shopping-market", [], true),
+    verification: sourceReviewedVerification(
+      "shopping-market",
+      [],
+      true,
+      "cleared",
+    ),
   },
   {
     id: "bq-mall",
@@ -1092,11 +1167,16 @@ const placeEntries: Place[] = [
     images: [
       localImage(
         "bq-mall.jpg",
-        "Street entrance of Bohol Quality Mall in downtown Tagbilaran",
-        330,
-        228,
-        "Bohol Provincial Tourism Office",
-        "Image reuse terms are not stated; confirm with the publisher before launch.",
+        "Bohol Quality Mall and downtown traffic along Carlos P. Garcia Avenue",
+        2200,
+        2019,
+        "2hydh / Wikimedia Commons",
+        "Creative Commons Attribution-ShareAlike 4.0 International.",
+        {
+          date: "2023-06-15",
+          sourceUrl: "https://commons.wikimedia.org/wiki/File:BQ_MALL.jpg",
+          licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+        },
       ),
     ],
     sources: [
@@ -1116,45 +1196,12 @@ const placeEntries: Place[] = [
     ],
     verifiedAt: accessedAt,
     featured: true,
-    verification: sourceReviewedVerification("shopping-market", [], true),
-  },
-  {
-    id: "baclayon-church",
-    slug: "baclayon-church",
-    name: "Baclayon Church",
-    category: "faith-architecture",
-    scope: "nearby",
-    summary:
-      "A prominent historic church in the neighboring municipality of Baclayon, included as a clearly labeled nearby stop rather than a Tagbilaran City site.",
-    coordinates: { longitude: 123.9124751, latitude: 9.6229536 },
-    address: "Poblacion, Baclayon, Bohol",
-    directionsUrl: googleMapsUrl(
-      "Baclayon Church, Poblacion, Baclayon, Bohol",
+    verification: sourceReviewedVerification(
+      "shopping-market",
+      [],
+      true,
+      "cleared",
     ),
-    features: ["Popular nearby heritage stop", "Outside Tagbilaran City"],
-    accessibility: practicalDetailsNote,
-    images: [
-      localImage(
-        "baclayon-church.webp",
-        "Stone facade and bell tower of Baclayon Church",
-        1920,
-        1440,
-        "Bohol Provincial Tourism Office",
-        "Image reuse terms are not stated; confirm with the publisher before launch.",
-      ),
-    ],
-    sources: [
-      provincialTourismSource,
-      popularPlacesSource,
-      googleMapsSource(
-        "Baclayon Church",
-        "Baclayon Church, Poblacion, Baclayon, Bohol",
-      ),
-      osmSource("Baclayon Church map feature", "relation", 18624659),
-    ],
-    verifiedAt: accessedAt,
-    featured: true,
-    verification: sourceReviewedVerification("faith-architecture", [], true),
   },
   ...suppliedPlaceEntries,
 ];
@@ -1185,7 +1232,7 @@ const placeEnhancements: Record<string, PlaceEnhancement> = {
     "Plaza Rizal and the cathedral sit beside the museum in the compact civic core.",
   ),
   "carlos-p-garcia-heritage-museum": guideDetails(
-    "This heritage house and museum keeps the memory of Carlos P. Garcia—Boholano statesman and the Philippines’ eighth president—within Tagbilaran’s central heritage district.",
+    "This heritage house and museum keeps the memory of Carlos P. Garcia, Boholano statesman and the Philippines’ eighth president, within Tagbilaran’s central heritage district.",
     ["Presidential heritage museum", "Central heritage district"],
     "Poblacion III",
     "Include it in a downtown heritage walk with the National Museum, Plaza Rizal, and the cathedral.",
@@ -1373,11 +1420,6 @@ const placeEnhancements: Record<string, PlaceEnhancement> = {
     "Manga",
     "Treat the port as a workplace: keep routes clear and ask before photographing people at work.",
   ),
-  "baclayon-church": guideDetails(
-    "Baclayon Church is a major historic church in the neighboring municipality of Baclayon. It remains in the guide as a clearly labeled nearby heritage stop, not as a Tagbilaran City listing.",
-    ["Historic church complex", "Nearby stop outside Tagbilaran City"],
-    undefined,
-  ),
 };
 
 const categoryRank: Record<Place["category"], number> = {
@@ -1391,6 +1433,20 @@ const categoryRank: Record<Place["category"], number> = {
   "visitor-essential": 7,
 };
 
+function reviewedStreetView(
+  input: Omit<
+    StreetViewReference,
+    "provider" | "verifiedAt" | "reviewDueAt"
+  >,
+): StreetViewReference {
+  return {
+    ...input,
+    provider: "Google Maps",
+    verifiedAt: "2026-07-26",
+    reviewDueAt: "2027-01-26",
+  };
+}
+
 const reviewedStreetViews = {
   nationalMuseum: {
     panoId: "CIABIhA0PJrzmUK6HV6cIY56Z_bE",
@@ -1398,7 +1454,7 @@ const reviewedStreetViews = {
     captureDate: "2025-11",
     provider: "Google Maps",
     contributor: "EARL JOHN LASQUITE",
-    label: "National Museum of the Philippines – Bohol",
+    label: "National Museum of the Philippines - Bohol",
     verifiedAt: "2026-07-19",
     match: "exact-venue",
     reviewDueAt: "2027-01-19",
@@ -1436,21 +1492,319 @@ const reviewedStreetViews = {
     match: "exact-venue",
     reviewDueAt: "2027-01-19",
   },
+  plazaRizal: reviewedStreetView({
+    panoId: "K8N_nk2a_-UaclF8LoaPMw",
+    coordinates: { latitude: 9.639742, longitude: 123.8560645 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Sarmiento Street",
+    heading: 43.85,
+    match: "nearby-road",
+    distanceMeters: 21,
+  }),
+  carlosPGarciaHouse: reviewedStreetView({
+    panoId: "hdquTgLQlTIVCSOnYdsnug",
+    coordinates: { latitude: 9.6415533, longitude: 123.8578845 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby F. Rocha Street",
+    heading: 121.7,
+    match: "nearby-road",
+    distanceMeters: 26,
+  }),
+  lourdesParish: reviewedStreetView({
+    panoId: "w9pvUBU4haUDZf8Z7RJ5Qg",
+    coordinates: { latitude: 9.6458606, longitude: 123.8527811 },
+    captureDate: "2023-08",
+    contributor: "Google Street View",
+    label: "Nearby Celestino Gallares Street",
+    heading: -130.61,
+    match: "nearby-road",
+    distanceMeters: 14,
+  }),
+  birhenParish: reviewedStreetView({
+    panoId: "Qk22zzUFiE3zqrydvl-BfA",
+    coordinates: { latitude: 9.6552271, longitude: 123.8546176 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Benigno Aquino Avenue",
+    heading: 37.8,
+    match: "nearby-road",
+    distanceMeters: 46,
+  }),
+  immaculateHeartParish: reviewedStreetView({
+    panoId: "OS1I9m9dKga1TuLuOBovcg",
+    coordinates: { latitude: 9.6753508, longitude: 123.8537795 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Cabalit Street",
+    heading: -164.18,
+    match: "nearby-road",
+    distanceMeters: 33,
+  }),
+  chidoCafe: reviewedStreetView({
+    panoId: "GmqBFLdhr_oYe8LWfFrqFQ",
+    coordinates: { latitude: 9.628046, longitude: 123.8780369 },
+    captureDate: "2023-07",
+    contributor: "Google Street View",
+    label: "Nearby Tagbilaran East Road",
+    heading: -165.25,
+    match: "nearby-road",
+    distanceMeters: 22,
+  }),
+  gerardas: reviewedStreetView({
+    panoId: "BaMESnuA8DAvOBanX5hxYA",
+    coordinates: { latitude: 9.643124, longitude: 123.8581135 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby J.S. Torralba Street",
+    heading: 124.98,
+    match: "nearby-road",
+    distanceMeters: 10,
+  }),
+  alFrescoBay: reviewedStreetView({
+    panoId: "1WrJpCkKUpdEuEZgTpzFoQ",
+    coordinates: { latitude: 9.6450457, longitude: 123.8537733 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby G. Visarra Street",
+    heading: 158.86,
+    match: "nearby-road",
+    distanceMeters: 16,
+  }),
+  justSizzlin: reviewedStreetView({
+    panoId: "F7CP7pXoDp-bpzLR3s0UZg",
+    coordinates: { latitude: 9.6382123, longitude: 123.8599129 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby P. Del Rosario Street",
+    heading: 91.23,
+    match: "nearby-road",
+    distanceMeters: 12,
+  }),
+  smoqueBistro: reviewedStreetView({
+    panoId: "W2BYCe4pTkE24UKAEixowA",
+    coordinates: { latitude: 9.6310373, longitude: 123.8772423 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Carlos P. Garcia East Avenue",
+    heading: -128.23,
+    match: "nearby-road",
+    distanceMeters: 11,
+  }),
+  gardenCafe: reviewedStreetView({
+    panoId: "jD3_BQIdo_vd-e92g8yZRw",
+    coordinates: { latitude: 9.6397858, longitude: 123.8553656 },
+    captureDate: "2023-07",
+    contributor: "Google Street View",
+    label: "Nearby J.S. Torralba Street",
+    heading: 121.53,
+    match: "nearby-road",
+    distanceMeters: 22,
+  }),
+  punjabiRasoi: reviewedStreetView({
+    panoId: "ZrXIx7LGz7OUV3EqmjZUmA",
+    coordinates: { latitude: 9.6561916, longitude: 123.8528976 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Airport Road",
+    heading: 14.84,
+    match: "nearby-road",
+    distanceMeters: 13,
+  }),
+  craveCafe: reviewedStreetView({
+    panoId: "USlJaIcy37TBp5mbbth6pg",
+    coordinates: { latitude: 9.6506273, longitude: 123.8530979 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Lamdagan Street",
+    heading: -102.46,
+    match: "nearby-road",
+    distanceMeters: 12,
+  }),
+  barkCoffee: reviewedStreetView({
+    panoId: "e2JB9tt-yIRWxNDCQ5g92Q",
+    coordinates: { latitude: 9.6318004, longitude: 123.8694332 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Tagbilaran East Road",
+    heading: -161.43,
+    match: "nearby-road",
+    distanceMeters: 17,
+  }),
+  tamperCoffee: reviewedStreetView({
+    panoId: "p06iN5WHY2o45YkRBkn9nw",
+    coordinates: { latitude: 9.6384069, longitude: 123.860171 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Carlos P. Garcia East Avenue",
+    heading: -173,
+    match: "nearby-road",
+    distanceMeters: 23,
+  }),
+  mosiaCafe: reviewedStreetView({
+    panoId: "b_1xH0skZvIo4Ii2H9sNXg",
+    coordinates: { latitude: 9.6336773, longitude: 123.8659601 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Tagbilaran East Road",
+    heading: 22.42,
+    match: "nearby-road",
+    distanceMeters: 10,
+  }),
+  oceanSuitesRoad: reviewedStreetView({
+    panoId: "PX3DXU1DM1Qif2lU9Qe94Q",
+    coordinates: { latitude: 9.6278435, longitude: 123.8786534 },
+    captureDate: "2023-07",
+    contributor: "Google Street View",
+    label: "Nearby Tagbilaran East Road",
+    heading: 119,
+    match: "nearby-road",
+    distanceMeters: 78,
+  }),
+  boholEcotel: reviewedStreetView({
+    panoId: "_NmGkXxm1fF21l7-NDhLwQ",
+    coordinates: { latitude: 9.6394927, longitude: 123.8609586 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Hontanosas Street",
+    heading: -172.13,
+    match: "nearby-road",
+    distanceMeters: 8,
+  }),
+  travelbee: reviewedStreetView({
+    panoId: "gqgVXqeWY163-RYTlZY6og",
+    coordinates: { latitude: 9.6477207, longitude: 123.851325 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Celestino Gallares Street",
+    heading: -152.7,
+    match: "nearby-road",
+    distanceMeters: 14,
+  }),
+  daoDiamond: reviewedStreetView({
+    panoId: "UBo8h7mCq0nnU4XbsF7KZg",
+    coordinates: { latitude: 9.6637914, longitude: 123.8681589 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Tagbilaran-Corella Road",
+    heading: -44.38,
+    match: "nearby-road",
+    distanceMeters: 59,
+  }),
+  bqMall: reviewedStreetView({
+    panoId: "c5aTPdX0HOVGIYWibwZUew",
+    coordinates: { latitude: 9.6415448, longitude: 123.8552465 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Honorio Grupo Street",
+    heading: -42.02,
+    match: "nearby-road",
+    distanceMeters: 6,
+  }),
+  alturasMall: reviewedStreetView({
+    panoId: "zhXJuXAMvwulgO95lg9rVA",
+    coordinates: { latitude: 9.6430947, longitude: 123.8565919 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby B. Inting Street",
+    heading: -47.68,
+    match: "nearby-road",
+    distanceMeters: 44,
+  }),
+  galleriaLuisa: reviewedStreetView({
+    panoId: "YoYUj9vU--MjaBbIiAkyBg",
+    coordinates: { latitude: 9.6422977, longitude: 123.8540517 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby downtown road",
+    heading: -106.15,
+    match: "nearby-road",
+    distanceMeters: 19,
+  }),
+  centralMarket: reviewedStreetView({
+    panoId: "-FP5Uz0cUv7ZIgS3RxzR4A",
+    coordinates: { latitude: 9.6557571, longitude: 123.8715479 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby market access road",
+    heading: 164.92,
+    match: "nearby-road",
+    distanceMeters: 19,
+  }),
+  mangaMarket: reviewedStreetView({
+    panoId: "H8YmQZg4r7dHkjruUfKUbg",
+    coordinates: { latitude: 9.6933677, longitude: 123.8635854 },
+    captureDate: "2024-04",
+    contributor: "Google Street View",
+    label: "Nearby Elly Hill Road",
+    heading: -149.49,
+    match: "nearby-road",
+    distanceMeters: 5,
+  }),
+  friendshipParkRoad: reviewedStreetView({
+    panoId: "PX3DXU1DM1Qif2lU9Qe94Q",
+    coordinates: { latitude: 9.6278435, longitude: 123.8786534 },
+    captureDate: "2023-07",
+    contributor: "Google Street View",
+    label: "Nearby Tagbilaran East Road",
+    heading: -165.85,
+    match: "nearby-road",
+    distanceMeters: 65,
+  }),
 } satisfies Record<string, StreetViewReference>;
 
 const streetViewByPlace: Partial<Record<string, StreetViewReference>> = {
   "national-museum-bohol": reviewedStreetViews.nationalMuseum,
   "st-joseph-cathedral": reviewedStreetViews.cathedralInterior,
+  "plaza-rizal": reviewedStreetViews.plazaRizal,
+  "carlos-p-garcia-heritage-museum": reviewedStreetViews.carlosPGarciaHouse,
+  "our-lady-of-lourdes-parish": reviewedStreetViews.lourdesParish,
+  "birhen-sa-barangay-parish": reviewedStreetViews.birhenParish,
+  "immaculate-heart-of-mary-parish": reviewedStreetViews.immaculateHeartParish,
+  "chido-cafe": reviewedStreetViews.chidoCafe,
+  "gerardas-family-restaurant": reviewedStreetViews.gerardas,
+  "al-fresco-bay-cafe-restobar": reviewedStreetViews.alFrescoBay,
+  "just-sizzlin-resto": reviewedStreetViews.justSizzlin,
+  "smoque-bistro": reviewedStreetViews.smoqueBistro,
+  "garden-cafe": reviewedStreetViews.gardenCafe,
+  "punjabi-rasoi": reviewedStreetViews.punjabiRasoi,
+  "crave-cafe-bohol": reviewedStreetViews.craveCafe,
+  "bark-coffee": reviewedStreetViews.barkCoffee,
+  "tamper-coffee-brunch": reviewedStreetViews.tamperCoffee,
+  "mosia-cafe": reviewedStreetViews.mosiaCafe,
   "kew-hotel": reviewedStreetViews.kewHotel,
+  "ocean-suites": reviewedStreetViews.oceanSuitesRoad,
   "kasagpan-resort": reviewedStreetViews.kasagpan,
+  "bohol-ecotel": reviewedStreetViews.boholEcotel,
+  "travelbee-seaside-inn": reviewedStreetViews.travelbee,
+  "dao-diamond-hotel-restaurant": reviewedStreetViews.daoDiamond,
+  "bq-mall": reviewedStreetViews.bqMall,
+  "alturas-mall-tagbilaran": reviewedStreetViews.alturasMall,
+  "galleria-luisa-mall": reviewedStreetViews.galleriaLuisa,
+  "tagbilaran-city-central-public-market": reviewedStreetViews.centralMarket,
+  "barangay-manga-public-market": reviewedStreetViews.mangaMarket,
+  "tagbilaran-city-friendship-park": reviewedStreetViews.friendshipParkRoad,
 };
 
 export const places = placeEntries
-  .map((place) => ({
-    ...place,
-    ...placeEnhancements[place.slug],
-    streetView: streetViewByPlace[place.slug],
-  }))
+  .map((place) => {
+    const editorialCopy =
+      editorialCopyByPlace[
+        place.slug as keyof typeof editorialCopyByPlace
+      ];
+
+    return {
+      ...place,
+      ...placeEnhancements[place.slug],
+      ...editorialCopy,
+      sources: [
+        ...place.sources,
+        ...(researchedPlaceSources[place.slug] ?? []),
+      ],
+      streetView: streetViewByPlace[place.slug],
+    };
+  })
   .sort((a, b) => categoryRank[a.category] - categoryRank[b.category]);
 
 export function getPlace(slug: string) {

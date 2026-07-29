@@ -19,12 +19,12 @@ export function MapPlaceChoice({
   onDetails: () => void;
   onStreetView: () => void;
 }) {
-  const detailsButtonRef = useRef<HTMLButtonElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const headingId = `map-place-choice-${place.id}`;
   const streetViewAvailable = isStreetViewCurrent(place.streetView);
 
   useEffect(() => {
-    detailsButtonRef.current?.focus();
+    closeButtonRef.current?.focus();
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
@@ -41,10 +41,10 @@ export function MapPlaceChoice({
     >
       <header className="map-place-choice__heading">
         <div>
-          <p className="map-place-choice__eyebrow">Selected map stop</p>
           <h2 id={headingId}>{place.name}</h2>
         </div>
         <button
+          ref={closeButtonRef}
           className="map-place-choice__close"
           type="button"
           aria-label={`Close options for ${place.name}`}
@@ -55,17 +55,11 @@ export function MapPlaceChoice({
       </header>
       <p className="map-place-choice__meta">
         <span>{scopeLabels[place.scope]}</span>
-        <span aria-hidden="true">·</span>
         <span>{categoryLabels[place.category]}</span>
       </p>
       <div className="map-place-choice__actions">
-        <button
-          ref={detailsButtonRef}
-          className="secondary-action"
-          type="button"
-          onClick={onDetails}
-        >
-          View details
+        <button className="secondary-action" type="button" onClick={onDetails}>
+          About this place
         </button>
         {streetViewAvailable ? (
           <button className="primary-action" type="button" onClick={onStreetView}>
@@ -73,7 +67,7 @@ export function MapPlaceChoice({
           </button>
         ) : (
           <p className="map-place-choice__street-view-note">
-            No current panorama has been verified at this exact place.
+            No qualifying recent panorama is available at or near this place.
           </p>
         )}
       </div>

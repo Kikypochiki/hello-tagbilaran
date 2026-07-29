@@ -3,7 +3,6 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <main id="main-content" className="error-sheet">
-      <p className="kicker">This page is missing from the journal</p>
       <h1>We could not find that place note.</h1>
       <p>The place may have moved or the link may be out of date.</p>
       <div className="error-sheet__actions">

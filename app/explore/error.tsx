@@ -14,7 +14,6 @@ export default function ExploreError({
 
   return (
     <main id="main-content" className="error-sheet">
-      <p className="kicker">The map page caught on a fold</p>
       <h1>The field guide could not open.</h1>
       <p>Your saved stops remain on this device. Try opening the page again.</p>
       <div className="error-sheet__actions">

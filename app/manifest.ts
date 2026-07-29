@@ -4,8 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Hello Tagbilaran",
     short_name: "Hello Tagbilaran",
-    description:
-      "A paper-journal guide to the history and places of Tagbilaran City, Bohol.",
+    description: "Living City Archive",
     start_url: "/",
     display: "standalone",
     background_color: "#f4e8ce",

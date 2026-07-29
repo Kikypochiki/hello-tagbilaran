@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import maplibregl, {
   GeoJSONSource,
   LngLatBounds,
@@ -38,6 +38,33 @@ const cityBoundary = cityBoundaryJson as unknown as GeoJSON.FeatureCollection<
 const mapTileUrl =
   process.env.NEXT_PUBLIC_MAP_TILE_URL ??
   "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+const mapTileUrlPrefix = mapTileUrl.split("{")[0] ?? mapTileUrl;
+
+function mapPerspective() {
+  if (prefersReducedMotion()) {
+    return { bearing: 0, pitch: 0 };
+  }
+
+  return window.innerWidth <= 780
+    ? { bearing: -5, pitch: 28 }
+    : { bearing: -8, pitch: 38 };
+}
+
+function medianPlaceCenter(places: Place[]): [number, number] | undefined {
+  const coordinates = places.flatMap((place) =>
+    place.coordinates ? [place.coordinates] : [],
+  );
+  if (coordinates.length === 0) return undefined;
+
+  const middle = Math.floor(coordinates.length / 2);
+  const longitudes = coordinates
+    .map((coordinate) => coordinate.longitude)
+    .sort((left, right) => left - right);
+  const latitudes = coordinates
+    .map((coordinate) => coordinate.latitude)
+    .sort((left, right) => left - right);
+  return [longitudes[middle]!, latitudes[middle]!];
+}
 
 function placePoints(places: Place[]): GeoJSON.FeatureCollection<
   GeoJSON.Point,
@@ -169,6 +196,7 @@ export function MapCanvas({
   onSelectBarangay: (code?: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [baseTilesUnavailable, setBaseTilesUnavailable] = useState(false);
   const mapRef = useRef<MapLibreMap | null>(null);
   const choicePopupRef = useRef<Popup | null>(null);
   const choicePopupPlaceIdRef = useRef<string | undefined>(undefined);
@@ -195,13 +223,21 @@ export function MapCanvas({
     const cityFeature = cityBoundary.features[0];
     if (!cityFeature) return;
     const initialBounds = boundsForGeometry(cityFeature.geometry);
+    const perspective = mapPerspective();
+    const initialCenter = medianPlaceCenter(places) ?? initialBounds.getCenter();
+    const buildingTileUrl = `${window.location.origin}/data/buildings/{z}/{x}/{y}.pbf`;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
       bounds: initialBounds,
+      bearing: perspective.bearing,
+      pitch: perspective.pitch,
+      maxPitch: 58,
       fitBoundsOptions: {
         padding: mapPadding(),
         maxZoom: 14.2,
+        bearing: perspective.bearing,
+        pitch: perspective.pitch,
       },
       cooperativeGestures: false,
       attributionControl: false,
@@ -212,8 +248,23 @@ export function MapCanvas({
             type: "raster",
             tiles: [mapTileUrl],
             tileSize: 256,
+            maxzoom: 19,
             attribution:
               '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+          },
+          buildings: {
+            type: "vector",
+            tiles: [buildingTileUrl],
+            minzoom: 13,
+            maxzoom: 16,
+            bounds: [
+              initialBounds.getWest(),
+              initialBounds.getSouth(),
+              initialBounds.getEast(),
+              initialBounds.getNorth(),
+            ],
+            attribution:
+              'Building footprints &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
           },
           places: {
             type: "geojson",
@@ -243,6 +294,56 @@ export function MapCanvas({
             },
           },
           {
+            id: "building-footprints",
+            type: "fill",
+            source: "buildings",
+            "source-layer": "building",
+            minzoom: 13,
+            maxzoom: 13.75,
+            paint: {
+              "fill-color": "#ddcba8",
+              "fill-opacity": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                13,
+                0.25,
+                13.75,
+                0.7,
+              ],
+              "fill-outline-color": "rgba(0, 92, 9, 0.18)",
+            },
+          },
+          {
+            id: "buildings-3d",
+            type: "fill-extrusion",
+            source: "buildings",
+            "source-layer": "building",
+            minzoom: 13,
+            paint: {
+              "fill-extrusion-base": 0,
+              "fill-extrusion-color": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                13,
+                "#ddcba8",
+                16,
+                "#f4e8ce",
+              ],
+              "fill-extrusion-height": [
+                "case",
+                ["has", "height"],
+                ["get", "height"],
+                ["has", "levels"],
+                ["*", ["get", "levels"], 3],
+                4,
+              ],
+              "fill-extrusion-opacity": 0.84,
+              "fill-extrusion-vertical-gradient": true,
+            },
+          },
+          {
             id: "barangay-fill",
             type: "fill",
             source: "barangays",
@@ -258,7 +359,7 @@ export function MapCanvas({
             filter: ["==", ["get", "brgy_code"], ""],
             paint: {
               "fill-color": "#f4c542",
-              "fill-opacity": 0.42,
+              "fill-opacity": 0.5,
             },
           },
           {
@@ -279,7 +380,7 @@ export function MapCanvas({
             filter: ["==", ["get", "brgy_code"], ""],
             paint: {
               "line-color": "#4a3d14",
-              "line-width": 2.5,
+              "line-width": 3,
               "line-opacity": 0.95,
             },
           },
@@ -414,6 +515,19 @@ export function MapCanvas({
         ],
       },
     });
+    const handleMapError = (event: { error: Error }) => {
+      const error = event.error as Error & { url?: string };
+      if (error.url?.startsWith(mapTileUrlPrefix)) {
+        setBaseTilesUnavailable(true);
+        containerRef.current?.setAttribute(
+          "data-map-background",
+          "unavailable",
+        );
+        return;
+      }
+      console.error(error);
+    };
+    map.on("error", handleMapError);
     const pinImages = {
       [placePinImageId]: createPlacePinImage({
         fill: "#f4c542",
@@ -440,10 +554,45 @@ export function MapCanvas({
     map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
     mapRef.current = map;
 
+    const establishPerspective = () => {
+      map.jumpTo({
+        center: initialCenter,
+        zoom: Math.max(map.getZoom(), window.innerWidth <= 780 ? 13.8 : 14.1),
+        bearing: perspective.bearing,
+        pitch: perspective.pitch,
+      });
+    };
+    const syncPerspectiveState = () => {
+      if (!containerRef.current || !map.getLayer("buildings-3d")) return;
+      const renderedBuildings = map.queryRenderedFeatures({
+        layers: ["buildings-3d"],
+      }).length;
+      containerRef.current.dataset.mapPitch = String(Math.round(map.getPitch()));
+      containerRef.current.dataset.buildingsRendered = String(renderedBuildings);
+    };
+    const syncBuildingSourceState = (event: maplibregl.MapSourceDataEvent) => {
+      if (
+        containerRef.current &&
+        event.sourceId === "buildings" &&
+        map.isSourceLoaded("buildings")
+      ) {
+        containerRef.current.dataset.buildingsReady = "true";
+        syncPerspectiveState();
+      }
+    };
+    map.once("load", establishPerspective);
+    map.on("idle", syncPerspectiveState);
+    map.on("moveend", syncPerspectiveState);
+    map.on("sourcedata", syncBuildingSourceState);
+    const supportsPointerPreview = window.matchMedia(
+      "(hover: hover) and (pointer: fine) and (min-width: 781px)",
+    ).matches;
+
     const openPlaceChoice = (placeId: string) => {
       const place = places.find((item) => item.id === placeId);
       if (!place?.coordinates) return;
 
+      onPreviewRef.current(undefined);
       choicePopupRef.current?.remove();
       const mountNode = document.createElement("div");
       mountNode.className = "journal-map-popup__mount";
@@ -503,6 +652,7 @@ export function MapCanvas({
       event: maplibregl.MapLayerMouseEvent & { features?: GeoJSON.Feature[] },
     ) => {
       map.getCanvas().style.cursor = "pointer";
+      if (!supportsPointerPreview) return;
       const placeId = event.features?.[0]?.properties?.placeId;
       if (typeof placeId === "string") {
         if (hoveredPlaceId && hoveredPlaceId !== placeId) {
@@ -517,9 +667,7 @@ export function MapCanvas({
       }
     };
 
-    const handleBarangayClick = (
-      event: maplibregl.MapLayerMouseEvent & { features?: GeoJSON.Feature[] },
-    ) => {
+    const handleBarangayClick = (event: maplibregl.MapMouseEvent) => {
       if (
         map.queryRenderedFeatures(event.point, {
           layers: ["place-clusters", "place-points", "place-point-hitarea"],
@@ -527,7 +675,11 @@ export function MapCanvas({
       ) {
         return;
       }
-      const code = event.features?.[0]?.properties?.brgy_code;
+
+      const boundaryFeature = map.queryRenderedFeatures(event.point, {
+        layers: ["barangay-selected-fill", "barangay-fill"],
+      })[0];
+      const code = boundaryFeature?.properties?.brgy_code;
       if (code !== undefined && code !== null) {
         const nextCode = String(code);
         onSelectBarangayRef.current(
@@ -541,9 +693,11 @@ export function MapCanvas({
     const clearPointer = () => {
       map.getCanvas().style.cursor = "";
     };
-    map.on("click", "barangay-fill", handleBarangayClick);
+    map.on("click", handleBarangayClick);
     map.on("mouseenter", "barangay-fill", showPointer);
     map.on("mouseleave", "barangay-fill", clearPointer);
+    map.on("mouseenter", "barangay-selected-fill", showPointer);
+    map.on("mouseleave", "barangay-selected-fill", clearPointer);
     map.on("click", "place-clusters", handleClusterClick);
     map.on("click", "place-point-hitarea", handlePlaceClick);
     map.on("mouseenter", "place-clusters", showPointer);
@@ -566,6 +720,12 @@ export function MapCanvas({
       choicePopupRef.current?.remove();
       choicePopupRef.current = null;
       choicePopupPlaceIdRef.current = undefined;
+      map.off("click", handleBarangayClick);
+      map.off("load", establishPerspective);
+      map.off("idle", syncPerspectiveState);
+      map.off("moveend", syncPerspectiveState);
+      map.off("sourcedata", syncBuildingSourceState);
+      map.off("error", handleMapError);
       map.remove();
       mapRef.current = null;
     };
@@ -631,10 +791,11 @@ export function MapCanvas({
     if (!streetViewTarget?.streetView) {
       if (!previousStreetViewTargetRef.current) return;
       previousStreetViewTargetRef.current = undefined;
+      const perspective = mapPerspective();
       map.easeTo({
         zoom: Math.min(map.getZoom(), 15.8),
-        pitch: 0,
-        bearing: 0,
+        pitch: perspective.pitch,
+        bearing: perspective.bearing,
         duration: reducedMotion ? 0 : 420,
       });
       return;
@@ -649,7 +810,7 @@ export function MapCanvas({
       zoom: 18.4,
       pitch: reducedMotion ? 0 : 52,
       bearing: reducedMotion ? 0 : 18,
-      duration: reducedMotion ? 0 : 620,
+      duration: reducedMotion ? 0 : 900,
       easing: (time) => 1 - Math.pow(1 - time, 4),
     });
   }, [streetViewTarget]);
@@ -671,8 +832,14 @@ export function MapCanvas({
     );
     if (points.length === 0) return;
 
+    containerRef.current?.removeAttribute("data-highlight-focus");
+    let markFocusReady: (() => void) | undefined;
     const focusHighlightedPlaces = () => {
       const reducedMotion = prefersReducedMotion();
+      markFocusReady = () => {
+        containerRef.current?.setAttribute("data-highlight-focus", "ready");
+      };
+      map.once("moveend", markFocusReady);
       if (points.length === 1 && points[0]?.coordinates) {
         map.easeTo({
           center: [points[0].coordinates.longitude, points[0].coordinates.latitude],
@@ -691,6 +858,8 @@ export function MapCanvas({
       map.fitBounds(bounds, {
         padding: mapPadding(),
         maxZoom: 15.2,
+        bearing: mapPerspective().bearing,
+        pitch: mapPerspective().pitch,
         duration: reducedMotion ? 0 : 650,
       });
     };
@@ -708,6 +877,7 @@ export function MapCanvas({
     return () => {
       window.clearTimeout(focusTimer);
       map.off("style.load", scheduleFocus);
+      if (markFocusReady) map.off("moveend", markFocusReady);
     };
   }, [highlightedIds, places, selectedBarangayCode]);
 
@@ -731,9 +901,12 @@ export function MapCanvas({
       if (!target) return;
 
       const reducedMotion = prefersReducedMotion();
+      const perspective = mapPerspective();
       map.fitBounds(boundsForGeometry(target.geometry), {
         padding: mapPadding(),
         maxZoom: feature ? 15.6 : 14.2,
+        bearing: perspective.bearing,
+        pitch: perspective.pitch,
         duration: reducedMotion ? 0 : 650,
       });
     };
@@ -747,12 +920,19 @@ export function MapCanvas({
   }, [selectedBarangayCode]);
 
   return (
-    <div
-      className="map-canvas map-canvas--city"
-      ref={containerRef}
-      data-selected-barangay={selectedBarangayCode}
-      role="region"
-      aria-label="Interactive map of Tagbilaran place pins, all 15 indicative barangay areas, and the indicative city boundary. The map index provides keyboard controls for every selection."
-    />
+    <>
+      <div
+        className="map-canvas map-canvas--city"
+        ref={containerRef}
+        data-selected-barangay={selectedBarangayCode}
+        role="region"
+        aria-label="Interactive map of Tagbilaran place pins, all 15 indicative barangay areas, and the indicative city boundary. The map index provides keyboard controls for every selection."
+      />
+      {baseTilesUnavailable ? (
+        <p className="map-canvas__network-status" role="status">
+          Map background unavailable. Place markers and boundaries remain usable.
+        </p>
+      ) : null}
+    </>
   );
 }

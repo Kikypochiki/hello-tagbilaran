@@ -4,7 +4,6 @@ import type { GeographicScope } from "@/types/content";
 export function ScopeBadge({ scope }: { scope: GeographicScope }) {
   return (
     <span className="scope-badge" data-scope={scope}>
-      <span aria-hidden="true" className="scope-badge__mark" />
       {scopeLabels[scope]}
     </span>
   );

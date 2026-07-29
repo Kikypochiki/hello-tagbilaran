@@ -1,0 +1,295 @@
+/* Story navigation only. Chapter composition lives in the isolated story module. */
+
+.story-journal {
+  overflow: visible;
+}
+
+.archive-story {
+  --story-paper: #f4e8ce;
+  --story-paper-light: #fff9eb;
+  --story-ink: #173a30;
+  --story-muted: #5f665d;
+  --story-rule: rgb(23 58 48 / 24%);
+}
+
+.archive-story__navigator {
+  position: fixed;
+  z-index: 35;
+  top: 50%;
+  right: clamp(0.7rem, 1.4vw, 1.25rem);
+  width: 2.75rem;
+  height: min(52dvh, 29rem);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translate(0.65rem, -50%);
+  transition:
+    opacity 220ms ease,
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 220ms;
+}
+
+.archive-story__navigator[data-within-story] {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.story-thread {
+  position: relative;
+  width: 2.75rem;
+  height: 100%;
+}
+
+.story-thread__track {
+  position: absolute;
+  top: 5%;
+  right: 0.82rem;
+  bottom: 5%;
+  width: 1px;
+  overflow: hidden;
+  background: rgb(23 58 48 / 30%);
+}
+
+.story-thread__fill {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--sandugo-red);
+  transform: scaleY(0);
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.story-thread ol {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.story-thread li {
+  position: absolute;
+  top: var(--chapter-at);
+  right: 0;
+  width: 2.75rem;
+  height: 44px;
+  transform: translateY(-50%);
+}
+
+.story-thread a {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 44px;
+  color: var(--story-ink);
+  text-decoration: none;
+}
+
+.story-thread__mark {
+  position: absolute;
+  top: 50%;
+  right: 0.48rem;
+  width: 0.68rem;
+  height: 0.68rem;
+  background: var(--story-paper-light);
+  border: 1px solid rgb(23 58 48 / 58%);
+  border-radius: 50%;
+  transform: translateY(-50%) scale(0.72);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.story-thread a:hover .story-thread__mark,
+.story-thread a:focus-visible .story-thread__mark,
+.story-thread a[aria-current] .story-thread__mark {
+  border-color: var(--sandugo-red);
+  transform: translateY(-50%) scale(1);
+}
+
+.story-thread a[aria-current] .story-thread__mark {
+  background: var(--sandugo-red);
+}
+
+.story-thread__label {
+  position: absolute;
+  top: 50%;
+  right: 2.25rem;
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  width: min(19rem, calc(100vw - 6rem));
+  min-height: 44px;
+  align-items: center;
+  padding: 0.5rem 0.8rem;
+  color: var(--story-ink);
+  background: rgb(255 249 235 / 92%);
+  border-right: 1px solid rgb(23 58 48 / 24%);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translate(0.65rem, -50%);
+  transition:
+    opacity 180ms ease,
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 180ms;
+  gap: 0.55rem;
+}
+
+.story-thread__label small {
+  color: var(--sandugo-red);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.61rem;
+  font-weight: 700;
+}
+
+.story-thread__label strong {
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: clamp(0.88rem, 1.05vw, 1rem);
+  font-weight: 400;
+  line-height: 1.16;
+}
+
+.story-thread:hover .story-thread__label,
+.story-thread:focus-within .story-thread__label {
+  pointer-events: auto;
+  visibility: visible;
+  opacity: 0.24;
+  transform: translate(0, -50%);
+}
+
+.story-thread:hover a[aria-current] .story-thread__label,
+.story-thread:focus-within a[aria-current] .story-thread__label,
+.story-thread a:hover .story-thread__label,
+.story-thread a:focus-visible .story-thread__label {
+  border-right-color: var(--sandugo-red);
+  opacity: 1;
+}
+
+.story-thread__counter {
+  position: absolute;
+  right: 0.32rem;
+  bottom: -1.55rem;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  color: rgb(23 58 48 / 54%);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.56rem;
+  line-height: 1;
+  gap: 0.12rem;
+}
+
+.story-thread__counter strong {
+  color: var(--sandugo-red);
+}
+
+.story-mobile-index {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .archive-story__navigator {
+    top: var(--header-height);
+    right: 0;
+    bottom: auto;
+    left: 0;
+    width: auto;
+    height: auto;
+    transform: translateY(-0.75rem);
+  }
+
+  .archive-story__navigator[data-within-story] {
+    transform: none;
+  }
+
+  .story-thread {
+    display: none;
+  }
+
+  .story-mobile-index {
+    display: block;
+    width: 100%;
+    min-height: 52px;
+    color: var(--story-ink);
+    background: rgb(255 249 235 / 94%);
+    border-bottom: 1px solid var(--story-rule);
+  }
+
+  .story-mobile-index summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 52px;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    font-size: 0.76rem;
+    list-style: none;
+    cursor: pointer;
+    gap: 1rem;
+  }
+
+  .story-mobile-index summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .story-mobile-index summary span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .story-mobile-index summary strong {
+    color: var(--sandugo-red);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.65rem;
+  }
+
+  .story-mobile-index ol {
+    display: grid;
+    padding: 0.5rem 1rem 1rem;
+    margin: 0;
+    background: var(--story-paper-light);
+    border-top: 1px solid var(--story-rule);
+    list-style: none;
+  }
+
+  .story-mobile-index a {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    min-height: 44px;
+    align-items: center;
+    color: var(--story-muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+    text-decoration: none;
+    gap: 0.5rem;
+  }
+
+  .story-mobile-index a span {
+    color: var(--sandugo-red);
+    font-family: var(--font-mono), monospace;
+    font-size: 0.62rem;
+  }
+
+  .story-mobile-index a[aria-current] {
+    color: var(--story-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--sandugo-red);
+    text-underline-offset: 0.25em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .archive-story__navigator,
+  .story-thread__mark,
+  .story-thread__label {
+    transition: none;
+  }
+
+  .story-thread__fill {
+    display: none;
+  }
+}

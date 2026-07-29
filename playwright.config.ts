@@ -26,7 +26,7 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
-        command: "npm run dev -- --hostname 127.0.0.1 --port 3102",
+        command: "npx next dev --hostname 127.0.0.1 --port 3102",
         url: "http://127.0.0.1:3102",
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

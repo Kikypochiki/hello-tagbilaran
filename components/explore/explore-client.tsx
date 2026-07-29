@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   useCallback,
@@ -16,15 +15,17 @@ import { MapPlaceChoice } from "@/components/explore/map-place-choice";
 import { MapErrorBoundary } from "@/components/explore/map-error-boundary";
 import { PlaceDialog } from "@/components/explore/place-dialog";
 import { StreetViewExperience } from "@/components/explore/street-view-experience";
-import { PlaceVerificationNote } from "@/components/place-verification-note";
+import { BarangaySheet } from "@/components/explore/barangay-sheet";
 import { ScopeBadge } from "@/components/scope-badge";
 import {
-  tagbilaranAdministrativeSource,
   tagbilaranBarangays,
-  tagbilaranBoundarySource,
 } from "@/content/barangays";
 import { filterPlaces } from "@/lib/explore-filters";
-import { categoryLabels, categoryOrder, scopeLabels } from "@/lib/place-labels";
+import {
+  categoryDescriptions,
+  categoryLabels,
+  categoryOrder,
+} from "@/lib/place-labels";
 import { readSavedPlaceIds, subscribeToSavedPlaces } from "@/lib/saved-places";
 import { hasReviewedLocation } from "@/lib/verification";
 import type { Place, PlaceCategory } from "@/types/content";
@@ -54,7 +55,10 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const savedOnly = searchParams.get("saved") === "1";
   const queryParam = searchParams.get("q") ?? "";
   const indexRef = useRef<HTMLDetailsElement>(null);
+  const barangayBrowseRef = useRef<HTMLButtonElement>(null);
+  const barangayDirectoryCloseRef = useRef<HTMLButtonElement>(null);
   const [query, setQuery] = useState(queryParam);
+  const [barangayDirectoryOpen, setBarangayDirectoryOpen] = useState(false);
   const [previewedId, setPreviewedId] = useState<string>();
   const [promptedPlace, setPromptedPlace] = useState<Place>();
   const [promptMountNode, setPromptMountNode] = useState<HTMLElement>();
@@ -88,6 +92,9 @@ export function ExploreClient({ places }: { places: Place[] }) {
   const selectedBarangay = tagbilaranBarangays.find(
     (barangay) => barangay.code === searchParams.get("barangay"),
   );
+  const selectedBarangayIndex = selectedBarangay
+    ? tagbilaranBarangays.findIndex((item) => item.code === selectedBarangay.code)
+    : -1;
 
   const filteredPlaces = useMemo(
     () =>
@@ -104,6 +111,16 @@ export function ExploreClient({ places }: { places: Place[] }) {
     () => categoryOrder.filter((item) => places.some((place) => place.category === item)),
     [places],
   );
+  const categoryCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        categoryOrder.map((item) => [
+          item,
+          places.filter((place) => place.category === item).length,
+        ]),
+      ) as Record<PlaceCategory, number>,
+    [places],
+  );
 
   const [mappablePlaces] = useState(() =>
     places.filter(hasReviewedLocation),
@@ -116,12 +133,12 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
   const replaceParams = useCallback(
     (updates: Record<string, string | null>) => {
-      const next = new URLSearchParams(searchParams.toString());
+      const current = window.location.search.slice(1);
+      const next = new URLSearchParams(current);
       Object.entries(updates).forEach(([key, value]) => {
         if (value) next.set(key, value);
         else next.delete(key);
       });
-      const current = searchParams.toString();
       const suffix = next.toString();
       if (suffix === current) return;
 
@@ -131,8 +148,29 @@ export function ExploreClient({ places }: { places: Place[] }) {
         suffix ? `${pathname}?${suffix}` : pathname,
       );
     },
-    [pathname, searchParams],
+    [pathname],
   );
+
+  useEffect(() => {
+    if (!selectedBarangay) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") replaceParams({ barangay: null });
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [replaceParams, selectedBarangay]);
+
+  useEffect(() => {
+    if (!barangayDirectoryOpen) return;
+    barangayDirectoryCloseRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setBarangayDirectoryOpen(false);
+      window.setTimeout(() => barangayBrowseRef.current?.focus());
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [barangayDirectoryOpen]);
 
   const openPlace = useCallback(
     (place: Place) => {
@@ -172,43 +210,74 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
       <details className="map-index" ref={indexRef} open>
         <summary>
-          <span>
-            <span className="section-kicker">Journal index</span>
-            <strong>Places &amp; barangays</strong>
+          <span className="map-index__summary-copy">
+            <strong>Find a place</strong>
+            <small>
+              {category
+                ? categoryLabels[category]
+                : selectedBarangay
+                  ? selectedBarangay.name
+                  : savedOnly
+                    ? "Saved places"
+                    : "Explore Tagbilaran"}
+            </small>
           </span>
           <span className="map-index__count">
-            {places.length} places · {tagbilaranBarangays.length} barangays
+            {filteredPlaces.length} matches
+          </span>
+          <span className="map-index__toggle-label" aria-hidden="true">
+            <span data-when-open>Close</span>
+            <span data-when-closed>Open</span>
           </span>
         </summary>
 
         <div className="map-index__body">
-          <section className="map-index__section" aria-labelledby="places-index-title">
-            <h2 className="sr-only" id="places-index-title">
-              Search and filter places
-            </h2>
+          <section className="map-index__section" aria-labelledby="explore-index-title">
+            <header className="map-index__intro">
+              <div>
+                <h2 id="explore-index-title">What would you like to find?</h2>
+                <p>Choose an interest, search by name, or focus on one barangay.</p>
+              </div>
+              {category || query || savedOnly || selectedBarangay ? (
+                <button
+                  className="map-index__reset"
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    setPreviewedId(undefined);
+                    replaceParams({
+                      q: null,
+                      category: null,
+                      saved: null,
+                      barangay: null,
+                      place: null,
+                    });
+                  }}
+                >
+                  Reset
+                </button>
+              ) : null}
+            </header>
             <p className="sr-only" aria-live="polite">
               {filteredPlaces.length} places shown
             </p>
 
             <label className="search-field search-field--index">
-              <span>Search the place index</span>
+              <span>Search by place or barangay</span>
               <span className="search-field__control">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <circle cx="10.8" cy="10.8" r="6.8" />
-                  <path d="m16 16 5 5" />
-                </svg>
                 <input
                   type="search"
                   value={query}
                   onChange={(event) => updateQuery(event.target.value)}
-                  placeholder="Name, barangay, or category"
+                  placeholder="Try “museum” or “Bool”"
                 />
               </span>
             </label>
 
             <fieldset className="category-filters category-filters--index">
-              <legend>Highlight a place category</legend>
+              <legend>Browse by interest</legend>
               <button
+                className="category-choice"
                 type="button"
                 aria-pressed={!category}
                 onClick={() => {
@@ -216,10 +285,15 @@ export function ExploreClient({ places }: { places: Place[] }) {
                   replaceParams({ category: null, place: null });
                 }}
               >
-                All
+                <span>
+                  <strong>All places</strong>
+                  <small>Museums, dining, stays, shops, and outdoor spaces</small>
+                </span>
+                <b>{places.length}</b>
               </button>
               {availableCategories.map((item) => (
                 <button
+                  className="category-choice"
                   key={item}
                   type="button"
                   aria-pressed={category === item}
@@ -228,141 +302,113 @@ export function ExploreClient({ places }: { places: Place[] }) {
                     replaceParams({ category: item, place: null });
                   }}
                 >
-                  {categoryLabels[item]}
+                  <span>
+                    <strong>{categoryLabels[item]}</strong>
+                    <small>{categoryDescriptions[item]}</small>
+                  </span>
+                  <b>{categoryCounts[item]}</b>
                 </button>
               ))}
+            </fieldset>
+
+            <div className="map-index__utilities">
               <button
+                className="barangay-browse"
+                type="button"
+                ref={barangayBrowseRef}
+                onClick={() => setBarangayDirectoryOpen(true)}
+              >
+                <span>
+                  <strong>Browse barangays</strong>
+                  <small>
+                    {selectedBarangay?.name ?? "Open the city directory"}
+                  </small>
+                </span>
+                <b>15</b>
+              </button>
+              <button
+                className="saved-filter"
                 type="button"
                 aria-pressed={savedOnly}
                 onClick={() =>
                   replaceParams({ saved: savedOnly ? null : "1", place: null })
                 }
               >
-                Saved ({savedIds.size})
+                <span>
+                  <strong>Saved places</strong>
+                  <small>Your personal shortlist</small>
+                </span>
+                <b>{savedIds.size}</b>
               </button>
-            </fieldset>
-
-            <p className="map-index__source">
-              Explore {places.length} curated entries. Map points and directions appear
-              only where the location has been source-reviewed.
-            </p>
-
-            {filteredPlaces.length ? (
-              <ol className="map-index__places">
-                {filteredPlaces.map((place) => (
-                  <li className="map-index__place-entry" key={place.id}>
-                    <Link
-                      className="map-index__place-link"
-                      href={`/places/${place.slug}`}
-                      onClick={(event) => {
-                        if (
-                          event.button !== 0 ||
-                          event.metaKey ||
-                          event.ctrlKey ||
-                          event.shiftKey ||
-                          event.altKey
-                        ) {
-                          return;
-                        }
-                        event.preventDefault();
-                        openPlace(place);
-                      }}
-                      onPointerEnter={() => {
-                        if (place.coordinates) setPreviewedId(place.id);
-                      }}
-                      onPointerLeave={() => setPreviewedId(undefined)}
-                      onFocus={() => {
-                        if (place.coordinates) setPreviewedId(place.id);
-                      }}
-                      onBlur={() => setPreviewedId(undefined)}
-                    >
-                      <Image
-                        className="map-index__place-photo"
-                        src={place.images[0].src}
-                        alt=""
-                        width={place.images[0].width}
-                        height={place.images[0].height}
-                        sizes="72px"
-                        loading="lazy"
-                      />
-                      <span className="map-index__place-copy">
-                        <span className="map-index__place-name">{place.name}</span>
-                        <span className="map-index__place-meta">
-                          <span>{categoryLabels[place.category]}</span>
-                          <span>{scopeLabels[place.scope]}</span>
-                        </span>
-                        <PlaceVerificationNote place={place} compact />
-                      </span>
-                    </Link>
-                    {hasReviewedLocation(place) && place.directionsUrl ? (
-                    <a
-                      className="map-index__directions"
-                      href={place.directionsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Maps
-                      <span aria-hidden="true">↗</span>
-                      <span className="sr-only">Open Google Maps for {place.name}</span>
-                    </a>
-                    ) : null}
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <div className="map-index__empty" role="status">
-                <strong>No matching place entries.</strong>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery("");
-                    replaceParams({
-                      q: null,
-                      category: null,
-                      saved: null,
-                      place: null,
-                    });
-                  }}
-                >
-                  Clear filters
-                </button>
-              </div>
-            )}
-          </section>
-
-          <section className="map-index__section" aria-labelledby="barangay-index-title">
-            <header className="map-index__heading">
-              <div>
-                <p className="section-kicker">City districts</p>
-                <h2 id="barangay-index-title">All 15 barangays</h2>
-              </div>
-            </header>
-            <div className="barangay-index">
-              {tagbilaranBarangays.map((barangay) => (
-                <button
-                  key={barangay.code}
-                  type="button"
-                  aria-pressed={selectedBarangay?.code === barangay.code}
-                  onClick={() =>
-                    replaceParams({
-                      barangay:
-                        selectedBarangay?.code === barangay.code ? null : barangay.code,
-                    })
-                  }
-                >
-                  <span>{barangay.name}</span>
-                  <small>{barangay.code}</small>
-                </button>
-              ))}
             </div>
-            <p className="map-index__source">
-              Names and codes: {tagbilaranAdministrativeSource.publisher}.{" "}
-              {tagbilaranBoundarySource.note} Boundary source:{" "}
-              {tagbilaranBoundarySource.publisher}.
-            </p>
+
+            <footer className="map-index__status" role="status">
+              <strong>
+                {filteredPlaces.length}{" "}
+                {filteredPlaces.length === 1 ? "place" : "places"} highlighted
+              </strong>
+              <span>
+                Select a marker on the map to open its description and visit details.
+              </span>
+            </footer>
           </section>
         </div>
       </details>
+
+      {barangayDirectoryOpen ? (
+        <div
+          className="barangay-directory"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="barangay-directory-title"
+        >
+          <header>
+            <div>
+              <small>Tagbilaran City</small>
+              <h2 id="barangay-directory-title">Choose a barangay</h2>
+            </div>
+            <button
+              type="button"
+              ref={barangayDirectoryCloseRef}
+              onClick={() => {
+                setBarangayDirectoryOpen(false);
+                window.setTimeout(() => barangayBrowseRef.current?.focus());
+              }}
+            >
+              Close
+            </button>
+          </header>
+          <p>Select a district to highlight its boundary and open its city profile.</p>
+          <div className="barangay-directory__list">
+            <button
+              type="button"
+              aria-pressed={!selectedBarangay}
+              onClick={() => {
+                setBarangayDirectoryOpen(false);
+                replaceParams({ barangay: null, place: null });
+              }}
+            >
+              <span>All barangays</span>
+              <small>Clear district focus</small>
+            </button>
+            {tagbilaranBarangays.map((barangay, index) => (
+              <button
+                type="button"
+                key={barangay.code}
+                data-barangay-code={barangay.code}
+                aria-pressed={selectedBarangay?.code === barangay.code}
+                onClick={() => {
+                  setBarangayDirectoryOpen(false);
+                  replaceParams({ barangay: barangay.code, place: null });
+                }}
+              >
+                <span>{barangay.name}</span>
+                <small>{String(index + 1).padStart(2, "0")}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <MapErrorBoundary>
         <MapCanvas
@@ -384,13 +430,21 @@ export function ExploreClient({ places }: { places: Place[] }) {
 
       {highlightedIds.length === 0 ? (
         <div className="map-category-empty map-category-empty--map-only" role="status">
-          <strong>No source-located pins in this filter.</strong>
-          <span>Matching entries remain available inside the map index.</span>
+          <strong>No map markers match these filters.</strong>
+          <span>Reset the search, category, or saved-place filter to continue.</span>
         </div>
       ) : null}
 
       {previewedPlace && !selectedPlace && !promptedPlace && !streetViewPlace ? (
         <aside className="map-place-preview map-place-preview--map-only" aria-live="polite">
+          <button
+            className="map-place-preview__close"
+            type="button"
+            aria-label={`Close preview of ${previewedPlace.name}`}
+            onClick={() => setPreviewedId(undefined)}
+          >
+            <span aria-hidden="true">×</span>
+          </button>
           <Image
             className="map-place-preview__photo"
             src={previewedPlace.images[0].src}
@@ -406,24 +460,22 @@ export function ExploreClient({ places }: { places: Place[] }) {
               {categoryLabels[previewedPlace.category]}
             </span>
           </div>
-          <p className="section-kicker">Place note</p>
           <h2>{previewedPlace.name}</h2>
-          <p>{previewedPlace.summary}</p>
-          <button className="text-link" type="button" onClick={() => openPlace(previewedPlace)}>
-            Open complete information <span aria-hidden="true">→</span>
-          </button>
         </aside>
       ) : null}
 
       {selectedBarangay ? (
-        <aside className="selected-barangay" aria-live="polite">
-          <p className="section-kicker">Highlighted barangay</p>
-          <h2>{selectedBarangay.name}</h2>
-          <p>Indicative administrative area · PSGC {selectedBarangay.code}</p>
-          <button type="button" onClick={() => replaceParams({ barangay: null })}>
-            Clear highlight
-          </button>
-        </aside>
+        <BarangaySheet
+          barangay={selectedBarangay}
+          places={places}
+          previous={tagbilaranBarangays[(selectedBarangayIndex - 1 + tagbilaranBarangays.length) % tagbilaranBarangays.length]}
+          next={tagbilaranBarangays[(selectedBarangayIndex + 1) % tagbilaranBarangays.length]}
+          onChoose={(code) => replaceParams({ barangay: code })}
+          onClose={() => {
+            replaceParams({ barangay: null });
+            window.setTimeout(() => barangayBrowseRef.current?.focus());
+          }}
+        />
       ) : null}
 
       <aside className="map-boundary-note map-legend" aria-label="Map symbol legend">

@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { places } from "@/content/places";
 import { filterPlaces } from "@/lib/explore-filters";
+import {
+  categoryDescriptions,
+  categoryLabels,
+  categoryOrder,
+} from "@/lib/place-labels";
 
 describe("filterPlaces", () => {
   it("matches names, barangays, and categories", () => {
@@ -22,5 +27,17 @@ describe("filterPlaces", () => {
       savedIds: saved,
     });
     expect(results.map((place) => place.id)).toEqual(["chido-cafe"]);
+  });
+});
+
+describe("Explore category language", () => {
+  it("gives every category a clear label and practical description", () => {
+    for (const category of categoryOrder) {
+      expect(categoryLabels[category].length).toBeGreaterThan(4);
+      expect(categoryDescriptions[category].split(" ").length).toBeGreaterThanOrEqual(4);
+      expect(categoryDescriptions[category]).not.toMatch(
+        /discover|experience|something for everyone|must-see/i,
+      );
+    }
   });
 });

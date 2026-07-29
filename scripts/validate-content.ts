@@ -1,6 +1,12 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { tagbilaranBarangays } from "../content/barangays";
 import { places } from "../content/places";
 import { isStreetViewCurrent } from "../lib/verification";
+import { hazardLayers } from "../content/hazards";
+import { siteOwner, supportProfile } from "../content/site-owner";
+import { validateHazardLayer } from "../lib/hazards";
+import { validateSiteOwner } from "../lib/site-owner";
 
 const warnings: string[] = [];
 const errors: string[] = [];
@@ -75,8 +81,17 @@ for (const place of places) {
   }
 
   if (place.streetView) {
-    if (place.streetView.match !== "exact-venue") {
-      error(`${label}: Street View must be an exact-venue match.`);
+    const captureYear = Number(place.streetView.captureDate.slice(0, 4));
+    if (captureYear < 2023 || captureYear > 2026) {
+      error(`${label}: Street View must be dated from 2023 through 2026.`);
+    }
+    if (
+      place.streetView.match === "nearby-road" &&
+      (!place.streetView.distanceMeters ||
+        place.streetView.distanceMeters <= 0 ||
+        place.streetView.distanceMeters > 250)
+    ) {
+      error(`${label}: nearby Street View requires a distance from 1 to 250 m.`);
     }
     if (!validDate(place.streetView.verifiedAt)) {
       error(`${label}: Street View has an invalid review date.`);
@@ -95,6 +110,42 @@ if (tagbilaranBarangays.length !== 15) {
 }
 if (new Set(tagbilaranBarangays.map((barangay) => barangay.code)).size !== 15) {
   error("Tagbilaran barangay codes must be unique.");
+}
+for (const barangay of tagbilaranBarangays) {
+  const label = `${barangay.name} (${barangay.code})`;
+  if (!/^\d{9}$/.test(barangay.code)) {
+    error(`${label}: PSGC code must contain nine digits.`);
+  }
+  if (!Number.isInteger(barangay.population2024) || barangay.population2024 <= 0) {
+    error(`${label}: 2024 population must be a positive integer.`);
+  }
+  if (!barangay.punongBarangay.trim()) {
+    error(`${label}: official directory leader is required.`);
+  }
+  if (!barangay.contact.length || barangay.contact.some((item) => !item.trim())) {
+    error(`${label}: official directory contact is required.`);
+  }
+  if (barangay.officialDirectoryUrl !== "https://tagbilaran.gov.ph/barangays/") {
+    error(`${label}: official city directory URL is missing or incorrect.`);
+  }
+  if (!validDate(barangay.directoryReviewedAt)) {
+    error(`${label}: official directory review date is invalid.`);
+  }
+}
+
+if (!hazardLayers.every(validateHazardLayer)) {
+  error("Hazard metadata is incomplete or includes unapproved placeholder geometry.");
+}
+for (const layer of hazardLayers) {
+  const localPath = join(process.cwd(), "public", layer.dataUrl);
+  if (!existsSync(localPath)) {
+    error(`${layer.label}: local hazard dataset is missing at ${layer.dataUrl}.`);
+  }
+}
+
+const ownerErrors = validateSiteOwner(siteOwner, supportProfile);
+if (ownerErrors.length && process.env.ALLOW_PLACEHOLDER_CONTENT !== "1") {
+  ownerErrors.forEach(error);
 }
 
 for (const message of warnings) console.warn(`CONTENT WARNING: ${message}`);
