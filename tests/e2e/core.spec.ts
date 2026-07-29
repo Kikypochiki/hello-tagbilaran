@@ -313,10 +313,17 @@ test("A point click opens its choice without reloading the page", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name === "mobile", "Desktop map regression check");
-  await page.goto("/explore?q=National+Museum");
+  // Use a single exact result so the filtered marker is centered before the
+  // pointer interaction. "National Museum" also matches the Garcia museum,
+  // placing the viewport center between two markers instead of on either one.
+  await page.goto("/explore?q=Bohol+Quality+Mall");
+  await expect(page.locator(".map-canvas")).toHaveAttribute(
+    "data-highlight-focus",
+    "ready",
+    { timeout: 15_000 },
+  );
   const canvas = page.locator(".maplibregl-canvas");
   await expect(canvas).toBeVisible();
-  await page.waitForTimeout(1_000);
   await canvas.hover();
   await page.mouse.wheel(0, -320);
   await expect(page.locator(".maplibregl-cooperative-gesture-screen")).toHaveCount(0);
@@ -325,7 +332,9 @@ test("A point click opens its choice without reloading the page", async ({
   await canvas.click({
     position: {
       x: Math.round((bounds?.width ?? 0) / 2),
-      y: Math.round((bounds?.height ?? 0) / 2),
+      // The paper pin is bottom-anchored at the map coordinate, so its
+      // interactive face sits above the projected point.
+      y: Math.round((bounds?.height ?? 0) / 2 - 18),
     },
   });
   await expect(page.locator(".map-place-choice")).toBeVisible();
@@ -340,7 +349,7 @@ test("Barangays remain selected after click", async ({
   await page.goto("/explore?q=no-such-place");
   const map = page.locator(".map-canvas");
   const canvas = page.locator(".maplibregl-canvas");
-  await expect(canvas).toBeVisible();
+  await expect(canvas).toBeVisible({ timeout: 15_000 });
   await page.waitForTimeout(500);
   const bounds = await canvas.boundingBox();
   expect(bounds).not.toBeNull();

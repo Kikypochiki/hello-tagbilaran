@@ -1689,7 +1689,7 @@
   display: block;
   max-width: 62ch;
   margin-top: 1rem;
-  color: rgb(0 63 7 / 68%);
+  color: var(--heritage-green-dark);
   line-height: 1.55;
 }
 
