@@ -6,7 +6,12 @@ import { siteOwner } from "@/content/site-owner";
 
 export function SiteFooter() {
   const pathname = usePathname();
-  if (pathname.startsWith("/explore")) return null;
+  if (
+    pathname.startsWith("/explore") ||
+    pathname.startsWith("/hazard-assessment")
+  ) {
+    return null;
+  }
 
   return (
     <footer className="site-footer">

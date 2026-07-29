@@ -6,7 +6,7 @@ import { hazardLayers } from "@/content/hazards";
 export const metadata: Metadata = {
   title: "Hazard assessment",
   description:
-    "A source-conscious Tagbilaran hazard-assessment workspace with barangay inspection and official UP NOAH verification links.",
+    "An interactive Tagbilaran hazard map using Project NOAH flood, landslide, and storm-surge scenario data.",
   alternates: { canonical: "/hazard-assessment" },
 };
 
@@ -17,17 +17,25 @@ export default function HazardAssessmentPage() {
         <section className="hazard-noscript">
           <h1>Tagbilaran hazard assessment</h1>
           <p>
-            Interactive area selection requires JavaScript. No local hazard geometry is published while
-            reuse terms and coverage remain unverified.
+            The interactive map requires JavaScript. Use the source links below
+            to verify flood, landslide, and storm-surge scenarios with UP NOAH.
           </p>
           <ul>
             {hazardLayers.map((layer) => (
-              <li key={layer.id}><a href={layer.sourceUrl}>{layer.label} at UP NOAH</a></li>
+              <li key={layer.id}>
+                <a href={layer.sourceUrl}>{layer.label} at UP NOAH</a>
+              </li>
             ))}
           </ul>
         </section>
       </noscript>
-      <Suspense fallback={<div className="workspace-loading" role="status">Opening the preparedness field desk…</div>}>
+      <Suspense
+        fallback={
+          <div className="workspace-loading" role="status">
+            Opening the hazard map…
+          </div>
+        }
+      >
         <HazardAssessmentClient />
       </Suspense>
     </main>

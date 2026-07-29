@@ -66,7 +66,7 @@ export function SiteHeader() {
     <header
       className="site-header experience-header"
       data-overlay={pathname === "/" || undefined}
-      data-tone={pathname.startsWith("/hazard-assessment") ? "dark" : "light"}
+      data-tone="light"
     >
       <div className="site-header__inner">
         <Link className="brand" href="/" aria-label="Hello Tagbilaran home">
